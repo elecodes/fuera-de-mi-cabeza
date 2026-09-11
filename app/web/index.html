@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fuera de mi cabeza — Editor Personal</title>
+  <style>
+    :root {
+      --bg: #faf9f6;
+      --card-bg: #ffffff;
+      --text: #2c2c2c;
+      --accent: #d97706;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --radius: 8px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
+      background-color: var(--bg);
+      color: var(--text);
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 2rem 1rem;
+      line-height: 1.6;
+    }
+    header {
+      margin-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1rem;
+    }
+    h1 {
+      font-family: Georgia, serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      margin-top: 0.2rem;
+    }
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .step-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    textarea, input[type="text"] {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+      font-family: inherit;
+      font-size: 1rem;
+      box-sizing: border-box;
+      background: #fafafa;
+    }
+    textarea:focus, input[type="text"]:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: #fff;
+    }
+    button {
+      background: var(--text);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 0.6rem 1.2rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 1rem;
+      margin-right: 0.5rem;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #000;
+    }
+    button.secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.secondary:hover {
+      background: #f3f4f6;
+    }
+    .badge {
+      display: inline-block;
+      background: #fef3c7;
+      color: #92400e;
+      font-size: 0.8rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    ul, ol {
+      padding-left: 1.2rem;
+    }
+    .draft-content {
+      background: #fdfbf7;
+      border-left: 3px solid var(--accent);
+      padding: 1.2rem;
+      white-space: pre-wrap;
+      font-family: Georgia, serif;
+      font-size: 1.05rem;
+      margin-top: 1rem;
+    }
+    .hidden { display: none; }
+    .loader {
+      color: var(--muted);
+      font-style: italic;
+      margin-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>FUERA DE MI CABEZA</h1>
+    <div class="subtitle">Editor personal para Substack — Pensá, explorá y escribí con tu voz</div>
+  </header>
+
+  <!-- PASO 1: Idea Inicial -->
+  <div id="step-1" class="step-card">
+    <div class="step-title">¿Qué tenés en la cabeza?</div>
+    <textarea id="idea-input" rows="4" placeholder="Escribí una idea, inquietud o reflexión libre..."></textarea>
+    <button id="btn-explore" onclick="exploreIdea()">Explorar idea</button>
+    <div id="loader-1" class="loader hidden">Analizando la idea con el editor personal...</div>
+  </div>
+
+  <!-- PASO 2: Análisis & Preguntas -->
+  <div id="step-2" class="step-card hidden">
+    <div class="badge">ANÁLISIS</div>
+    <div class="step-title">Creo que estás intentando explorar:</div>
+    <p id="analysis-core" style="font-weight: 500; font-size: 1.1rem;"></p>
+    
+    <div style="margin-top: 1rem;">
+      <strong>Posibles enfoques:</strong>
+      <ul id="analysis-angles"></ul>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <strong>Para entender mejor lo que querés decir:</strong>
+      <div id="questions-container" style="margin-top: 0.5rem;"></div>
+    </div>
+
+    <button onclick="submitAnswers()">Continuar al Plan</button>
+    <div id="loader-2" class="loader hidden">Creando plan de contenido...</div>
+  </div>
+
+  <!-- PASO 3: Content Plan -->
+  <div id="step-3" class="step-card hidden">
+    <div class="badge">PLAN DE CONTENIDO</div>
+    <div class="step-title">Una posible dirección:</div>
+    <p><strong>Mensaje Central:</strong> <span id="plan-message"></span></p>
+
+    <div style="margin-top: 1rem;">
+      <strong>Opciones de título:</strong>
+      <ul id="plan-titles"></ul>
+    </div>
+
+    <div style="margin-top: 1rem;">
+      <strong>Puntos Clave:</strong>
+      <ul id="plan-points"></ul>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <label><strong>Formato deseado:</strong></label>
+      <select id="format-select" style="padding: 0.4rem; font-size: 0.95rem; margin-left: 0.5rem;">
+        <option value="article">Article (Artículo completo)</option>
+        <option value="note">Note (Reflexión breve)</option>
+      </select>
+    </div>
+
+    <button onclick="generateDraft()">Generar borrador</button>
+    <div id="loader-3" class="loader hidden">Redactando borrador con tu voz...</div>
+  </div>
+
+  <!-- PASO 4: Borrador y Feedback -->
+  <div id="step-4" class="step-card hidden">
+    <div class="badge">BORRADOR</div>
+    <h2 id="draft-title" style="font-family: Georgia, serif; margin-top: 0.5rem;"></h2>
+    <div id="draft-body" class="draft-content"></div>
+
+    <div style="margin-top: 1.5rem;" id="feedback-actions">
+      <strong>¿Encaja con vos?</strong><br/>
+      <button onclick="acceptDraft()">Sí, me representa</button>
+      <button class="secondary" onclick="showFeedbackForm('No suena a mí')">No suena a mí</button>
+      <button class="secondary" onclick="showFeedbackForm('')">Editar / Dar feedback</button>
+    </div>
+
+    <div id="feedback-form" class="hidden" style="margin-top: 1.5rem;">
+      <label><strong>¿Qué cambiarías?</strong></label>
+      <textarea id="feedback-input" rows="3" placeholder="Ej: Demasiado técnico, prefiero hacerlo más personal..."></textarea>
+      <button onclick="submitRevision()">Revisar borrador</button>
+      <div id="loader-4" class="loader hidden">Revisando borrador con tu feedback...</div>
+    </div>
+  </div>
+
+  <script>
+    let currentSessionId = null;
+    let currentAnalysis = null;
+
+    async function exploreIdea() {
+      const idea = document.getElementById("idea-input").value.trim();
+      if (!idea) return alert("Por favor ingresá una idea.");
+
+      document.getElementById("loader-1").classList.remove("hidden");
+
+      try {
+        // 1. Crear sesión
+        const resCreate = await fetch("/api/ideas", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idea })
+        });
+        const session = await resCreate.json();
+        currentSessionId = session.id;
+
+        // 2. Explorar idea
+        const resExplore = await fetch(`/api/ideas/${currentSessionId}/explore`, { method: "POST" });
+        const data = await resExplore.json();
+        currentAnalysis = data.analysis;
+
+        // Renderizar Análisis
+        document.getElementById("analysis-core").innerText = currentAnalysis.core_idea;
+        
+        const anglesUl = document.getElementById("analysis-angles");
+        anglesUl.innerHTML = currentAnalysis.possible_angles.map(a => `<li>${a}</li>`).join("");
+
+        const qContainer = document.getElementById("questions-container");
+        qContainer.innerHTML = currentAnalysis.questions.map((q, idx) => `
+          <div style="margin-bottom: 0.8rem;">
+            <label style="display:block; font-size:0.95rem; margin-bottom:0.2rem;">${q}</label>
+            <input type="text" class="user-answer-input" placeholder="Tu respuesta o contexto..." />
+          </div>
+        `).join("");
+
+        document.getElementById("step-2").classList.remove("hidden");
+        document.getElementById("step-2").scrollIntoView({ behavior: "smooth" });
+      } catch (err) {
+        alert("Error al explorar la idea: " + err.message);
+      } finally {
+        document.getElementById("loader-1").classList.add("hidden");
+      }
+    }
+
+    async function submitAnswers() {
+      const answerInputs = document.querySelectorAll(".user-answer-input");
+      const answers = Array.from(answerInputs).map(i => i.value.trim()).filter(a => a.length > 0);
+
+      document.getElementById("loader-2").classList.remove("hidden");
+
+      try {
+        // 1. Enviar respuestas
+        await fetch(`/api/ideas/${currentSessionId}/answers`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ answers })
+        });
+
+        // 2. Generar Plan
+        const resPlan = await fetch(`/api/ideas/${currentSessionId}/plan`, { method: "POST" });
+        const data = await resPlan.json();
+        const plan = data.content_plan;
+
+        document.getElementById("plan-message").innerText = plan.central_message;
+        document.getElementById("plan-titles").innerHTML = plan.title_options.map(t => `<li>${t}</li>`).join("");
+        document.getElementById("plan-points").innerHTML = plan.key_points.map(p => `<li>${p}</li>`).join("");
+
+        if (plan.format) {
+          document.getElementById("format-select").value = plan.format;
+        }
+
+        document.getElementById("step-3").classList.remove("hidden");
+        document.getElementById("step-3").scrollIntoView({ behavior: "smooth" });
+      } catch (err) {
+        alert("Error al generar el plan: " + err.message);
+      } finally {
+        document.getElementById("loader-2").classList.add("hidden");
+      }
+    }
+
+    async function generateDraft() {
+      const format = document.getElementById("format-select").value;
+      document.getElementById("loader-3").classList.remove("hidden");
+
+      try {
+        const resDraft = await fetch(`/api/ideas/${currentSessionId}/draft`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ format })
+        });
+        const data = await resDraft.json();
+        renderDraft(data.draft);
+
+        document.getElementById("step-4").classList.remove("hidden");
+        document.getElementById("step-4").scrollIntoView({ behavior: "smooth" });
+      } catch (err) {
+        alert("Error al generar el borrador: " + err.message);
+      } finally {
+        document.getElementById("loader-3").classList.add("hidden");
+      }
+    }
+
+    function renderDraft(draft) {
+      document.getElementById("draft-title").innerText = draft.title || "(Sin título - Note)";
+      document.getElementById("draft-body").innerText = draft.content;
+    }
+
+    function showFeedbackForm(defaultText) {
+      const form = document.getElementById("feedback-form");
+      form.classList.remove("hidden");
+      if (defaultText) {
+        document.getElementById("feedback-input").value = defaultText;
+      }
+    }
+
+    function acceptDraft() {
+      alert("¡Borrador aprobado! Guardado en la sesión.");
+    }
+
+    async function submitRevision() {
+      const feedback = document.getElementById("feedback-input").value.trim();
+      if (!feedback) return alert("Por favor ingresá tu feedback.");
+
+      document.getElementById("loader-4").classList.remove("hidden");
+
+      try {
+        const resRev = await fetch(`/api/ideas/${currentSessionId}/revise`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ feedback })
+        });
+        const data = await resRev.json();
+        renderDraft(data.draft);
+        document.getElementById("feedback-input").value = "";
+        document.getElementById("feedback-form").classList.add("hidden");
+      } catch (err) {
+        alert("Error al revisar el borrador: " + err.message);
+      } finally {
+        document.getElementById("loader-4").classList.add("hidden");
+      }
+    }
+  </script>
+</body>
+</html>

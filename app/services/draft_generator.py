@@ -1,0 +1,105 @@
+import json
+from pathlib import Path
+from app.llm.client import LLMClient
+from app.models.content_plan import ContentPlan
+from app.models.draft import Draft
+
+
+class DraftGenerator:
+    """
+    Servicio encargado de redactar el primer borrador (Note o Article)
+    respetando estrictamente la voz del autor sin inventar historias.
+    """
+
+    def __init__(
+        self,
+        llm_client: LLMClient,
+        profile_path: Path | str | None = None,
+        note_prompt_path: Path | str | None = None,
+        article_prompt_path: Path | str | None = None,
+    ):
+        self.llm_client = llm_client
+        base_dir = Path(__file__).resolve().parent.parent.parent
+        self.profile_path = Path(profile_path) if profile_path else base_dir / "data" / "editorial_profile.md"
+        self.note_prompt_path = Path(note_prompt_path) if note_prompt_path else base_dir / "app" / "prompts" / "generate_note.md"
+        self.article_prompt_path = Path(article_prompt_path) if article_prompt_path else base_dir / "app" / "prompts" / "generate_article.md"
+
+    def _load_profile(self) -> str:
+        if self.profile_path.exists():
+            return self.profile_path.read_text(encoding="utf-8")
+        return "Perfil Editorial no especificado."
+
+    async def generate_note(
+        self,
+        original_idea: str,
+        content_plan: ContentPlan,
+        user_answers: list[str],
+    ) -> Draft:
+        editorial_profile = self._load_profile()
+        prompt_template = self.note_prompt_path.read_text(encoding="utf-8")
+
+        formatted_answers = "\n".join(f"- {ans}" for ans in user_answers) if user_answers else "Sin respuestas adicionales."
+        formatted_key_points = "\n".join(f"- {kp}" for kp in content_plan.key_points)
+
+        formatted_prompt = (
+            prompt_template.replace("{editorial_profile}", editorial_profile)
+            .replace("{original_idea}", original_idea)
+            .replace("{user_answers}", formatted_answers)
+            .replace("{central_message}", content_plan.central_message)
+            .replace("{key_points}", formatted_key_points)
+        )
+
+        system_prompt = "Sos el redactar de 'Fuera de mi cabeza'. Genera un borrador en formato JSON."
+        raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
+
+        clean_json_str = self._clean_json_output(raw_response)
+        data = json.loads(clean_json_str)
+        data["format"] = "note"
+        return Draft.model_validate(data)
+
+    async def generate_article(
+        self,
+        original_idea: str,
+        content_plan: ContentPlan,
+        user_answers: list[str],
+        chosen_title: str | None = None,
+    ) -> Draft:
+        editorial_profile = self._load_profile()
+        prompt_template = self.article_prompt_path.read_text(encoding="utf-8")
+
+        title = chosen_title or (content_plan.title_options[0] if content_plan.title_options else "Sin título")
+        formatted_answers = "\n".join(f"- {ans}" for ans in user_answers) if user_answers else "Sin respuestas adicionales."
+        formatted_key_points = "\n".join(f"- {kp}" for kp in content_plan.key_points)
+
+        formatted_prompt = (
+            prompt_template.replace("{editorial_profile}", editorial_profile)
+            .replace("{original_idea}", original_idea)
+            .replace("{user_answers}", formatted_answers)
+            .replace("{chosen_title}", title)
+            .replace("{central_message}", content_plan.central_message)
+            .replace("{opening_direction}", content_plan.opening_direction)
+            .replace("{key_points}", formatted_key_points)
+            .replace("{ending_direction}", content_plan.ending_direction)
+        )
+
+        system_prompt = "Sos el redactar de 'Fuera de mi cabeza'. Genera un borrador de artículo en formato JSON."
+        raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
+
+        clean_json_str = self._clean_json_output(raw_response)
+        data = json.loads(clean_json_str)
+        data["format"] = "article"
+        if not data.get("title"):
+            data["title"] = title
+        return Draft.model_validate(data)
+
+    @staticmethod
+    def _clean_json_output(text: str) -> str:
+        text = text.strip()
+        if text.startswith("```"):
+            lines = text.splitlines()
+            if lines[0].startswith("```"):
+                lines = lines[1:]
+            if lines and lines[-1].startswith("```"):
+                lines = lines[:-1]
+            text = "\n".join(lines).strip()
+        return text
