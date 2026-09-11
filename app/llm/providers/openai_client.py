@@ -76,5 +76,7 @@ class OpenAICompatibleClient:
                         logger.error(f"[LLM Error] Fallaron todos los modelos candidata: {candidate_models}")
 
         if last_exception:
+            if isinstance(last_exception, httpx.ConnectError):
+                raise RuntimeError("No se pudo establecer conexión de red con el proveedor LLM (error de DNS/red). Verificá tu conexión a internet o que el servidor tenga salida a red.")
             raise last_exception
         raise RuntimeError("No se pudo obtener respuesta de ningún modelo.")
