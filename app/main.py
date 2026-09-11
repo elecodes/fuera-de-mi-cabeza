@@ -4,6 +4,9 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from pydantic import BaseModel
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from app.llm.providers import get_llm_client
 from app.models.idea import IdeaInput
