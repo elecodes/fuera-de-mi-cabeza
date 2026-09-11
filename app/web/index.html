@@ -224,11 +224,19 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idea })
         });
+        if (!resCreate.ok) {
+          const errData = await resCreate.json().catch(() => ({}));
+          throw new Error(errData.detail || "Error al crear la sesión en el servidor");
+        }
         const session = await resCreate.json();
         currentSessionId = session.id;
 
         // 2. Explorar idea
         const resExplore = await fetch(`/api/ideas/${currentSessionId}/explore`, { method: "POST" });
+        if (!resExplore.ok) {
+          const errData = await resExplore.json().catch(() => ({}));
+          throw new Error(errData.detail || `Error ${resExplore.status}: El servidor no pudo procesar la solicitud`);
+        }
         const data = await resExplore.json();
         currentAnalysis = data.analysis;
 
@@ -263,14 +271,19 @@
 
       try {
         // 1. Enviar respuestas
-        await fetch(`/api/ideas/${currentSessionId}/answers`, {
+        const resAns = await fetch(`/api/ideas/${currentSessionId}/answers`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ answers })
         });
+        if (!resAns.ok) throw new Error("Error al guardar las respuestas");
 
         // 2. Generar Plan
         const resPlan = await fetch(`/api/ideas/${currentSessionId}/plan`, { method: "POST" });
+        if (!resPlan.ok) {
+          const errData = await resPlan.json().catch(() => ({}));
+          throw new Error(errData.detail || "Error al generar el plan de contenido");
+        }
         const data = await resPlan.json();
         const plan = data.content_plan;
 
@@ -301,6 +314,10 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ format })
         });
+        if (!resDraft.ok) {
+          const errData = await resDraft.json().catch(() => ({}));
+          throw new Error(errData.detail || "Error al generar el borrador");
+        }
         const data = await resDraft.json();
         renderDraft(data.draft);
 

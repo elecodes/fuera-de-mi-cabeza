@@ -49,13 +49,16 @@ async def explore_idea(session_id: str):
     if not session:
         raise HTTPException(status_code=404, detail="Sesión no encontrada")
 
-    llm = get_llm_client()
-    explorer = IdeaExplorer(llm_client=llm)
-    analysis = await explorer.analyze(session.original_idea)
+    try:
+        llm = get_llm_client()
+        explorer = IdeaExplorer(llm_client=llm)
+        analysis = await explorer.analyze(session.original_idea)
 
-    session.analysis = analysis
-    session_manager.save_session(session)
-    return session
+        session.analysis = analysis
+        session_manager.save_session(session)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
 
 
 @app.post("/api/ideas/{session_id}/answers", response_model=EditorialSession)
@@ -75,17 +78,20 @@ async def plan_content(session_id: str):
     if not session or not session.analysis:
         raise HTTPException(status_code=400, detail="La sesión debe haber completado el análisis previamente")
 
-    llm = get_llm_client()
-    planner = ContentPlanner(llm_client=llm)
-    plan = await planner.plan(
-        original_idea=session.original_idea,
-        analysis=session.analysis,
-        user_answers=session.user_answers,
-    )
+    try:
+        llm = get_llm_client()
+        planner = ContentPlanner(llm_client=llm)
+        plan = await planner.plan(
+            original_idea=session.original_idea,
+            analysis=session.analysis,
+            user_answers=session.user_answers,
+        )
 
-    session.content_plan = plan
-    session_manager.save_session(session)
-    return session
+        session.content_plan = plan
+        session_manager.save_session(session)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
 
 
 @app.post("/api/ideas/{session_id}/draft", response_model=EditorialSession)
@@ -94,28 +100,31 @@ async def generate_draft(session_id: str, payload: DraftRequestInput):
     if not session or not session.content_plan:
         raise HTTPException(status_code=400, detail="Se requiere un plan de contenido aprobado antes de generar un borrador")
 
-    llm = get_llm_client()
-    generator = DraftGenerator(llm_client=llm)
+    try:
+        llm = get_llm_client()
+        generator = DraftGenerator(llm_client=llm)
 
-    fmt = payload.format or session.content_plan.format
+        fmt = payload.format or session.content_plan.format
 
-    if fmt == "note":
-        draft = await generator.generate_note(
-            original_idea=session.original_idea,
-            content_plan=session.content_plan,
-            user_answers=session.user_answers,
-        )
-    else:
-        draft = await generator.generate_article(
-            original_idea=session.original_idea,
-            content_plan=session.content_plan,
-            user_answers=session.user_answers,
-            chosen_title=payload.chosen_title,
-        )
+        if fmt == "note":
+            draft = await generator.generate_note(
+                original_idea=session.original_idea,
+                content_plan=session.content_plan,
+                user_answers=session.user_answers,
+            )
+        else:
+            draft = await generator.generate_article(
+                original_idea=session.original_idea,
+                content_plan=session.content_plan,
+                user_answers=session.user_answers,
+                chosen_title=payload.chosen_title,
+            )
 
-    session.draft = draft
-    session_manager.save_session(session)
-    return session
+        session.draft = draft
+        session_manager.save_session(session)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
 
 
 @app.post("/api/ideas/{session_id}/revise", response_model=EditorialSession)
@@ -124,20 +133,23 @@ async def revise_draft(session_id: str, payload: RevisionInput):
     if not session or not session.draft:
         raise HTTPException(status_code=400, detail="No hay un borrador existente para revisar")
 
-    llm = get_llm_client()
-    editor = VoiceEditor(llm_client=llm)
+    try:
+        llm = get_llm_client()
+        editor = VoiceEditor(llm_client=llm)
 
-    revised_draft = await editor.revise(
-        original_idea=session.original_idea,
-        current_draft=session.draft,
-        feedback_text=payload.feedback,
-    )
+        revised_draft = await editor.revise(
+            original_idea=session.original_idea,
+            current_draft=session.draft,
+            feedback_text=payload.feedback,
+        )
 
-    session.feedback.append(payload.feedback)
-    session.revisions.append(revised_draft.content)
-    session.draft = revised_draft
-    session_manager.save_session(session)
-    return session
+        session.feedback.append(payload.feedback)
+        session.revisions.append(revised_draft.content)
+        session.draft = revised_draft
+        session_manager.save_session(session)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
 
 
 @app.get("/api/sessions/{session_id}", response_model=EditorialSession)
