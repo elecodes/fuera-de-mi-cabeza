@@ -125,9 +125,15 @@
 </head>
 <body>
 
-  <header>
-    <h1>FUERA DE MI CABEZA</h1>
-    <div class="subtitle">Editor personal para Substack — Pensá, explorá y escribí con tu voz</div>
+  <header style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1>FUERA DE MI CABEZA</h1>
+      <div class="subtitle">Editor personal para Substack — Pensá, explorá y escribí con tu voz</div>
+    </div>
+    <div id="status-bar" style="text-align: right;">
+      <div id="status-badge" class="badge" style="background:#e5e7eb; color:#374151; margin-bottom: 0.3rem;">Comprobando servidor...</div>
+      <button id="btn-start-omniroute" class="hidden" onclick="startOmniRoute()" style="font-size:0.8rem; padding:0.35rem 0.7rem; margin-top:0.2rem; background:#dc2626;">⚡ Iniciar OmniRoute</button>
+    </div>
   </header>
 
   <!-- PASO 1: Idea Inicial -->
@@ -369,6 +375,61 @@
         document.getElementById("loader-4").classList.add("hidden");
       }
     }
+
+    async function checkSystemStatus() {
+      try {
+        const res = await fetch("/api/system/status");
+        if (!res.ok) return;
+        const data = await res.json();
+        const badge = document.getElementById("status-badge");
+        const btn = document.getElementById("btn-start-omniroute");
+
+        if (data.provider === "openai-compatible" || data.provider === "omniroute") {
+          if (data.omniroute_running) {
+            badge.style.background = "#dcfce7";
+            badge.style.color = "#166534";
+            badge.innerText = "🟢 OmniRoute Conectado";
+            btn.classList.add("hidden");
+          } else {
+            badge.style.background = "#fee2e2";
+            badge.style.color = "#991b1b";
+            badge.innerText = "🔴 OmniRoute Desconectado";
+            btn.classList.remove("hidden");
+          }
+        } else if (data.provider === "groq") {
+          badge.style.background = "#dbeafe";
+          badge.style.color = "#1e40af";
+          badge.innerText = "⚡ Groq Directo";
+          btn.classList.add("hidden");
+        } else {
+          badge.style.background = "#f3f4f6";
+          badge.style.color = "#374151";
+          badge.innerText = "🧪 Modo Mock";
+          btn.classList.add("hidden");
+        }
+      } catch (err) {
+        console.error("Error comprobando estado:", err);
+      }
+    }
+
+    async function startOmniRoute() {
+      const btn = document.getElementById("btn-start-omniroute");
+      btn.innerText = "Iniciando...";
+      btn.disabled = true;
+      try {
+        const res = await fetch("/api/system/omniroute/start", { method: "POST" });
+        const data = await res.json();
+        alert(data.message);
+        await checkSystemStatus();
+      } catch (err) {
+        alert("Error al iniciar OmniRoute: " + err.message);
+      } finally {
+        btn.innerText = "⚡ Iniciar OmniRoute";
+        btn.disabled = false;
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", checkSystemStatus);
   </script>
 </body>
 </html>

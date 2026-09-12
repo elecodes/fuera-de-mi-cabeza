@@ -6,6 +6,7 @@ All notable changes to the "Fuera de mi cabeza" Editorial Agent project will be 
 
 ### Added
 - **OmniRoute Integration:** Support for local AI gateway/proxy routing (`LLM_PROVIDER=openai-compatible`) with configurable `LLM_BASE_URL`.
+- **OmniRoute UI Status & Launcher:** Added live status badge (`🟢 OmniRoute Conectado` / `🔴 OmniRoute Desconectado`) and a one-click **"Start OmniRoute"** button in the header UI (`/api/system/status` & `/api/system/omniroute/start`).
 - **SSE Stream Parsing:** Added fallback SSE parser in `OpenAICompatibleClient` to support proxies returning Server-Sent Events stream chunks.
 
 ### Changed

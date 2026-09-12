@@ -36,7 +36,68 @@ class RevisionInput(BaseModel):
     feedback: str
 
 
-# Endpoints de la API
+import os
+import subprocess
+import asyncio
+import httpx
+
+# Endpoints de estado del sistema y OmniRoute
+@app.get("/api/system/status")
+async def get_system_status():
+    provider = os.getenv("LLM_PROVIDER", "mock").lower()
+    base_url = os.getenv("LLM_BASE_URL", "http://127.0.0.1:20128/v1")
+    omniroute_running = False
+
+    if provider in ("openai-compatible", "omniroute"):
+        try:
+            async with httpx.AsyncClient(timeout=1.5) as client:
+                res = await client.get(f"{base_url.rstrip('/')}/models")
+                if res.status_code in (200, 401):
+                    omniroute_running = True
+        except Exception:
+            omniroute_running = False
+
+    return {
+        "provider": provider,
+        "base_url": base_url,
+        "omniroute_running": omniroute_running,
+    }
+
+
+@app.post("/api/system/omniroute/start")
+async def start_omniroute():
+    provider = os.getenv("LLM_PROVIDER", "mock").lower()
+    base_url = os.getenv("LLM_BASE_URL", "http://127.0.0.1:20128/v1")
+
+    try:
+        async with httpx.AsyncClient(timeout=1.5) as client:
+            res = await client.get(f"{base_url.rstrip('/')}/models")
+            if res.status_code in (200, 401):
+                return {"message": "OmniRoute ya se encuentra activo.", "running": True}
+    except Exception:
+        pass
+
+    try:
+        try:
+            subprocess.Popen(["omniroute"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        except FileNotFoundError:
+            subprocess.Popen(["npx", "omniroute"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        await asyncio.sleep(2.0)
+
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                res = await client.get(f"{base_url.rstrip('/')}/models")
+                if res.status_code in (200, 401):
+                    return {"message": "OmniRoute se ha iniciado correctamente.", "running": True}
+        except Exception:
+            pass
+
+        return {"message": "Proceso de inicio enviado a OmniRoute.", "running": True}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"No se pudo iniciar OmniRoute automáticamente: {str(e)}")
+
+
 @app.post("/api/ideas", response_model=EditorialSession)
 async def create_idea(input_data: IdeaInput):
     session = session_manager.create_session(original_idea=input_data.idea)
