@@ -128,7 +128,7 @@
   <header style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h1>FUERA DE MI CABEZA</h1>
-      <div class="subtitle">Editor personal para Substack — Pensá, explorá y escribí con tu voz</div>
+      <div class="subtitle">Editor personal para Substack — Piensa, explora y escribe con tu voz</div>
     </div>
     <div id="status-bar" style="text-align: right;">
       <div id="status-badge" class="badge" style="background:#e5e7eb; color:#374151; margin-bottom: 0.3rem;">Comprobando servidor...</div>
@@ -138,8 +138,8 @@
 
   <!-- PASO 1: Idea Inicial -->
   <div id="step-1" class="step-card">
-    <div class="step-title">¿Qué tenés en la cabeza?</div>
-    <textarea id="idea-input" rows="4" placeholder="Escribí una idea, inquietud o reflexión libre..."></textarea>
+    <div class="step-title">¿Qué tienes en la cabeza?</div>
+    <textarea id="idea-input" rows="4" placeholder="Escribe una idea, inquietud o reflexión libre..."></textarea>
     <button id="btn-explore" onclick="exploreIdea()">Explorar idea</button>
     <div id="loader-1" class="loader hidden">Analizando la idea con el editor personal...</div>
   </div>
@@ -156,7 +156,7 @@
     </div>
 
     <div style="margin-top: 1.5rem;">
-      <strong>Para entender mejor lo que querés decir:</strong>
+      <strong>Para entender mejor lo que quieres decir:</strong>
       <div id="questions-container" style="margin-top: 0.5rem;"></div>
     </div>
 
@@ -199,7 +199,7 @@
     <div id="draft-body" class="draft-content"></div>
 
     <div style="margin-top: 1.5rem;" id="feedback-actions">
-      <strong>¿Encaja con vos?</strong><br/>
+      <strong>¿Encaja contigo?</strong><br/>
       <button onclick="acceptDraft()">Sí, me representa</button>
       <button class="secondary" onclick="showFeedbackForm('No suena a mí')">No suena a mí</button>
       <button class="secondary" onclick="showFeedbackForm('')">Editar / Dar feedback</button>
@@ -219,7 +219,7 @@
 
     async function exploreIdea() {
       const idea = document.getElementById("idea-input").value.trim();
-      if (!idea) return alert("Por favor ingresá una idea.");
+      if (!idea) return alert("Por favor introduce una idea.");
 
       document.getElementById("loader-1").classList.remove("hidden");
 
@@ -355,7 +355,7 @@
 
     async function submitRevision() {
       const feedback = document.getElementById("feedback-input").value.trim();
-      if (!feedback) return alert("Por favor ingresá tu feedback.");
+      if (!feedback) return alert("Por favor introduce tu feedback.");
 
       document.getElementById("loader-4").classList.remove("hidden");
 

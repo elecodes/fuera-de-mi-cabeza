@@ -11,5 +11,5 @@ All notable changes to the "Fuera de mi cabeza" Editorial Agent project will be 
 
 ### Changed
 - **Anti-AI Writing Rules:** Added 11 strict prohibitions against common AI writing patterns (antitheses, intro abstractions, triad rules, generic metaphors, artificial enthusiasm, circular conclusions, transition questions, em-dash overuse, etc.).
-- **Language & Voice Variant:** Switched agent system prompts and editorial profile from Rioplatense voseo to **Español de España (castellano peninsular)** (*tú*, *tienes*, *has vivido*).
+- **Language & Voice Variant:** Switched agent system prompts, editorial profile, and web UI copy (`index.html` subtitle, placeholders, step titles, and alert messages) from Rioplatense voseo to **Español de España (castellano peninsular)** (*Piensa, explora y escribe*, *tú*, *tienes*, *has vivido*).
 - **Default Models:** Updated default Groq models in configuration documentation to currently supported models (`openai/gpt-oss-120b`).
