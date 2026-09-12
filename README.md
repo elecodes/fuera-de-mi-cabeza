@@ -83,8 +83,21 @@ python3 demo_full_workflow.py
 
 ## ⚙️ Configuración del Proveedor LLM y Voz Editorial
 
-### 1. Voz Editorial
+### 1. Voz Editorial y Filtros Anti-IA
 El agente está configurado para redactar y preguntar en **Español de España (castellano peninsular)** (*tú, tienes, has probado*), manteniendo un tono humano, reflexivo y sin clichés.
+
+Además, cuenta con **11 filtros estrictos anti-modismos de IA** para evitar que los borradores suenen generados artificialmente:
+- **Sin antítesis fijas:** Prohibido "No es X, es Y" o "No se trata de X, sino de Y".
+- **Sin abstracciones introductorias:** Cero "En un mundo donde..." o "En la sociedad acelerada...".
+- **Sin frases triádicas:** Evita agrupar conceptos constantemente en tríos.
+- **Sin afirmaciones sobrecalificadas:** Cero "Es importante señalar que...", "Cabe destacar que...".
+- **Sin metáforas trilladas:** Evita "brújula, no mapa", "máquina bien engrasada".
+- **Sin entusiasmo artificial:** Cero "¡Tú puedes hacerlo!", "No estás solo".
+- **Sin cierres circulares:** Cero "En resumen...", "En conclusión...", "Como puedes ver...".
+- **Sin introducciones hiperestructuradas:** Prohibido anunciar la estructura ("Dividámoslo en...").
+- **Sin preguntas de transición armadas:** Cero "¿La trampa?", "¿El detalle clave?", "¿La verdad brutal?".
+- **Sin emojis decorativos:** Texto limpio en markdown puro.
+- **Sin abuso de la raya / guión largo (—):** Pausas naturales en lugar de rayas reflexivas continuas.
 
 ### 2. Configuración de Proveedores (Groq / OmniRoute / OpenAI)
 
