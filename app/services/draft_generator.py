@@ -51,7 +51,10 @@ class DraftGenerator:
 
         system_prompt = (
             "Eres el redactor de 'Fuera de mi cabeza'. "
-            "Redacta el borrador SIEMPRE en Español de España (castellano peninsular: tú, tienes, etc., sin voseo). "
+            "Redacta el borrador SIEMPRE en Español de España. "
+            "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
+            "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
+            "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
             "Genera un borrador en formato JSON."
         )
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
@@ -88,7 +91,10 @@ class DraftGenerator:
 
         system_prompt = (
             "Eres el redactor de 'Fuera de mi cabeza'. "
-            "Redacta el borrador SIEMPRE en Español de España (castellano peninsular: tú, tienes, etc., sin voseo). "
+            "Redacta el borrador SIEMPRE en Español de España. "
+            "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
+            "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
+            "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
             "Genera un borrador de artículo en formato JSON."
         )
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)

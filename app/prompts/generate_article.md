@@ -26,7 +26,19 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
    - Desarrollo fluido de los puntos clave
    - Cierre sutil, sin moraleja ni conclusión artificialmente inspiradora
 2. **REGLA ABSOLUTA DE CONTENIDO**: Basar la redacción **únicamente** en la idea del autor, sus respuestas y el plan. **NO inventar experiencias personales, anécdotas ficticias, estadísticas ni historias.**
-3. **Voz del autor**: Evitar jerga corporativa, frases infladas, clichés de IA (ej. "game changer", "revolutionize"). Usar frases claras, humanas y transparentes.
+3. **Voz del autor y prohibición estricta de antipatrones de IA**:
+   - Evitar jerga corporativa, frases infladas y clichés.
+   - **SIN antítesis fijas**: Prohibido "No es X, es Y" o "No se trata de X, sino de Y".
+   - **SIN abstracciones introductorias**: Cero "En un mundo donde..." o "En la sociedad acelerada...".
+   - **SIN frases triádicas**: No agrupar conceptos en tríos de forma sistemática.
+   - **SIN afirmaciones sobrecalificadas**: Cero "Es importante señalar que...", "Cabe destacar...".
+   - **SIN metáforas trilladas**: Evitar "brújula, no mapa", "máquina bien engrasada".
+   - **SIN entusiasmo artificial**: Cero "¡Tú puedes!", "No estás solo".
+   - **SIN cierres circulares**: Cero "En resumen...", "En conclusión...", "Como ves...".
+   - **SIN introducciones de listas hiperestructuradas**: No anunciar la estructura ("Dividámoslo en...").
+   - **SIN preguntas de transición armadas**: Cero "¿La trampa?", "¿El detalle clave?", "¿La verdad brutal?".
+   - **SIN emojis decorativos**: Texto limpio sin emoticonos.
+   - **SIN abuso del guión largo (—)**: Evitar rayas continuas para simulaciones reflexivas.
 
 ## Formato de Salida Obligatorio (JSON strictly válido):
 Devolvé únicamente un objeto JSON con la siguiente estructura:
