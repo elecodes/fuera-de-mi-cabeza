@@ -53,7 +53,8 @@ class ContentPlanner:
         )
 
         system_prompt = (
-            "Sos el planificador editorial de 'Fuera de mi cabeza'. "
+            "Eres el planificador editorial de 'Fuera de mi cabeza'. "
+            "Escribe SIEMPRE en Español de España (castellano peninsular: tú, tienes, etc., sin voseo ni modismos argentinos). "
             "Responde SIEMPRE con un objeto JSON válido con la estructura solicitada."
         )
 

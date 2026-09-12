@@ -47,7 +47,8 @@ class VoiceEditor:
         )
 
         system_prompt = (
-            "Sos el editor de voz de 'Fuera de mi cabeza'. "
+            "Eres el editor de voz de 'Fuera de mi cabeza'. "
+            "Edita y redacta SIEMPRE en Español de España (castellano peninsular: tú, tienes, etc., sin voseo). "
             "Aplica el feedback recibido y devuelve un borrador revisado en JSON."
         )
 

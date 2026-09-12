@@ -52,6 +52,7 @@ class OpenAICompatibleClient:
                     "model": current_model,
                     "messages": messages,
                     "temperature": 0.7,
+                    "stream": False,
                 }
                 try:
                     response = await client.post(
@@ -60,6 +61,23 @@ class OpenAICompatibleClient:
                         json=payload,
                     )
                     response.raise_for_status()
+                    text = response.text.strip()
+                    if text.startswith("data:"):
+                        # Handling SSE stream format from proxy routers
+                        parts = []
+                        for line in text.splitlines():
+                            line = line.strip()
+                            if line.startswith("data: ") and line != "data: [DONE]":
+                                try:
+                                    chunk = json.loads(line[6:].strip())
+                                    choices = chunk.get("choices", [])
+                                    if choices:
+                                        delta_content = choices[0].get("delta", {}).get("content")
+                                        msg_content = choices[0].get("message", {}).get("content")
+                                        parts.append(delta_content or msg_content or "")
+                                except Exception:
+                                    continue
+                        return "".join(parts)
                     data = response.json()
                     return data["choices"][0]["message"]["content"]
                 except Exception as err:

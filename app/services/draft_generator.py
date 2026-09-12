@@ -49,7 +49,11 @@ class DraftGenerator:
             .replace("{key_points}", formatted_key_points)
         )
 
-        system_prompt = "Sos el redactar de 'Fuera de mi cabeza'. Genera un borrador en formato JSON."
+        system_prompt = (
+            "Eres el redactor de 'Fuera de mi cabeza'. "
+            "Redacta el borrador SIEMPRE en Español de España (castellano peninsular: tú, tienes, etc., sin voseo). "
+            "Genera un borrador en formato JSON."
+        )
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
 
         clean_json_str = self._clean_json_output(raw_response)
@@ -82,7 +86,11 @@ class DraftGenerator:
             .replace("{ending_direction}", content_plan.ending_direction)
         )
 
-        system_prompt = "Sos el redactar de 'Fuera de mi cabeza'. Genera un borrador de artículo en formato JSON."
+        system_prompt = (
+            "Eres el redactor de 'Fuera de mi cabeza'. "
+            "Redacta el borrador SIEMPRE en Español de España (castellano peninsular: tú, tienes, etc., sin voseo). "
+            "Genera un borrador de artículo en formato JSON."
+        )
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
 
         clean_json_str = self._clean_json_output(raw_response)

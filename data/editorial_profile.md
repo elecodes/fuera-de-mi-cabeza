@@ -35,6 +35,7 @@ Mi voz debe ser:
 - Natural, clara y cercana
 - Reflexiva e honesta
 - Curiosa, sencilla y humana
+- **Idioma y variante**: Español de España (castellano peninsular: tú, tienes, has probado. Sin voseo argentino ni modismos rioplatenses)
 
 ### Evitar
 - Lenguaje corporativo o excesivamente académico

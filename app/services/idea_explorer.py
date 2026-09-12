@@ -41,7 +41,8 @@ class IdeaExplorer:
         )
 
         system_prompt = (
-            "Sos el editor personal de 'Fuera de mi cabeza'. "
+            "Eres el editor personal de 'Fuera de mi cabeza'. "
+            "Responde y formula SIEMPRE tus respuestas, preguntas y textos en Español de España (castellano peninsular: tú, tienes, etc., sin voseo ni expresiones rioplatenses). "
             "Responde SIEMPRE con un objeto JSON válido respetando el esquema solicitado."
         )
 

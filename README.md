@@ -81,12 +81,33 @@ python3 demo_full_workflow.py
 
 ---
 
-## ⚙️ Configuración del Proveedor LLM
+## ⚙️ Configuración del Proveedor LLM y Voz Editorial
 
-Podés cambiar el proveedor mediante variables de entorno en `.env`:
+### 1. Voz Editorial
+El agente está configurado para redactar y preguntar en **Español de España (castellano peninsular)** (*tú, tienes, has probado*), manteniendo un tono humano, reflexivo y sin clichés.
 
+### 2. Configuración de Proveedores (Groq / OmniRoute / OpenAI)
+
+Podés configurar el proveedor en tu archivo `.env`:
+
+#### Opción A: Vía OmniRoute (Gateway de IA recomendado)
 ```env
-LLM_PROVIDER=openai  # o "mock" para pruebas deterministas sin API key
-LLM_MODEL=gpt-4o-mini
-LLM_API_KEY=tu_api_key_aqui
+LLM_PROVIDER=openai-compatible
+LLM_BASE_URL=http://127.0.0.1:20128/v1
+LLM_API_KEY=tu_omniroute_api_key
+LLM_MODEL=groq/openai/gpt-oss-120b
+LLM_FALLBACK_MODELS=groq/qwen/qwen3.6-27b
+GROQ_API_KEY=tu_groq_api_key
+```
+
+#### Opción B: Groq Directo
+```env
+LLM_PROVIDER=groq
+LLM_MODEL=openai/gpt-oss-120b
+GROQ_API_KEY=tu_groq_api_key
+```
+
+#### Opción C: Mock (para pruebas locales sin API key)
+```env
+LLM_PROVIDER=mock
 ```
