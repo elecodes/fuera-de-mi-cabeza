@@ -221,10 +221,13 @@ async def get_session_details(session_id: str):
     return session
 
 
+FAVICON_SVG = """<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232c2c2c'/><path d='M50 20 L75 50 L60 80 L50 72 L40 80 L25 50 Z' fill='%23d97706'/><circle cx='50' cy='50' r='4' fill='%232c2c2c'/><line x1='50' y1='54' x2='50' y2='72' stroke='%232c2c2c' stroke-width='3'/></svg>"""
+
+
 @app.get("/favicon.ico", include_in_schema=False)
 async def favicon():
     from fastapi.responses import Response
-    return Response(status_code=204)
+    return Response(content=FAVICON_SVG, media_type="image/svg+xml")
 
 
 # Web UI mínima
