@@ -51,9 +51,8 @@ async def get_system_status():
     if provider in ("openai-compatible", "omniroute"):
         try:
             async with httpx.AsyncClient(timeout=1.5) as client:
-                res = await client.get(f"{base_url.rstrip('/')}/models")
-                if res.status_code in (200, 401):
-                    omniroute_running = True
+                await client.get(f"{base_url.rstrip('/')}/models")
+                omniroute_running = True
         except Exception:
             omniroute_running = False
 
@@ -64,6 +63,8 @@ async def get_system_status():
     }
 
 
+import shutil
+
 @app.post("/api/system/omniroute/start")
 async def start_omniroute():
     provider = os.getenv("LLM_PROVIDER", "mock").lower()
@@ -71,29 +72,28 @@ async def start_omniroute():
 
     try:
         async with httpx.AsyncClient(timeout=1.5) as client:
-            res = await client.get(f"{base_url.rstrip('/')}/models")
-            if res.status_code in (200, 401):
-                return {"message": "OmniRoute ya se encuentra activo.", "running": True}
+            await client.get(f"{base_url.rstrip('/')}/models")
+            return {"message": "OmniRoute ya se encuentra activo.", "running": True}
     except Exception:
         pass
 
     try:
-        try:
-            subprocess.Popen(["omniroute"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        except FileNotFoundError:
-            subprocess.Popen(["npx", "omniroute"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        cmd = ["omniroute"] if shutil.which("omniroute") else ["npx", "-y", "omniroute"]
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        await asyncio.sleep(2.0)
-
-        try:
-            async with httpx.AsyncClient(timeout=2.0) as client:
-                res = await client.get(f"{base_url.rstrip('/')}/models")
-                if res.status_code in (200, 401):
+        for _ in range(5):
+            await asyncio.sleep(1.0)
+            try:
+                async with httpx.AsyncClient(timeout=1.5) as client:
+                    await client.get(f"{base_url.rstrip('/')}/models")
                     return {"message": "OmniRoute se ha iniciado correctamente.", "running": True}
-        except Exception:
-            pass
+            except Exception:
+                pass
 
-        return {"message": "Proceso de inicio enviado a OmniRoute.", "running": True}
+        return {
+            "message": f"Se envió la orden de inicio, pero OmniRoute no respondió a tiempo en {base_url}. Probá iniciarlo manualmente en la terminal con 'npx omniroute'.",
+            "running": False,
+        }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"No se pudo iniciar OmniRoute automáticamente: {str(e)}")
 
