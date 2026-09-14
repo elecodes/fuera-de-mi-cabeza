@@ -18,6 +18,7 @@ IDEA → EXPLORAR → PREGUNTAR → ESTRUCTURAR → BORRADOR (Note / Article) �
 
 ```
 fuera-de-mi-cabeza/
+├── SOUL.md                      # Constitución del agente y arquitectura de comportamiento
 ├── data/
 │   ├── editorial_profile.md     # Perfil e identidad del autor
 │   └── sessions/                # Persistencia local JSON de sesiones
