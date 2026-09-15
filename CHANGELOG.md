@@ -2,6 +2,13 @@
 
 All notable changes to the "Fuera de mi cabeza" Editorial Agent project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Architecture Decision Records (`docs/adr/`):** Initialized MADR structure with ADR-0000 (Use MADR), ADR-0001 (Decouple Agent Constitution from Task Prompt Templates), and ADR-0002 (Few-Shot Natural Writing Guidelines and Rhythm/Cadence Rules).
+- **Natural Writing & Few-Shot Style Guide (`data/editorial_profile.md`):** Added 5 few-shot example pairs (robotic vs. natural), rhythm/cadence guidelines, preferred vs. avoided connectors, idioms, narrative entry points, and naturalness rules.
+- **Prompt Template Enforcement (`app/prompts/`):** Updated `generate_note.md`, `generate_article.md`, and `revise_draft.md` to explicitly enforce few-shot examples and variable sentence rhythm.
+
 ## [0.2.1] - 2026-09-14
 
 ### Added

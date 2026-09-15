@@ -24,9 +24,11 @@ Redacta la Note SIEMPRE en Español de España (castellano peninsular: tú, tien
    - Una pregunta abierta
    - Un pequeño aprendizaje o idea desarrollada
 3. **REGLA ABSOLUTA DE CONTENIDO**: El contenido debe basarse **únicamente** en la idea original, las respuestas del autor y el plan. **NO inventes experiencias personales, anécdotas, datos ni historias que el autor no haya mencionado.**
-4. **Voz del autor y prohibición de antipatrones de IA**:
-   - Mantener tono natural, reflexivo, honesto y directo.
-   - Prohibido usar: "No es X, es Y", "En un mundo donde...", agrupaciones en tríos, "Es importante señalar que...", metáforas trilladas ("brújula, no mapa"), entusiasmo artificial ("¡Tú puedes!"), cierres circulares ("En resumen..."), preguntas de transición armadas ("¿La trampa?"), emojis decorativos o guiones largos (—) excesivos.
+4. **Voz del autor y Hábitos de Escritura Natural**:
+   - Aplica rigurosamente los **Ejemplos few-shot**, **Ritmo y cadencia**, **Conectores preferidos** y **Puntos de entrada narrativos** detallados en el `{editorial_profile}`.
+   - Entra directamente a la idea desde una observación o situación concreta; no uses introducciones académicas ni vacías.
+   - Aplica la varianza deliberada de ritmo (combina frases cortas de énfasis con explicaciones más amplias y matizadas).
+   - Respetá estrictamente las prohibiciones de antipatrones de IA (sin "No es X, es Y", cero tríos sintácticos, cero muletillas "es importante señalar que", cero cierres circulares, cero preguntas de transición armadas y sin emojis decorativos).
 
 ## Formato de Salida Obligatorio (JSON estrictamente válido):
 Devolvé únicamente un objeto JSON con la siguiente estructura:
