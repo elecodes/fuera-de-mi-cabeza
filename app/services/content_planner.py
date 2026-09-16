@@ -1,14 +1,14 @@
 import json
 from pathlib import Path
 from app.llm.client import LLMClient
-from app.models.analysis import IdeaAnalysis
+from app.models.analysis import IdeaAnalysis, NarrativeArc
 from app.models.content_plan import ContentPlan
 
 
 class ContentPlanner:
     """
-    Servicio que transforma la idea, su análisis y las respuestas del usuario
-    en un plan de contenido (ContentPlan) antes de generar el borrador.
+    Servicio que transforma la idea, su análisis, la secuencia narrativa elegida
+    y las respuestas del usuario en un plan de contenido (ContentPlan).
     """
 
     def __init__(
@@ -37,11 +37,17 @@ class ContentPlanner:
         original_idea: str,
         analysis: IdeaAnalysis,
         user_answers: list[str],
+        selected_arc: NarrativeArc | None = None,
     ) -> ContentPlan:
         editorial_profile = self._load_profile()
         prompt_template = self._load_prompt_template()
 
         formatted_answers = "\n".join(f"- {ans}" for ans in user_answers) if user_answers else "Sin respuestas adicionales."
+
+        selected_arc_info = "Sin secuencia preferida seleccionada previamente."
+        if selected_arc:
+            seq = " -> ".join(selected_arc.thought_sequence)
+            selected_arc_info = f"Título del Arco: {selected_arc.title}\nSecuencia: {seq}\nJustificación: {selected_arc.rationale}"
 
         formatted_prompt = (
             prompt_template.replace("{editorial_profile}", editorial_profile)
@@ -49,6 +55,7 @@ class ContentPlanner:
             .replace("{core_idea}", analysis.core_idea)
             .replace("{emotional_tone}", analysis.emotional_tone)
             .replace("{recommended_format}", analysis.recommended_format)
+            .replace("{selected_arc_info}", selected_arc_info)
             .replace("{user_answers}", formatted_answers)
         )
 
@@ -66,7 +73,6 @@ class ContentPlanner:
         clean_json_str = self._clean_json_output(raw_response)
         data = json.loads(clean_json_str)
 
-        # Enforce max limits
         if "title_options" in data and isinstance(data["title_options"], list):
             data["title_options"] = data["title_options"][:3]
         if "key_points" in data and isinstance(data["key_points"], list):

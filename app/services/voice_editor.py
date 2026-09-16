@@ -49,7 +49,7 @@ class VoiceEditor:
         system_prompt = (
             "Eres el editor de voz de 'Fuera de mi cabeza'. "
             "Edita y redacta SIEMPRE en Español de España. "
-            "Elimina estrictamente antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres, "
+            "Elimina strictly antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres, "
             "afirmaciones cautelosas, metáforas clichés ('brújula, no mapa'), entusiasmo artificial, cierres circulares ('En resumen'), "
             "preguntas de transición armadas, emojis decorativos y abuso de rayas (—). "
             "Aplica el feedback recibido y devuelve un borrador revisado en JSON."
@@ -60,7 +60,7 @@ class VoiceEditor:
         clean_json_str = self._clean_json_output(raw_response)
         data = json.loads(clean_json_str)
         data["format"] = current_draft.format
-        if current_draft.title and not data.get("title"):
+        if "title" not in data or not data["title"]:
             data["title"] = current_draft.title
         return Draft.model_validate(data)
 

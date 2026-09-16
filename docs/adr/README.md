@@ -7,3 +7,4 @@ This directory contains records of major architectural decisions made in the "Fu
 | [0000](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0000-use-markdown-architectural-decision-records.md) | Use Markdown Architectural Decision Records (MADR) | Accepted | 2026-09-15 |
 | [0001](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0001-decouple-agent-constitution-from-prompt-templates.md) | Decouple Agent Constitution (`SOUL.md`) from Task Prompt Templates | Accepted | 2026-09-15 |
 | [0002](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0002-few-shot-natural-writing-and-rhythm-cadence-rules.md) | Few-Shot Natural Writing Guidelines and Rhythm/Cadence Rules | Accepted | 2026-09-15 |
+| [0003](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0003-interactive-narrative-arcs-voice-auditing-and-inline-draft-editing.md) | Interactive Narrative Arcs, Automated Voice Auditing, and Inline Draft Editing | Accepted | 2026-09-16 |

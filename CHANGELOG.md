@@ -4,6 +4,22 @@ All notable changes to the "Fuera de mi cabeza" Editorial Agent project will be 
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-09-16
+
+### Added
+- **Multi-Thought & Brain Dump Support:** Enabled raw, multi-fragment text input (notes, bullet points, voice transcripts) in `IdeaInput` and `IdeaExplorer`.
+- **Interactive Narrative Arcs (`IdeaExplorer` & Web UI):** Socratic synthesis of 2–3 narrative sequences (`arc-1`, `arc-2`, `arc-3`) with interactive selection cards in `index.html` before content planning (`/api/ideas/{session_id}/select-arc`).
+- **Automated Editorial Voice Auditor (`VoiceAuditor`):** Added `VoiceAuditor` service (`app/services/voice_auditor.py`) and prompt (`app/prompts/audit_voice.md`) returning naturalness score (0–100), cadence analysis, and flagged AI anti-patterns (`/api/ideas/{session_id}/audit`).
+- **Inline Draft Editing & Auto-Save:** Added `contenteditable="true"` on draft title and body with auto-save endpoint (`/api/ideas/{session_id}/draft/update`).
+- **Clipboard Copying:** Added one-click **"📋 Copiar borrador al portapapeles"** button in `index.html`.
+- **Memory Preference Storage:** Added `/api/memory/preference` and UI button to store style preferences directly into `data/editorial_memory.json`.
+- **Architecture Decision Record (ADR-0003):** Documented interactive narrative arcs, automated voice auditing, and inline draft editing.
+
+### Fixed
+- **Revision Title Handling & Frontend Error Safety:** Fixed runtime error when revising drafts without titles or when receiving non-200 responses in `index.html` (`submitRevision`).
+
+## [0.2.2] - 2026-09-15
+
 ### Added
 - **Architecture Decision Records (`docs/adr/`):** Initialized MADR structure with ADR-0000 (Use MADR), ADR-0001 (Decouple Agent Constitution from Task Prompt Templates), and ADR-0002 (Few-Shot Natural Writing Guidelines and Rhythm/Cadence Rules).
 - **Natural Writing & Few-Shot Style Guide (`data/editorial_profile.md`):** Added 5 few-shot example pairs (robotic vs. natural), rhythm/cadence guidelines, preferred vs. avoided connectors, idioms, narrative entry points, and naturalness rules.

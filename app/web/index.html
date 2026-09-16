@@ -19,7 +19,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Georgia, serif;
       background-color: var(--bg);
       color: var(--text);
-      max-width: 720px;
+      max-width: 760px;
       margin: 0 auto;
       padding: 2rem 1rem;
       line-height: 1.6;
@@ -104,8 +104,28 @@
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
-    ul, ol {
-      padding-left: 1.2rem;
+    .arc-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #fff;
+    }
+    .arc-card:hover, .arc-card.selected {
+      border-color: var(--accent);
+      background: #fffbeb;
+    }
+    .arc-title {
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: #78350f;
+    }
+    .arc-rationale {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 0.3rem;
     }
     .draft-content {
       background: #fdfbf7;
@@ -114,7 +134,30 @@
       white-space: pre-wrap;
       font-family: Georgia, serif;
       font-size: 1.05rem;
+      margin-top: 0.5rem;
+      outline: none;
+      border-radius: 0 var(--radius) var(--radius) 0;
+    }
+    .draft-content:focus {
+      background: #ffffff;
+      box-shadow: 0 0 0 2px var(--accent);
+    }
+    .editable-hint {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-top: 0.4rem;
+    }
+    .audit-box {
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: var(--radius);
+      padding: 1rem;
       margin-top: 1rem;
+    }
+    .audit-score {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #166534;
     }
     .hidden { display: none; }
     .loader {
@@ -129,7 +172,7 @@
   <header style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
     <div>
       <h1>FUERA DE MI CABEZA</h1>
-      <div class="subtitle">Editor personal para Substack — Piensa, explora y escribe con tu voz</div>
+      <div class="subtitle">Editor personal para Substack — Piensa, conecta ideas y escribe con tu voz</div>
     </div>
     <div id="status-bar" style="text-align: right;">
       <div id="status-badge" class="badge" style="background:#e5e7eb; color:#374151; margin-bottom: 0.3rem;">Comprobando servidor...</div>
@@ -137,38 +180,47 @@
     </div>
   </header>
 
-  <!-- PASO 1: Idea Inicial -->
+  <!-- PASO 1: Brain Dump / Ideas Sueltas -->
   <div id="step-1" class="step-card">
-    <div class="step-title">¿Qué tienes en la cabeza?</div>
-    <textarea id="idea-input" rows="4" placeholder="Escribe una idea, inquietud o reflexión libre..."></textarea>
-    <button id="btn-explore" onclick="exploreIdea()">Explorar idea</button>
-    <div id="loader-1" class="loader hidden">Analizando la idea con el editor personal...</div>
+    <div class="step-title">¿Qué tienes en la cabeza hoy?</div>
+    <p style="font-size:0.9rem; color:var(--muted); margin-bottom:0.8rem;">
+      Puedes escribir una reflexión libre, notas sueltas en viñetas o fragmentos de ideas. El agente te ayudará a ordenarlos y conectarlos.
+    </p>
+    <textarea id="idea-input" rows="5" placeholder="- Pensamiento 1: No sé si seguir con este proyecto...&#10;- Pensamiento 2: Aprendí algo sobre IA...&#10;- Reflexión: La sencillez importa más que el perfeccionismo."></textarea>
+    <button id="btn-explore" onclick="exploreIdea()">Explorar y Conectar Ideas</button>
+    <div id="loader-1" class="loader hidden">Conectando pensamientos y sintetizando arcos narrativos...</div>
   </div>
 
-  <!-- PASO 2: Análisis & Preguntas -->
+  <!-- PASO 2: Análisis & Guiado Socrático (Arcos Narrativos) -->
   <div id="step-2" class="step-card hidden">
-    <div class="badge">ANÁLISIS</div>
-    <div class="step-title">Creo que estás intentando explorar:</div>
+    <div class="badge">SÍNTESIS DE IDEAS</div>
+    <div class="step-title">Núcleo detectado:</div>
     <p id="analysis-core" style="font-weight: 500; font-size: 1.1rem;"></p>
     
-    <div style="margin-top: 1rem;">
-      <strong>Posibles enfoques:</strong>
-      <ul id="analysis-angles"></ul>
+    <div style="margin-top: 1rem;" id="connected-thoughts-section">
+      <strong>Pensamientos identificados:</strong>
+      <ul id="analysis-connected"></ul>
+    </div>
+
+    <!-- Modal Guiado de Selección de Arco Narrativo -->
+    <div style="margin-top: 1.5rem;">
+      <strong>Elige cómo ordenar y conectar tus pensamientos:</strong>
+      <div id="arcs-container" style="margin-top: 0.8rem;"></div>
     </div>
 
     <div style="margin-top: 1.5rem;">
-      <strong>Para entender mejor lo que quieres decir:</strong>
+      <strong>Preguntas de profundización:</strong>
       <div id="questions-container" style="margin-top: 0.5rem;"></div>
     </div>
 
-    <button onclick="submitAnswers()">Continuar al Plan</button>
-    <div id="loader-2" class="loader hidden">Creando plan de contenido...</div>
+    <button onclick="submitAnswersAndPlan()">Continuar al Plan de Contenido</button>
+    <div id="loader-2" class="loader hidden">Guardando orden seleccionado y generando plan de contenido...</div>
   </div>
 
-  <!-- PASO 3: Content Plan -->
+  <!-- PASO 3: Plan de Contenido -->
   <div id="step-3" class="step-card hidden">
     <div class="badge">PLAN DE CONTENIDO</div>
-    <div class="step-title">Una posible dirección:</div>
+    <div class="step-title">Estructura recomendada:</div>
     <p><strong>Mensaje Central:</strong> <span id="plan-message"></span></p>
 
     <div style="margin-top: 1rem;">
@@ -182,34 +234,49 @@
     </div>
 
     <div style="margin-top: 1.5rem;">
-      <label><strong>Formato deseado:</strong></label>
+      <label><strong>Formato Substack deseado:</strong></label>
       <select id="format-select" style="padding: 0.4rem; font-size: 0.95rem; margin-left: 0.5rem;">
-        <option value="article">Article (Artículo completo)</option>
-        <option value="note">Note (Reflexión breve)</option>
+        <option value="article">Substack Post / Article (Artículo completo)</option>
+        <option value="note">Substack Note (Reflexión breve)</option>
       </select>
     </div>
 
-    <button onclick="generateDraft()">Generar borrador</button>
-    <div id="loader-3" class="loader hidden">Redactando borrador con tu voz...</div>
+    <button onclick="generateDraft()">Generar Borrador</button>
+    <div id="loader-3" class="loader hidden">Redactando borrador en castellano peninsular...</div>
   </div>
 
-  <!-- PASO 4: Borrador y Feedback -->
+  <!-- PASO 4: Borrador, Edición Directa, Auditoría & Feedback -->
   <div id="step-4" class="step-card hidden">
     <div class="badge">BORRADOR</div>
-    <h2 id="draft-title" style="font-family: Georgia, serif; margin-top: 0.5rem;"></h2>
-    <div id="draft-body" class="draft-content"></div>
+    <h2 id="draft-title" style="font-family: Georgia, serif; margin-top: 0.5rem;" contenteditable="true" onblur="saveDraftChanges()"></h2>
+    <div id="draft-body" class="draft-content" contenteditable="true" onblur="saveDraftChanges()"></div>
+    <div class="editable-hint">✏️ Puedes editar o escribir directamente en el título y el cuerpo del borrador. Los cambios se guardan al hacer clic fuera.</div>
+
+    <div style="margin-top: 1.2rem;">
+      <button onclick="copyDraftToClipboard()">📋 Copiar borrador al portapapeles</button>
+      <button class="secondary" onclick="auditVoice()">🔍 Auditar Voz Editorial (editorial_profile.md)</button>
+    </div>
+
+    <div id="audit-box" class="audit-box hidden">
+      <div class="audit-score" id="audit-score-text">Puntuación: 95/100</div>
+      <p id="audit-cadence" style="font-size:0.95rem; margin-top:0.3rem;"></p>
+      <div id="audit-issues-container" style="margin-top:0.5rem;"></div>
+    </div>
 
     <div style="margin-top: 1.5rem;" id="feedback-actions">
-      <strong>¿Encaja contigo?</strong><br/>
+      <strong>¿Te suena natural?</strong><br/>
       <button onclick="acceptDraft()">Sí, me representa</button>
       <button class="secondary" onclick="showFeedbackForm('No suena a mí')">No suena a mí</button>
-      <button class="secondary" onclick="showFeedbackForm('')">Editar / Dar feedback</button>
+      <button class="secondary" onclick="showFeedbackForm('')">Dar feedback específico al agente</button>
     </div>
 
     <div id="feedback-form" class="hidden" style="margin-top: 1.5rem;">
-      <label><strong>¿Qué cambiarías?</strong></label>
-      <textarea id="feedback-input" rows="3" placeholder="Ej: Demasiado técnico, prefiero hacerlo más personal..."></textarea>
-      <button onclick="submitRevision()">Revisar borrador</button>
+      <label><strong>¿Qué te gustaría ajustar?</strong></label>
+      <textarea id="feedback-input" rows="3" placeholder="Ej: Demasiado formal, prefiero frases más breves al inicio..."></textarea>
+      <div>
+        <button onclick="submitRevision()">Revisar Borrador</button>
+        <button class="secondary" onclick="saveMemoryRule()">💾 Guardar regla en Memoria</button>
+      </div>
       <div id="loader-4" class="loader hidden">Revisando borrador con tu feedback...</div>
     </div>
   </div>
@@ -217,41 +284,53 @@
   <script>
     let currentSessionId = null;
     let currentAnalysis = null;
+    let selectedArcId = null;
 
     async function exploreIdea() {
       const idea = document.getElementById("idea-input").value.trim();
-      if (!idea) return alert("Por favor introduce una idea.");
+      if (!idea) return alert("Por favor introduce una idea o notas sueltas.");
 
       document.getElementById("loader-1").classList.remove("hidden");
 
       try {
-        // 1. Crear sesión
         const resCreate = await fetch("/api/ideas", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ idea })
         });
-        if (!resCreate.ok) {
-          const errData = await resCreate.json().catch(() => ({}));
-          throw new Error(errData.detail || "Error al crear la sesión en el servidor");
-        }
+        if (!resCreate.ok) throw new Error("Error al iniciar la sesión en el servidor");
         const session = await resCreate.json();
         currentSessionId = session.id;
 
-        // 2. Explorar idea
         const resExplore = await fetch(`/api/ideas/${currentSessionId}/explore`, { method: "POST" });
-        if (!resExplore.ok) {
-          const errData = await resExplore.json().catch(() => ({}));
-          throw new Error(errData.detail || `Error ${resExplore.status}: El servidor no pudo procesar la solicitud`);
-        }
+        if (!resExplore.ok) throw new Error("Error al analizar las ideas");
         const data = await resExplore.json();
         currentAnalysis = data.analysis;
 
-        // Renderizar Análisis
         document.getElementById("analysis-core").innerText = currentAnalysis.core_idea;
-        
-        const anglesUl = document.getElementById("analysis-angles");
-        anglesUl.innerHTML = currentAnalysis.possible_angles.map(a => `<li>${a}</li>`).join("");
+
+        const connectedUl = document.getElementById("analysis-connected");
+        if (currentAnalysis.connected_thoughts && currentAnalysis.connected_thoughts.length > 0) {
+          connectedUl.innerHTML = currentAnalysis.connected_thoughts.map(t => `<li>${t}</li>`).join("");
+          document.getElementById("connected-thoughts-section").classList.remove("hidden");
+        } else {
+          document.getElementById("connected-thoughts-section").classList.add("hidden");
+        }
+
+        // Render Arcos Narrativos
+        const arcsContainer = document.getElementById("arcs-container");
+        if (currentAnalysis.narrative_arcs && currentAnalysis.narrative_arcs.length > 0) {
+          arcsContainer.innerHTML = currentAnalysis.narrative_arcs.map((arc, idx) => `
+            <div class="arc-card ${idx === 0 ? 'selected' : ''}" onclick="selectArc('${arc.id}', this)">
+              <div class="arc-title">${arc.title}</div>
+              <div style="font-size:0.95rem; margin-top:0.3rem;">${arc.thought_sequence.join(" → ")}</div>
+              <div class="arc-rationale">${arc.rationale}</div>
+            </div>
+          `).join("");
+          selectedArcId = currentAnalysis.narrative_arcs[0].id;
+        } else {
+          arcsContainer.innerHTML = "<em>Secuencia estándar recomendada.</em>";
+        }
 
         const qContainer = document.getElementById("questions-container");
         qContainer.innerHTML = currentAnalysis.questions.map((q, idx) => `
@@ -264,33 +343,41 @@
         document.getElementById("step-2").classList.remove("hidden");
         document.getElementById("step-2").scrollIntoView({ behavior: "smooth" });
       } catch (err) {
-        alert("Error al explorar la idea: " + err.message);
+        alert("Error al explorar las ideas: " + err.message);
       } finally {
         document.getElementById("loader-1").classList.add("hidden");
       }
     }
 
-    async function submitAnswers() {
+    function selectArc(arcId, element) {
+      selectedArcId = arcId;
+      document.querySelectorAll(".arc-card").forEach(el => el.classList.remove("selected"));
+      element.classList.add("selected");
+    }
+
+    async function submitAnswersAndPlan() {
       const answerInputs = document.querySelectorAll(".user-answer-input");
       const answers = Array.from(answerInputs).map(i => i.value.trim()).filter(a => a.length > 0);
 
       document.getElementById("loader-2").classList.remove("hidden");
 
       try {
-        // 1. Enviar respuestas
-        const resAns = await fetch(`/api/ideas/${currentSessionId}/answers`, {
+        if (selectedArcId) {
+          await fetch(`/api/ideas/${currentSessionId}/select-arc`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ arc_id: selectedArcId })
+          });
+        }
+
+        await fetch(`/api/ideas/${currentSessionId}/answers`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ answers })
         });
-        if (!resAns.ok) throw new Error("Error al guardar las respuestas");
 
-        // 2. Generar Plan
         const resPlan = await fetch(`/api/ideas/${currentSessionId}/plan`, { method: "POST" });
-        if (!resPlan.ok) {
-          const errData = await resPlan.json().catch(() => ({}));
-          throw new Error(errData.detail || "Error al generar el plan de contenido");
-        }
+        if (!resPlan.ok) throw new Error("Error al generar el plan de contenido");
         const data = await resPlan.json();
         const plan = data.content_plan;
 
@@ -305,7 +392,7 @@
         document.getElementById("step-3").classList.remove("hidden");
         document.getElementById("step-3").scrollIntoView({ behavior: "smooth" });
       } catch (err) {
-        alert("Error al generar el plan: " + err.message);
+        alert("Error al avanzar al plan: " + err.message);
       } finally {
         document.getElementById("loader-2").classList.add("hidden");
       }
@@ -321,10 +408,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ format })
         });
-        if (!resDraft.ok) {
-          const errData = await resDraft.json().catch(() => ({}));
-          throw new Error(errData.detail || "Error al generar el borrador");
-        }
+        if (!resDraft.ok) throw new Error("Error al generar el borrador");
         const data = await resDraft.json();
         renderDraft(data.draft);
 
@@ -338,8 +422,67 @@
     }
 
     function renderDraft(draft) {
-      document.getElementById("draft-title").innerText = draft.title || "(Sin título - Note)";
-      document.getElementById("draft-body").innerText = draft.content;
+      if (!draft) return;
+      document.getElementById("draft-title").innerText = draft.title || "(Substack Note)";
+      document.getElementById("draft-body").innerText = draft.content || "";
+      document.getElementById("audit-box").classList.add("hidden");
+    }
+
+    async function saveDraftChanges() {
+      if (!currentSessionId) return;
+      const title = document.getElementById("draft-title").innerText.trim();
+      const content = document.getElementById("draft-body").innerText.trim();
+      try {
+        await fetch(`/api/ideas/${currentSessionId}/draft/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ title, content })
+        });
+      } catch (err) {
+        console.error("Error guardando cambios del borrador:", err);
+      }
+    }
+
+    function copyDraftToClipboard() {
+      const title = document.getElementById("draft-title").innerText.trim();
+      const content = document.getElementById("draft-body").innerText.trim();
+      const fullText = (title && !title.includes("Substack Note") ? title + "\n\n" : "") + content;
+
+      navigator.clipboard.writeText(fullText).then(() => {
+        alert("¡Borrador copiado al portapapeles!");
+      }).catch(err => {
+        alert("Error al copiar al portapapeles: " + err);
+      });
+    }
+
+    async function auditVoice() {
+      try {
+        const content = document.getElementById("draft-body").innerText.trim();
+        const res = await fetch(`/api/ideas/${currentSessionId}/audit`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content })
+        });
+        if (!res.ok) throw new Error("Error al auditar la voz editorial");
+        const data = await res.json();
+        const audit = data.voice_audit;
+
+        document.getElementById("audit-score-text").innerText = `Puntuación de Voz: ${audit.score}/100 — ${audit.passed ? '✅ Cumple Perfil' : '⚠️ Revisar Puntos'}`;
+        document.getElementById("audit-cadence").innerText = audit.cadence_analysis;
+
+        const issuesContainer = document.getElementById("audit-issues-container");
+        if (audit.issues && audit.issues.length > 0) {
+          issuesContainer.innerHTML = "<strong>Detalles a mejorar:</strong><ul>" +
+            audit.issues.map(i => `<li><strong>${i.rule_id}:</strong> ${i.description} ${i.snippet ? `<em>("${i.snippet}")</em>` : ''}</li>`).join("") +
+            "</ul>";
+        } else {
+          issuesContainer.innerHTML = "<p style='color:#166534;'>No se detectaron antipatrones de IA ni muletillas vacías.</p>";
+        }
+
+        document.getElementById("audit-box").classList.remove("hidden");
+      } catch (err) {
+        alert("Error al auditar el texto: " + err.message);
+      }
     }
 
     function showFeedbackForm(defaultText) {
@@ -351,7 +494,7 @@
     }
 
     function acceptDraft() {
-      alert("¡Borrador aprobado! Guardado en la sesión.");
+      alert("¡Borrador aprobado! Listo para tu Substack.");
     }
 
     async function submitRevision() {
@@ -366,14 +509,39 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ feedback })
         });
+        if (!resRev.ok) {
+          const errData = await resRev.json().catch(() => ({}));
+          throw new Error(errData.detail || `Error ${resRev.status} al revisar el borrador`);
+        }
         const data = await resRev.json();
-        renderDraft(data.draft);
-        document.getElementById("feedback-input").value = "";
-        document.getElementById("feedback-form").classList.add("hidden");
+        if (data && data.draft) {
+          renderDraft(data.draft);
+          document.getElementById("feedback-input").value = "";
+          document.getElementById("feedback-form").classList.add("hidden");
+        } else {
+          throw new Error("No se recibió un borrador válido del servidor");
+        }
       } catch (err) {
         alert("Error al revisar el borrador: " + err.message);
       } finally {
         document.getElementById("loader-4").classList.add("hidden");
+      }
+    }
+
+    async function saveMemoryRule() {
+      const feedback = document.getElementById("feedback-input").value.trim();
+      if (!feedback) return alert("Escribe primero la regla o preferencia de estilo.");
+
+      try {
+        const res = await fetch("/api/memory/preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category: "style_rules", preference: feedback })
+        });
+        const data = await res.json();
+        alert(data.message);
+      } catch (err) {
+        alert("Error al guardar preferencia: " + err.message);
       }
     }
 

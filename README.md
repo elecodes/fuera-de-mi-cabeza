@@ -1,15 +1,15 @@
-# Fuera de mi cabeza — Personal Editorial Agent (MVP v0.1)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.3.0)
 
-MVP de un editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
+Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
-El agente no escribe inmediatamente. Su objetivo principal es ayudarte a pensar, explorar qué querés decir realmente y estructurar el borrador manteniendo tu voz sin inventar experiencias personales.
+El agente no escribe inmediatamente. Su objetivo principal es ayudarte a pensar, explorar y conectar notas sueltas o ideas en bruto, ordenarlas mediante **Arcos Narrativos** interactivos y estructurar borradores (Substack Notes o Posts) manteniendo tu voz sin inventar experiencias personales.
 
 ---
 
 ## 🛠️ Flujo Principal Implementado
 
 ```
-IDEA → EXPLORAR → PREGUNTAR → ESTRUCTURAR → BORRADOR (Note / Article) → FEEDBACK → REVISIÓN
+BRAIN DUMP (Notas/Ideas) → ARCOS NARRATIVOS (Selección) → PREGUNTAR → PLAN → BORRADOR (Note/Post) → EDICIÓN DIRECTA / AUDITORÍA DE VOZ → REVISIÓN
 ```
 
 ---
@@ -19,31 +19,35 @@ IDEA → EXPLORAR → PREGUNTAR → ESTRUCTURAR → BORRADOR (Note / Article) �
 ```
 fuera-de-mi-cabeza/
 ├── SOUL.md                      # Constitución del agente y arquitectura de comportamiento
+├── docs/adr/                    # Architecture Decision Records (MADR)
 ├── data/
-│   ├── editorial_profile.md     # Perfil e identidad del autor
+│   ├── editorial_profile.md     # Perfil e identidad del autor, reglas de ritmo y antipatrones IA
+│   ├── editorial_memory.json    # Persistencia local de reglas y preferencias de estilo
 │   └── sessions/                # Persistencia local JSON de sesiones
 ├── app/
 │   ├── main.py                  # Endpoints FastAPI y Web UI
 │   ├── models/
-│   │   ├── idea.py              # Modelos Pydantic para ideas
-│   │   ├── analysis.py          # Modelo de análisis de la idea
+│   │   ├── idea.py              # Modelos Pydantic para ideas y brain dumps
+│   │   ├── analysis.py          # Modelo de análisis y Arcos Narrativos
 │   │   ├── content_plan.py      # Modelo de plan de contenido
-│   │   ├── draft.py             # Modelo de borrador (Note/Article)
+│   │   ├── draft.py             # Modelo de borrador (Substack Note / Article)
+│   │   ├── voice_audit.py       # Modelo de reporte de auditoría editorial
 │   │   └── session.py           # Modelo de sesión editorial
 │   ├── services/
-│   │   ├── idea_explorer.py     # Analiza la idea y hace preguntas
-│   │   ├── content_planner.py   # Genera el plan de contenido
-│   │   ├── draft_generator.py   # Redacta Notes o Artículos
+│   │   ├── idea_explorer.py     # Analiza ideas, desglosa pensamientos y sintetiza arcos
+│   │   ├── content_planner.py   # Genera el plan según el arco narrativo elegido
+│   │   ├── draft_generator.py   # Redacta Substack Notes o Artículos
+│   │   ├── voice_auditor.py     # Audita la naturalidad y antipatrones de IA (editorial_profile.md)
 │   │   ├── voice_editor.py      # Ajusta el texto según tu feedback
 │   │   └── session_manager.py   # Guarda el estado de la sesión
 │   ├── llm/
 │   │   ├── client.py            # Protocol LLMClient
 │   │   └── providers/           # Mock LLM y cliente HTTPX OpenAI-compatible
 │   ├── memory/
-│   │   └── editorial_memory.py  # Interfaz preparatoria para MVP v0.2
+│   │   └── editorial_memory.py  # Memoria editorial y preferencias de estilo
 │   ├── prompts/                 # Templates Markdown para el LLM
 │   └── web/
-│       └── index.html           # Interfaz Web minimalista (cuaderno digital)
+│       └── index.html           # Interfaz Web (cuaderno digital con edición directa y copiado)
 ├── tests/                       # Suite completa de tests unitarios e integración
 ├── pyproject.toml
 └── README.md
@@ -64,64 +68,25 @@ pip install -e .[dev] uvicorn
 ```bash
 uvicorn app.main:app --reload
 ```
-Navegá a **`http://localhost:8000`** en tu navegador para usar la interfaz estilo cuaderno digital.
+Navega a **`http://localhost:8000`** en tu navegador para usar la interfaz de cuaderno digital.
 
 ### 3. Ejecutar los Tests
 ```bash
-pytest
-```
-
-### 4. Demostraciones por CLI
-```bash
-# Probar solo el primer hito (IDEA -> ANALYSIS -> QUESTIONS)
-python3 demo_idea_explorer.py
-
-# Probar el flujo completo (IDEA -> PLAN -> DRAFT -> REVISIÓN)
-python3 demo_full_workflow.py
+python3 -m pytest
 ```
 
 ---
 
-## ⚙️ Configuración del Proveedor LLM y Voz Editorial
+## ⚙️ Características Clave & Voz Editorial
 
-### 1. Voz Editorial y Filtros Anti-IA
-El agente está configurado para redactar y preguntar en **Español de España (castellano peninsular)** (*tú, tienes, has probado*), manteniendo un tono humano, reflexivo y sin clichés.
+### 1. Brain Dumps & Arcos Narrativos
+Puedes ingresar notas sueltas, viñetas o fragmentos de ideas. El agente desglosa tus pensamientos y te ofrece 2–3 **Arcos Narrativos** interactivos para elegir cómo quieres ordenar y conectar tus ideas antes de planificar.
 
-Además, cuenta con **11 filtros estrictos anti-modismos de IA** para evitar que los borradores suenen generados artificialmente:
-- **Sin antítesis fijas:** Prohibido "No es X, es Y" o "No se trata de X, sino de Y".
-- **Sin abstracciones introductorias:** Cero "En un mundo donde..." o "En la sociedad acelerada...".
-- **Sin frases triádicas:** Evita agrupar conceptos constantemente en tríos.
-- **Sin afirmaciones sobrecalificadas:** Cero "Es importante señalar que...", "Cabe destacar que...".
-- **Sin metáforas trilladas:** Evita "brújula, no mapa", "máquina bien engrasada".
-- **Sin entusiasmo artificial:** Cero "¡Tú puedes hacerlo!", "No estás solo".
-- **Sin cierres circulares:** Cero "En resumen...", "En conclusión...", "Como puedes ver...".
-- **Sin introducciones hiperestructuradas:** Prohibido anunciar la estructura ("Dividámoslo en...").
-- **Sin preguntas de transición armadas:** Cero "¿La trampa?", "¿El detalle clave?", "¿La verdad brutal?".
-- **Sin emojis decorativos:** Texto limpio en markdown puro.
-- **Sin abuso de la raya / guión largo (—):** Pausas naturales en lugar de rayas reflexivas continuas.
+### 2. Edición Directa & Copiado al Portapapeles
+En el cuaderno web (`index.html`), puedes hacer clic y editar directamente el borrador generado (`contenteditable`). Un botón dedicado de **"📋 Copiar borrador al portapapeles"** te permite llevar el texto listo a Substack.
 
-### 2. Configuración de Proveedores (Groq / OmniRoute / OpenAI)
-
-Podés configurar el proveedor en tu archivo `.env`:
-
-#### Opción A: Vía OmniRoute (Gateway de IA recomendado)
-```env
-LLM_PROVIDER=openai-compatible
-LLM_BASE_URL=http://127.0.0.1:20128/v1
-LLM_API_KEY=tu_omniroute_api_key
-LLM_MODEL=groq/openai/gpt-oss-120b
-LLM_FALLBACK_MODELS=groq/qwen/qwen3.6-27b
-GROQ_API_KEY=tu_groq_api_key
-```
-
-#### Opción B: Groq Directo
-```env
-LLM_PROVIDER=groq
-LLM_MODEL=openai/gpt-oss-120b
-GROQ_API_KEY=tu_groq_api_key
-```
-
-#### Opción C: Mock (para pruebas locales sin API key)
-```env
-LLM_PROVIDER=mock
-```
+### 3. Auditoría de Voz Editorial y Filtros Anti-IA
+El botón **"🔍 Auditar Voz Editorial"** analiza tu texto en tiempo real contra los 11 antipatrones de IA y la guía de estilo de [`data/editorial_profile.md`](file:///Users/elena/Developer/fuera-de-mi-cabeza/data/editorial_profile.md):
+- **Voz Peninsular:** Redacción en **Español de España (castellano peninsular)** (*tú, tienes, has vivido*).
+- **Varianza de Cadencia:** Oraciones cortas de énfasis combinadas espontáneamente con explicaciones matizadas.
+- **Filtros Antipatrones IA:** Cero antítesis ("No es X, es Y"), cero introducciones vacías, cero frases triádicas, cero muletillas cautelosas, cero cierres circulares y cero emojis decorativos.

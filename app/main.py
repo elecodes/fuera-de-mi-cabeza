@@ -16,10 +16,13 @@ from app.services.idea_explorer import IdeaExplorer
 from app.services.content_planner import ContentPlanner
 from app.services.draft_generator import DraftGenerator
 from app.services.voice_editor import VoiceEditor
+from app.services.voice_auditor import VoiceAuditor
+from app.memory.editorial_memory import EditorialMemory
 
-app = FastAPI(title="Fuera de mi cabeza — Personal Editorial Agent", version="0.1.0")
+app = FastAPI(title="Fuera de mi cabeza — Personal Editorial Agent", version="0.3.0")
 
 session_manager = SessionManager()
+editorial_memory = EditorialMemory()
 
 
 # DTOs para solicitudes de la API
@@ -27,13 +30,31 @@ class AnswersInput(BaseModel):
     answers: list[str]
 
 
+class SelectArcInput(BaseModel):
+    arc_id: str
+
+
 class DraftRequestInput(BaseModel):
     format: Literal["note", "article"] = "article"
     chosen_title: str | None = None
 
 
+class UpdateDraftInput(BaseModel):
+    title: str | None = None
+    content: str
+
+
+class AuditInput(BaseModel):
+    content: str | None = None
+
+
 class RevisionInput(BaseModel):
     feedback: str
+
+
+class PreferenceInput(BaseModel):
+    category: str
+    preference: str
 
 
 import os
@@ -101,6 +122,9 @@ async def start_omniroute():
 @app.post("/api/ideas", response_model=EditorialSession)
 async def create_idea(input_data: IdeaInput):
     session = session_manager.create_session(original_idea=input_data.idea)
+    if input_data.raw_thoughts:
+        session.raw_thoughts = input_data.raw_thoughts
+        session_manager.save_session(session)
     return session
 
 
@@ -120,6 +144,21 @@ async def explore_idea(session_id: str):
         return session
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
+
+
+@app.post("/api/ideas/{session_id}/select-arc", response_model=EditorialSession)
+async def select_narrative_arc(session_id: str, payload: SelectArcInput):
+    session = session_manager.get_session(session_id)
+    if not session or not session.analysis:
+        raise HTTPException(status_code=400, detail="La sesión debe haber completado el análisis previamente")
+
+    matching_arc = next((arc for arc in session.analysis.narrative_arcs if arc.id == payload.arc_id), None)
+    if not matching_arc:
+        raise HTTPException(status_code=404, detail=f"Arco narrativo {payload.arc_id} no encontrado")
+
+    session.selected_arc = matching_arc
+    session_manager.save_session(session)
+    return session
 
 
 @app.post("/api/ideas/{session_id}/answers", response_model=EditorialSession)
@@ -146,6 +185,7 @@ async def plan_content(session_id: str):
             original_idea=session.original_idea,
             analysis=session.analysis,
             user_answers=session.user_answers,
+            selected_arc=session.selected_arc,
         )
 
         session.content_plan = plan
@@ -188,6 +228,39 @@ async def generate_draft(session_id: str, payload: DraftRequestInput):
         raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
 
 
+@app.post("/api/ideas/{session_id}/draft/update", response_model=EditorialSession)
+async def update_draft(session_id: str, payload: UpdateDraftInput):
+    session = session_manager.get_session(session_id)
+    if not session or not session.draft:
+        raise HTTPException(status_code=400, detail="No hay un borrador activo para actualizar")
+
+    session.draft.content = payload.content
+    if payload.title is not None:
+        session.draft.title = payload.title
+    session_manager.save_session(session)
+    return session
+
+
+@app.post("/api/ideas/{session_id}/audit", response_model=EditorialSession)
+async def audit_draft(session_id: str, payload: AuditInput | None = None):
+    session = session_manager.get_session(session_id)
+    if not session or not session.draft:
+        raise HTTPException(status_code=400, detail="No existe un borrador para auditar")
+
+    text_to_audit = (payload.content if payload and payload.content else session.draft.content)
+
+    try:
+        llm = get_llm_client()
+        auditor = VoiceAuditor(llm_client=llm)
+        audit_report = await auditor.audit(text_to_audit)
+
+        session.voice_audit = audit_report
+        session_manager.save_session(session)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al auditar la voz editorial: {str(e)}")
+
+
 @app.post("/api/ideas/{session_id}/revise", response_model=EditorialSession)
 async def revise_draft(session_id: str, payload: RevisionInput):
     session = session_manager.get_session(session_id)
@@ -213,6 +286,12 @@ async def revise_draft(session_id: str, payload: RevisionInput):
         raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
 
 
+@app.post("/api/memory/preference")
+async def add_memory_preference(payload: PreferenceInput):
+    editorial_memory.add_preference(payload.category, payload.preference)
+    return {"message": "Preferencia guardada correctamente en memoria editorial."}
+
+
 @app.get("/api/sessions/{session_id}", response_model=EditorialSession)
 async def get_session_details(session_id: str):
     session = session_manager.get_session(session_id)
@@ -230,7 +309,7 @@ async def favicon():
     return Response(content=FAVICON_SVG, media_type="image/svg+xml")
 
 
-# Web UI mínima
+# Web UI
 WEB_DIR = Path(__file__).resolve().parent / "web"
 
 @app.get("/", response_class=HTMLResponse)
@@ -239,4 +318,3 @@ async def serve_index():
     if index_file.exists():
         return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
     return HTMLResponse("<h1>Fuera de mi cabeza — API lista</h1>")
-
