@@ -105,14 +105,12 @@ async def start_omniroute():
         cmd = ["omniroute"] if shutil.which("omniroute") else (["omnirouter"] if shutil.which("omnirouter") else ["npx", "-y", "omniroute"])
         subprocess.Popen(cmd, env=os.environ.copy(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-        for _ in range(10):
-            await asyncio.sleep(1.0)
-            if await check_omniroute_running(base_url):
-                return {"message": "OmniRoute se ha iniciado correctamente.", "running": True}
+        await asyncio.sleep(1.0)
+        is_running = await check_omniroute_running(base_url)
 
         return {
-            "message": f"Se envió la orden de inicio, pero OmniRoute no respondió a tiempo en {base_url}. Probá iniciarlo manualmente en la terminal con 'npx omniroute'.",
-            "running": False,
+            "message": "Se envió la orden de inicio para OmniRoute. La conexión se actualizará automáticamente.",
+            "running": is_running,
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"No se pudo iniciar OmniRoute automáticamente: {str(e)}")
