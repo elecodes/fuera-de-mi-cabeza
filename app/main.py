@@ -69,7 +69,7 @@ async def get_system_status():
     base_url = os.getenv("LLM_BASE_URL", "http://127.0.0.1:20128/v1")
     omniroute_running = False
 
-    if provider in ("openai-compatible", "omniroute"):
+    if provider in ("openai-compatible", "omniroute", "omnirouter"):
         try:
             async with httpx.AsyncClient(timeout=1.5) as client:
                 await client.get(f"{base_url.rstrip('/')}/models")
@@ -99,7 +99,7 @@ async def start_omniroute():
         pass
 
     try:
-        cmd = ["omniroute"] if shutil.which("omniroute") else ["npx", "-y", "omniroute"]
+        cmd = ["omniroute"] if shutil.which("omniroute") else (["omnirouter"] if shutil.which("omnirouter") else ["npx", "-y", "omniroute"])
         subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
         for _ in range(5):
@@ -309,8 +309,9 @@ async def favicon():
     return Response(content=FAVICON_SVG, media_type="image/svg+xml")
 
 
-# Web UI
+# Web UI & Architecture Diagram
 WEB_DIR = Path(__file__).resolve().parent / "web"
+DOCS_DIR = Path(__file__).resolve().parent.parent / "docs" / "architecture"
 
 @app.get("/", response_class=HTMLResponse)
 async def serve_index():
@@ -318,3 +319,21 @@ async def serve_index():
     if index_file.exists():
         return HTMLResponse(content=index_file.read_text(encoding="utf-8"))
     return HTMLResponse("<h1>Fuera de mi cabeza — API lista</h1>")
+
+
+@app.get("/architecture", response_class=HTMLResponse)
+async def serve_architecture():
+    arch_file = DOCS_DIR / "archify_architecture.html"
+    if arch_file.exists():
+        return HTMLResponse(content=arch_file.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Diagrama de Arquitectura no encontrado</h1>", status_code=440)
+
+
+@app.get("/architecture/sequence", response_class=HTMLResponse)
+async def serve_architecture_sequence():
+    seq_file = DOCS_DIR / "archify_sequence_flow.html"
+    if seq_file.exists():
+        return HTMLResponse(content=seq_file.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>Diagrama de Secuencia no encontrado</h1>", status_code=440)
+
+

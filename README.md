@@ -19,13 +19,17 @@ BRAIN DUMP (Notas/Ideas) → ARCOS NARRATIVOS (Selección) → PREGUNTAR → PLA
 ```
 fuera-de-mi-cabeza/
 ├── SOUL.md                      # Constitución del agente y arquitectura de comportamiento
-├── docs/adr/                    # Architecture Decision Records (MADR)
+├── docs/
+│   ├── adr/                     # Architecture Decision Records (MADR)
+│   └── architecture/            # Diagramas interactivos de arquitectura de Archify
+├── scripts/
+│   └── update_diagram_metadata.py # Actualizador automático de metadatos de versión y Git
 ├── data/
 │   ├── editorial_profile.md     # Perfil e identidad del autor, reglas de ritmo y antipatrones IA
 │   ├── editorial_memory.json    # Persistencia local de reglas y preferencias de estilo
 │   └── sessions/                # Persistencia local JSON de sesiones
 ├── app/
-│   ├── main.py                  # Endpoints FastAPI y Web UI
+│   ├── main.py                  # Endpoints FastAPI, Web UI y rutas de diagramas
 │   ├── models/
 │   │   ├── idea.py              # Modelos Pydantic para ideas y brain dumps
 │   │   ├── analysis.py          # Modelo de análisis y Arcos Narrativos

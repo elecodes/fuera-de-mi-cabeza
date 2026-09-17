@@ -59,3 +59,15 @@ def test_openai_client_fallback_retry():
             assert attempts == ["llama-3.3-70b-versatile", "openai/gpt-oss-120b"]
 
     asyncio.run(_run())
+
+
+def test_get_llm_client_omniroute():
+    from app.llm.providers import get_llm_client
+    with patch.dict("os.environ", {"LLM_PROVIDER": "omniroute"}):
+        client = get_llm_client()
+        assert isinstance(client, OpenAICompatibleClient)
+
+    with patch.dict("os.environ", {"LLM_PROVIDER": "omnirouter"}):
+        client = get_llm_client()
+        assert isinstance(client, OpenAICompatibleClient)
+

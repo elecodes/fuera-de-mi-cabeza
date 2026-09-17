@@ -553,7 +553,7 @@
         const badge = document.getElementById("status-badge");
         const btn = document.getElementById("btn-start-omniroute");
 
-        if (data.provider === "openai-compatible" || data.provider === "omniroute") {
+        if (["openai-compatible", "omniroute", "omnirouter"].includes(data.provider)) {
           if (data.omniroute_running) {
             badge.style.background = "#dcfce7";
             badge.style.color = "#166534";

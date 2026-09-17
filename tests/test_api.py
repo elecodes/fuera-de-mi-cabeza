@@ -119,3 +119,25 @@ def test_full_api_flow():
     res_get = client.get(f"/api/sessions/{session_id}")
     assert res_get.status_code == 200
     assert res_get.json()["id"] == session_id
+
+
+def test_architecture_endpoint():
+    res = client.get("/architecture")
+    assert res.status_code == 200
+    assert "Archify Verified IR" in res.text
+
+
+def test_architecture_sequence_endpoint():
+    res = client.get("/architecture/sequence")
+    assert res.status_code == 200
+    assert "Archify Sequence IR" in res.text
+
+
+def test_update_diagram_metadata_script():
+    from scripts.update_diagram_metadata import main as update_meta
+    update_meta()
+    res = client.get("/architecture")
+    assert "git:" in res.text
+
+
+

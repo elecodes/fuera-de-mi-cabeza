@@ -4,7 +4,14 @@ All notable changes to the "Fuera de mi cabeza" Editorial Agent project will be 
 
 ## [Unreleased]
 
-## [0.3.0] - 2026-09-16
+## [0.3.1] - 2026-09-17
+
+### Added
+- **Archify Living Architecture Diagrams:** Added verified, interactive HTML/SVG architecture diagrams for overall system component mapping (`docs/architecture/archify_architecture.html`) and end-to-end sequence flow (`docs/architecture/archify_sequence_flow.html`).
+- **FastAPI Diagram Routes:** Added `/architecture` and `/architecture/sequence` routes in `app/main.py` for direct browser inspection.
+- **Automated Diagram Metadata Sync (`scripts/update_diagram_metadata.py`):** Added automation script to dynamically extract current app version (`pyproject.toml`), generation timestamp, and Git commit hash (`git rev-parse --short HEAD`) into diagram headers.
+- **Architecture Decision Record (ADR-0004):** Documented Archify living diagrams and metadata automation in `docs/adr/0004-archify-interactive-living-architecture-and-metadata-automation.md`.
+- **OmniRoute & OmniRouter Provider Compatibility:** Extended `LLM_PROVIDER` recognition across factory client, main routes, and Web UI status badge.
 
 ### Added
 - **Multi-Thought & Brain Dump Support:** Enabled raw, multi-fragment text input (notes, bullet points, voice transcripts) in `IdeaInput` and `IdeaExplorer`.

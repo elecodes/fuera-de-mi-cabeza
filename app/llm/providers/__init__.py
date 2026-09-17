@@ -25,7 +25,7 @@ def get_llm_client() -> LLMClient:
             base_url=base_url,
         )
 
-    if provider in ("openai", "openai-compatible"):
+    if provider in ("openai", "openai-compatible", "omniroute", "omnirouter"):
         return OpenAICompatibleClient()
 
     return MockLLMClient()
