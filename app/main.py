@@ -65,10 +65,10 @@ import httpx
 
 async def check_omniroute_running(base_url: str) -> bool:
     try:
-        async with httpx.AsyncClient(timeout=1.5) as client:
+        async with httpx.AsyncClient(timeout=1.0) as client:
             await client.get(base_url.rstrip('/'))
             return True
-    except (httpx.ConnectError, httpx.ConnectTimeout):
+    except (httpx.ConnectError, httpx.TimeoutException):
         return False
     except Exception:
         return True

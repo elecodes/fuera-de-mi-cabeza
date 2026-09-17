@@ -666,7 +666,10 @@
       }
     }
 
-    window.addEventListener("DOMContentLoaded", checkSystemStatus);
+    window.addEventListener("DOMContentLoaded", () => {
+      checkSystemStatus();
+      setInterval(checkSystemStatus, 4000);
+    });
   </script>
 </body>
 </html>
