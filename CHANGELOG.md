@@ -4,6 +4,15 @@ All notable changes to the "Fuera de mi cabeza" Editorial Agent project will be 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-17
+
+### Added
+- **Optional "Grill My Argument" Interview Mode (`ArgumentGriller`):** Added optional adversarial interview service (`app/services/argument_griller.py`) and prompt (`app/prompts/grill_argument.md`) to stress-test premises with 3 deep questions (counter-argument, personal evidence, and limits) before generating long-form article content plans.
+- **Grill API Endpoints:** Added `POST /api/ideas/{session_id}/grill` and `POST /api/ideas/{session_id}/grill/answers` in `app/main.py`.
+- **Web UI Grill Button & Cards:** Added optional **"🔥 Entrevista Adversarial (Grill My Argument)"** button and interactive card container in `index.html`.
+- **Architecture Decision Record (ADR-0005):** Documented optional Grill My Argument mode in `docs/adr/0005-optional-adversarial-grill-my-argument-interview-mode.md`.
+- **Unit & Integration Suite (`tests/test_grill_mode.py`):** Added full test suite verifying `ArgumentGriller` service and API endpoints (23/23 tests passing).
+
 ## [0.3.1] - 2026-09-17
 
 ### Added

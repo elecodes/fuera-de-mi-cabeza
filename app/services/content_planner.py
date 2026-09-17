@@ -38,11 +38,17 @@ class ContentPlanner:
         analysis: IdeaAnalysis,
         user_answers: list[str],
         selected_arc: NarrativeArc | None = None,
+        grill_answers: list[str] | None = None,
     ) -> ContentPlan:
         editorial_profile = self._load_profile()
         prompt_template = self._load_prompt_template()
 
-        formatted_answers = "\n".join(f"- {ans}" for ans in user_answers) if user_answers else "Sin respuestas adicionales."
+        all_answers = list(user_answers)
+        if grill_answers:
+            all_answers.append("\n--- Respuestas del Modo Grill (Entrevista Adversarial) ---")
+            all_answers.extend(grill_answers)
+
+        formatted_answers = "\n".join(f"- {ans}" for ans in all_answers) if all_answers else "Sin respuestas adicionales."
 
         selected_arc_info = "Sin secuencia preferida seleccionada previamente."
         if selected_arc:

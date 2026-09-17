@@ -17,6 +17,7 @@ from app.services.content_planner import ContentPlanner
 from app.services.draft_generator import DraftGenerator
 from app.services.voice_editor import VoiceEditor
 from app.services.voice_auditor import VoiceAuditor
+from app.services.argument_griller import ArgumentGriller
 from app.memory.editorial_memory import EditorialMemory
 
 app = FastAPI(title="Fuera de mi cabeza — Personal Editorial Agent", version="0.3.0")
@@ -172,6 +173,39 @@ async def submit_answers(session_id: str, payload: AnswersInput):
     return session
 
 
+@app.post("/api/ideas/{session_id}/grill", response_model=EditorialSession)
+async def trigger_grill_mode(session_id: str):
+    session = session_manager.get_session(session_id)
+    if not session or not session.selected_arc:
+        raise HTTPException(status_code=400, detail="Debes seleccionar un arco narrativo antes de activar el modo Grill")
+
+    try:
+        client = get_llm_client()
+        griller = ArgumentGriller(llm_client=client)
+        questions = await griller.generate_grill_questions(
+            idea=session.original_idea,
+            arc_title=session.selected_arc.title,
+            thought_sequence=session.selected_arc.thought_sequence,
+        )
+        session.grill_mode = True
+        session.grill_questions = questions
+        session_manager.save_session(session)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error en el modo Grill: {str(e)}")
+
+
+@app.post("/api/ideas/{session_id}/grill/answers", response_model=EditorialSession)
+async def submit_grill_answers(session_id: str, payload: AnswersInput):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+
+    session.grill_answers = payload.answers
+    session_manager.save_session(session)
+    return session
+
+
 @app.post("/api/ideas/{session_id}/plan", response_model=EditorialSession)
 async def plan_content(session_id: str):
     session = session_manager.get_session(session_id)
@@ -186,6 +220,7 @@ async def plan_content(session_id: str):
             analysis=session.analysis,
             user_answers=session.user_answers,
             selected_arc=session.selected_arc,
+            grill_answers=session.grill_answers,
         )
 
         session.content_plan = plan
