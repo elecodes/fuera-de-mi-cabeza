@@ -1,10 +1,12 @@
 from typing import Literal
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
+import tempfile
 from pathlib import Path
 from pydantic import BaseModel
 from dotenv import load_dotenv
+
 
 load_dotenv()
 
@@ -18,9 +20,12 @@ from app.services.draft_generator import DraftGenerator
 from app.services.voice_editor import VoiceEditor
 from app.services.voice_auditor import VoiceAuditor
 from app.services.argument_griller import ArgumentGriller
+from app.services.profile_generator import ProfileGenerator
+from app.services.audio_transcriber import AudioTranscriber
 from app.memory.editorial_memory import EditorialMemory
 
-app = FastAPI(title="Fuera de mi cabeza — Personal Editorial Agent", version="0.3.0")
+app = FastAPI(title="Fuera de mi cabeza — Personal Editorial Agent", version="0.4.0")
+
 
 session_manager = SessionManager()
 editorial_memory = EditorialMemory()
@@ -58,20 +63,44 @@ class PreferenceInput(BaseModel):
     preference: str
 
 
+class ProfileExtractInput(BaseModel):
+    samples: list[str]
+
+
+class LearnPreferenceInput(BaseModel):
+    user_correction: str
+
+
+
 import os
 import subprocess
 import asyncio
 import httpx
 
+import socket
+from urllib.parse import urlparse
+
 async def check_omniroute_running(base_url: str) -> bool:
     try:
-        async with httpx.AsyncClient(timeout=1.0) as client:
-            await client.get(base_url.rstrip('/'))
+        parsed = urlparse(base_url)
+        host = parsed.hostname or "127.0.0.1"
+        port = parsed.port or 20128
+        with socket.create_connection((host, port), timeout=0.5):
             return True
-    except (httpx.ConnectError, httpx.TimeoutException):
-        return False
     except Exception:
-        return True
+        pass
+
+    try:
+        res = subprocess.run(["pgrep", "-f", "omniroute"], capture_output=True, text=True)
+        if res.returncode == 0 and res.stdout.strip():
+            return True
+    except Exception:
+        pass
+
+    return False
+
+
+
 
 
 # Endpoints de estado del sistema y OmniRoute
@@ -93,6 +122,24 @@ async def get_system_status():
 
 import shutil
 
+def get_enhanced_path() -> str:
+    user_home = Path.home()
+    extra_paths = [
+        "/opt/homebrew/bin",
+        "/usr/local/bin",
+        str(user_home / ".bun" / "bin"),
+    ]
+    nvm_node_dir = user_home / ".nvm" / "versions" / "node"
+    if nvm_node_dir.exists():
+        for version_dir in nvm_node_dir.glob("*"):
+            bin_dir = version_dir / "bin"
+            if bin_dir.exists():
+                extra_paths.append(str(bin_dir))
+
+    current_path = os.environ.get("PATH", "")
+    return os.pathsep.join(extra_paths + [current_path])
+
+
 @app.post("/api/system/omniroute/start")
 async def start_omniroute():
     provider = os.getenv("LLM_PROVIDER", "mock").lower()
@@ -102,8 +149,19 @@ async def start_omniroute():
         return {"message": "OmniRoute ya se encuentra activo.", "running": True}
 
     try:
-        cmd = ["omniroute"] if shutil.which("omniroute") else (["omnirouter"] if shutil.which("omnirouter") else ["npx", "-y", "omniroute"])
-        subprocess.Popen(cmd, env=os.environ.copy(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        enhanced_path = get_enhanced_path()
+        omniroute_bin = shutil.which("omniroute", path=enhanced_path) or shutil.which("omnirouter", path=enhanced_path)
+        if omniroute_bin:
+            cmd = [omniroute_bin, "serve"]
+        else:
+            npx_bin = shutil.which("npx", path=enhanced_path) or "npx"
+            cmd = [npx_bin, "-y", "omniroute", "serve"]
+
+
+        env = os.environ.copy()
+        env["PATH"] = enhanced_path
+        subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
 
         for _ in range(5):
             await asyncio.sleep(0.9)
@@ -118,6 +176,27 @@ async def start_omniroute():
         raise HTTPException(status_code=500, detail=f"No se pudo iniciar OmniRoute automáticamente: {str(e)}")
 
 
+
+@app.post("/api/audio/transcribe")
+async def transcribe_audio_endpoint(file: UploadFile = File(...)):
+    try:
+        suffix = Path(file.filename or "audio.webm").suffix or ".webm"
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+            content = await file.read()
+            tmp.write(content)
+            tmp_path = Path(tmp.name)
+
+        transcriber = AudioTranscriber()
+        transcribed_text = await transcriber.transcribe_audio(tmp_path)
+
+        if tmp_path.exists():
+            tmp_path.unlink(missing_ok=True)
+
+        return {"transcription": transcribed_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al transcribir audio: {str(e)}")
+
+
 @app.post("/api/ideas", response_model=EditorialSession)
 async def create_idea(input_data: IdeaInput):
     session = session_manager.create_session(original_idea=input_data.idea)
@@ -125,6 +204,7 @@ async def create_idea(input_data: IdeaInput):
         session.raw_thoughts = input_data.raw_thoughts
         session_manager.save_session(session)
     return session
+
 
 
 @app.post("/api/ideas/{session_id}/explore", response_model=EditorialSession)
@@ -317,6 +397,33 @@ async def revise_draft(session_id: str, payload: RevisionInput):
         return session
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
+
+
+@app.post("/api/profile/extract-tone")
+async def extract_profile_tone(payload: ProfileExtractInput):
+    try:
+        llm = get_llm_client()
+        generator = ProfileGenerator(llm_client=llm)
+        updated_profile = await generator.update_editorial_profile(payload.samples)
+        return {"message": "Perfil editorial actualizado con éxito.", "updated_profile": updated_profile}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al extraer tono: {str(e)}")
+
+
+@app.post("/api/ideas/{session_id}/learn-preference", response_model=EditorialSession)
+async def learn_editor_preference(session_id: str, payload: LearnPreferenceInput):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+
+    try:
+        llm = get_llm_client()
+        editor = VoiceEditor(llm_client=llm)
+        await editor.save_preference_to_profile(payload.user_correction)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al guardar preferencia: {str(e)}")
+
 
 
 @app.post("/api/memory/preference")

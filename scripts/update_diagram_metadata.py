@@ -45,7 +45,7 @@ def update_diagram_file(file_path: Path, version: str, date_str: str, commit_has
     # Reemplazar versión, fecha y commit en las etiquetas span del header
     pattern = r'(<span style="color: var\(--accent-blue\);">)[^<]+(</span>\s*•\s*<span style="color: var\(--accent-green\);">)[^<]+(</span>\s*•\s*<span style="color: var\(--accent-purple\); font-family: monospace;">)git:[^<]+(</span>)'
     replacement = rf'\g<1>{version}\g<2>{date_str}\g<3>git:{commit_hash}\g<4>'
-    updated_content = re.sub(pattern, content, content)
+    updated_content = re.sub(pattern, replacement, content)
 
     # Si no hubo reemplazo regex, hacer una sustitución limpia
     file_path.write_text(updated_content, encoding="utf-8")

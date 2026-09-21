@@ -24,8 +24,12 @@ Verifica minuciosamente los siguientes 11 antipatrones de IA y normas de estilo:
 9. **Preguntas de transición prefabricadas:** ¿Usa ganchos como "¿La trampa?", "¿El detalle clave?"? (PROHIBIDO)
 10. **Emojis decorativos:** ¿Contiene emojis fuera de contexto? (PROHIBIDO)
 11. **Abuso de rayas (—):** ¿Usa desmedidamente em-dashes para simular pausas reflexivas? (PROHIBIDO)
-12. **Cadencia y Ritmo:** ¿Todas las frases tienen una longitud y estructura similar? (Debe combinar frases cortas, medias y largas de forma espontánea).
-13. **Idioma:** ¿Usa Español de España peninsular (*tú, tienes*) sin voseo argentino ni modismos rioplatenses?
+12. **Adjetivos inflados:** ¿Usa adjetivos inflados como *crucial, esencial, clave, fundamental, robusto, innovador, dinámico*? (PROHIBIDO)
+13. **Verbos de relleno:** ¿Usa verbos inflados sin sustancia concreta como *optimizar, potenciar, impulsar, maximizar*? (PROHIBIDO)
+14. **Repeticiones y falsos contrastes:** ¿Usa reiteradamente *profundizar* o conectores como *no obstante / sin embargo* cuando no hay verdadero contraste? (EVITAR)
+15. **Cadencia y Ritmo:** ¿Todas las frases tienen una longitud y estructura similar? (Debe combinar frases cortas, medias y largas de forma espontánea).
+16. **Idioma:** ¿Usa Español de España peninsular (*tú, tienes*) sin voseo argentino ni modismos rioplatenses?
+
 
 ## Formato de Salida Obligatorio (JSON estrictamente válido):
 Devuelve únicamente un objeto JSON:

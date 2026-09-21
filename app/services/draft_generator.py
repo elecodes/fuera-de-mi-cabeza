@@ -92,11 +92,13 @@ class DraftGenerator:
         system_prompt = (
             "Eres el redactor de 'Fuera de mi cabeza'. "
             "Redacta el borrador SIEMPRE en Español de España. "
+            "EXIGENCIA RIGUROSA DE EXTENSIÓN: Redacta un ARTÍCULO COMPLETO de Substack (mínimo 600 a 1200 palabras) estructurado en varias secciones ##. Desarrolla extensamente cada punto clave con párrafos ricos, reflexiones profundas y matices. PROHIBIDO generar resúmenes breves ni textos tipo nota. "
             "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
             "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
-            "Genera un borrador de artículo en formato JSON."
+            "Genera un borrador de artículo completo en formato JSON."
         )
+
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
 
         clean_json_str = self._clean_json_output(raw_response)

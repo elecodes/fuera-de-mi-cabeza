@@ -2,12 +2,13 @@ import json
 from pathlib import Path
 from app.llm.client import LLMClient
 from app.models.analysis import IdeaAnalysis
+from app.services.audio_transcriber import AudioTranscriber
 
 
 class IdeaExplorer:
     """
-    Servicio encargado de analizar la idea inicial del autor y formular
-    preguntas de profundización sin inventar experiencias personales.
+    Servicio encargado de analizar la idea inicial del autor (en texto o voz)
+    y formular preguntas de profundización sin inventar experiencias personales.
     """
 
     def __init__(
@@ -15,11 +16,13 @@ class IdeaExplorer:
         llm_client: LLMClient,
         profile_path: Path | str | None = None,
         prompt_path: Path | str | None = None,
+        audio_transcriber: AudioTranscriber | None = None,
     ):
         self.llm_client = llm_client
         base_dir = Path(__file__).resolve().parent.parent.parent
         self.profile_path = Path(profile_path) if profile_path else base_dir / "data" / "editorial_profile.md"
         self.prompt_path = Path(prompt_path) if prompt_path else base_dir / "app" / "prompts" / "explore_idea.md"
+        self.audio_transcriber = audio_transcriber or AudioTranscriber()
 
     def _load_profile(self) -> str:
         if self.profile_path.exists():
@@ -59,6 +62,13 @@ class IdeaExplorer:
             data["questions"] = data["questions"][:3]
 
         return IdeaAnalysis.model_validate(data)
+
+    async def analyze_audio_or_text(self, input_source: Path | str) -> IdeaAnalysis:
+        """
+        Si el input es un archivo de audio, lo transcribe automáticamente antes de pasar a la etapa EXPLORAR.
+        """
+        transcribed_text = await self.audio_transcriber.transcribe_if_audio(input_source)
+        return await self.analyze(transcribed_text)
 
     @staticmethod
     def _clean_json_output(text: str) -> str:

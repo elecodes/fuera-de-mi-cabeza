@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.3.0)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.4.0)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -19,6 +19,7 @@ BRAIN DUMP (Notas/Ideas) → ARCOS NARRATIVOS (Selección) → PREGUNTAR → PLA
 ```
 fuera-de-mi-cabeza/
 ├── SOUL.md                      # Constitución del agente y arquitectura de comportamiento
+├── CHANGELOG.md                 # Historial de cambios y versiones (Keep a Changelog)
 ├── docs/
 │   ├── adr/                     # Architecture Decision Records (MADR)
 │   └── architecture/            # Diagramas interactivos de arquitectura de Archify

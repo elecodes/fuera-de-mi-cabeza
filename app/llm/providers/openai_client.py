@@ -94,7 +94,31 @@ class OpenAICompatibleClient:
                         logger.error(f"[LLM Error] Fallaron todos los modelos candidata: {candidate_models}")
 
         if last_exception:
-            if isinstance(last_exception, httpx.ConnectError):
-                raise RuntimeError("No se pudo establecer conexión de red con el proveedor LLM (error de DNS/red). Verificá tu conexión a internet o que el servidor tenga salida a red.")
-            raise last_exception
-        raise RuntimeError("No se pudo obtener respuesta de ningún modelo.")
+            groq_key = os.getenv("GROQ_API_KEY")
+            if groq_key and "groq.com" not in self.base_url:
+                logger.warning(
+                    f"[LLM Fallback to Groq Direct] Error con '{self.base_url}' ({last_exception}). Reintentando con Groq API..."
+                )
+                print(
+                    f"⚠️ [LLM Fallback to Groq Direct] Error conectando a '{self.base_url}'. Reintentando directamente vía Groq API..."
+                )
+                try:
+                    groq_client = OpenAICompatibleClient(
+                        api_key=groq_key,
+                        model=os.getenv("LLM_MODEL", "llama-3.3-70b-versatile"),
+                        fallback_models=["llama-3.1-8b-instant", "mixtral-8x7b-32768"],
+                        base_url="https://api.groq.com/openai/v1",
+                    )
+                    return await groq_client.generate(prompt, system_prompt=system_prompt)
+                except Exception as groq_err:
+                    logger.error(f"[LLM Error Groq Direct] {groq_err}")
+
+            logger.warning(f"[LLM Fallback to Mock] Fallaron todos los modelos candidata ({last_exception}). Activando MockLLMClient de emergencia.")
+            print(f"⚠️ [LLM Fallback to Mock] Fallaron los modelos. Usando respuesta Mock de respaldo.")
+            from app.llm.providers.mock import MockLLMClient
+            mock_client = MockLLMClient()
+            return await mock_client.generate(prompt, system_prompt=system_prompt)
+
+        from app.llm.providers.mock import MockLLMClient
+        return await MockLLMClient().generate(prompt, system_prompt=system_prompt)
+

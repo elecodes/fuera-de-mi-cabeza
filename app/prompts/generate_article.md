@@ -26,13 +26,19 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
    - Desarrollo fluido de los puntos clave con cadencia variable de frases
    - Cierre sutil, sin moraleja ni conclusión artificialmente inspiradora o circular
 2. **REGLA ABSOLUTA DE CONTENIDO**: Basar la redacción **únicamente** en la idea del autor, sus respuestas y el plan. **NO inventar experiencias personales, anécdotas ficticias, estadísticas ni historias.**
-3. **Voz del autor y Hábitos de Escritura Natural**:
+3. **LONGITUD Y PROFUNDIDAD DEL ARTÍCULO**:
+   - Un **Artículo** es una entrega completa para Substack de extensión media/larga (entre 600 y 1200 palabras, con al menos 4-6 párrafos desarrollados en profundidad repartidos en secciones `##`).
+   - Cada punto clave del plan de contenido debe explicarse minuciosamente: no te limites a enunciarlo en una sola oración. Desarrollá el argumento, las consecuencias en la práctica, los matices y las observaciones reales aportadas por el autor.
+   - Construí párrafos completos con buen ritmo: introducción de la observación → explicación matizada del 'por qué' → implicación práctica → cierre limpio.
+4. **Voz del autor y Hábitos de Escritura Natural**:
    - Aplica estrictamente la **Guía de Estilo y Hábitos de Escritura Natural** del `{editorial_profile}`:
      * Guíate por los **Ejemplos few-shot** (robótico vs. natural).
      * Varía espontáneamente la longitud y ritmo de las oraciones (**frase corta → desarrollo → frase más larga con matices → conclusión breve**).
      * Usa conectores conversacionales preferidos en castellano (*pero, así que, por eso, en realidad, el caso es que, lo bueno es que, sobre el papel, en la práctica*).
      * Integra la incertidumbre y opiniones matizadas sin disclaimers ceremoniales.
-   - Aplica las prohibiciones de antipatrones de IA (cero "No es X, es Y", cero tríos sintácticos, cero muletillas cautelosas, cero metáforas trilladas, cero preguntas de transición armadas y sin emojis decorativos).
+   - Aplica las prohibiciones de antipatrones de IA (cero "No es X, es Y", cero tríos sintácticos, cero muletillas cautelosas, cero metáforas trilladas, cero preguntas de transición armadas, cero adjetivos inflados ['crucial', 'esencial', 'clave', 'fundamental', 'robusto', 'innovador', 'dinámico'], cero verbos de relleno ['optimizar', 'potenciar', 'impulsar', 'maximizar'], cero repeticiones de 'profundizar' o falsos contrastes 'no obstante / sin embargo' sin verdadera oposición y sin emojis decorativos).
+
+
 
 ## Formato de Salida Obligatorio (JSON estrictamente válido):
 Devolvé únicamente un objeto JSON con la siguiente estructura:

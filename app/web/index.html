@@ -180,6 +180,36 @@
     </div>
   </header>
 
+  <!-- SECCIÓN RUK LAB: Extractor de Tono (3 Muestras de Texto) -->
+  <div class="step-card" style="background:#fefce8; border:1px solid #fef08a;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-weight:700; color:#854d0e; font-size:1.05rem;">🎯 Extractor de Tono de Escritura</div>
+      <button class="secondary" onclick="toggleToneExtractor()" style="font-size:0.8rem; margin:0; padding:0.3rem 0.6rem;">
+        <span id="toggle-tone-icon">▼</span> Analizar Mis 3 Muestras de Texto
+      </button>
+    </div>
+    <div id="tone-extractor-panel" class="hidden" style="margin-top:1rem; border-top:1px solid #fef08a; padding-top:1rem;">
+      <p style="font-size:0.88rem; color:#713f12; margin-bottom:0.8rem;">
+        Pega 3 muestras de textos reales que hayas escrito (un email, un post o newsletter). El agente extraerá tus aperturas, ritmo y vocabulario para actualizar tu <strong>data/editorial_profile.md</strong> automáticamente.
+      </p>
+      <div style="margin-bottom:0.8rem;">
+        <label style="font-size:0.85rem; font-weight:600; color:#854d0e;">Muestra 1 (ej: Email o reflexión real):</label>
+        <textarea id="sample-1" rows="3" placeholder="Pega aquí el texto de tu primera muestra..."></textarea>
+      </div>
+      <div style="margin-bottom:0.8rem;">
+        <label style="font-size:0.85rem; font-weight:600; color:#854d0e;">Muestra 2 (ej: Post o hilo publicado):</label>
+        <textarea id="sample-2" rows="3" placeholder="Pega aquí el texto de tu segunda muestra..."></textarea>
+      </div>
+      <div style="margin-bottom:0.8rem;">
+        <label style="font-size:0.85rem; font-weight:600; color:#854d0e;">Muestra 3 (ej: Newsletter o nota de blog):</label>
+        <textarea id="sample-3" rows="3" placeholder="Pega aquí el texto de tu tercera muestra..."></textarea>
+      </div>
+      <button onclick="extractToneProfile()" style="background:#ca8a04; color:#fff;">✨ Extraer y Actualizar Mi Perfil de Tono</button>
+      <div id="tone-loader" class="loader hidden" style="color:#854d0e;">Analizando patrones lingüísticos y actualizando editorial_profile.md...</div>
+      <div id="tone-status-msg" style="margin-top:0.8rem; font-size:0.9rem; font-weight:600; color:#15803d;" class="hidden"></div>
+    </div>
+  </div>
+
   <!-- PASO 1: Brain Dump / Ideas Sueltas -->
   <div id="step-1" class="step-card">
     <div class="step-title">¿Qué tienes en la cabeza hoy?</div>
@@ -187,9 +217,18 @@
       Puedes escribir una reflexión libre, notas sueltas en viñetas o fragmentos de ideas. El agente te ayudará a ordenarlos y conectarlos.
     </p>
     <textarea id="idea-input" rows="5" placeholder="- Pensamiento 1: No sé si seguir con este proyecto...&#10;- Pensamiento 2: Aprendí algo sobre IA...&#10;- Reflexión: La sencillez importa más que el perfeccionismo."></textarea>
-    <button id="btn-explore" onclick="exploreIdea()">Explorar y Conectar Ideas</button>
+    
+    <div style="display:flex; gap:0.5rem; align-items:center; margin-top:0.8rem; flex-wrap:wrap;">
+      <button id="btn-explore" onclick="exploreIdea()">Explorar y Conectar Ideas</button>
+      <input type="file" id="audio-file-input" accept="audio/*" class="hidden" onchange="uploadAudioFile(this)">
+      <button type="button" class="secondary" onclick="document.getElementById('audio-file-input').click()">📁 Subir Audio de Voz</button>
+      <button type="button" id="btn-record-audio" class="secondary" onclick="toggleAudioRecording()">🎙️ Grabar Voz</button>
+    </div>
+    <div id="audio-status" style="font-size:0.85rem; color:var(--accent); font-weight:600; margin-top:0.4rem;" class="hidden"></div>
     <div id="loader-1" class="loader hidden">Conectando pensamientos y sintetizando arcos narrativos...</div>
   </div>
+
+
 
   <!-- PASO 2: Análisis & Guiado Socrático (Arcos Narrativos) -->
   <div id="step-2" class="step-card hidden">
@@ -260,7 +299,9 @@
   <!-- PASO 4: Borrador, Edición Directa, Auditoría & Feedback -->
   <div id="step-4" class="step-card hidden">
     <div class="badge">BORRADOR</div>
+    <div id="draft-metrics" style="font-size:0.85rem; font-weight:600; color:var(--accent); margin-top:0.3rem;"></div>
     <h2 id="draft-title" style="font-family: Georgia, serif; margin-top: 0.5rem;" contenteditable="true" onblur="saveDraftChanges()"></h2>
+
     <div id="draft-body" class="draft-content" contenteditable="true" onblur="saveDraftChanges()"></div>
     <div class="editable-hint">✏️ Puedes editar o escribir directamente en el título y el cuerpo del borrador. Los cambios se guardan al hacer clic fuera.</div>
 
@@ -489,10 +530,60 @@
       }
     }
 
+    function toggleToneExtractor() {
+      const panel = document.getElementById("tone-extractor-panel");
+      const icon = document.getElementById("toggle-tone-icon");
+      if (panel.classList.contains("hidden")) {
+        panel.classList.remove("hidden");
+        icon.innerText = "▲";
+      } else {
+        panel.classList.add("hidden");
+        icon.innerText = "▼";
+      }
+    }
+
+    async function extractToneProfile() {
+      const s1 = document.getElementById("sample-1").value.trim();
+      const s2 = document.getElementById("sample-2").value.trim();
+      const s3 = document.getElementById("sample-3").value.trim();
+      const samples = [s1, s2, s3].filter(s => s.length > 0);
+
+      if (samples.length < 1) {
+        return alert("Por favor introduce al menos 1 muestra de texto real (idealmente 3).");
+      }
+
+      document.getElementById("tone-loader").classList.remove("hidden");
+      const msg = document.getElementById("tone-status-msg");
+      msg.classList.add("hidden");
+
+      try {
+        const res = await fetch("/api/profile/extract-tone", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ samples })
+        });
+        if (!res.ok) throw new Error("Error al extraer perfil de tono");
+        const data = await res.json();
+        msg.innerText = "✨ ¡Perfil Editorial actualizado exitosamente en data/editorial_profile.md!";
+        msg.classList.remove("hidden");
+      } catch (err) {
+        alert("Error: " + err.message);
+      } finally {
+        document.getElementById("tone-loader").classList.add("hidden");
+      }
+    }
+
     function renderDraft(draft) {
       if (!draft) return;
-      document.getElementById("draft-title").innerText = draft.title || "(Substack Note)";
-      document.getElementById("draft-body").innerText = draft.content || "";
+      const title = draft.title || "(Substack Note)";
+      const content = draft.content || "";
+      document.getElementById("draft-title").innerText = title;
+      document.getElementById("draft-body").innerText = content;
+
+      const words = content.trim().split(/\s+/).filter(w => w.length > 0).length;
+      const fmtLabel = draft.format === 'note' ? 'PÍLDORA / NOTE' : 'ARTÍCULO SUBSTACK';
+      document.getElementById("draft-metrics").innerText = `Formato: ${fmtLabel} | Extensión: ${words} palabras`;
+
       document.getElementById("audit-box").classList.add("hidden");
     }
 
@@ -535,23 +626,128 @@
         const data = await res.json();
         const audit = data.voice_audit;
 
-        document.getElementById("audit-score-text").innerText = `Puntuación de Voz: ${audit.score}/100 — ${audit.passed ? '✅ Cumple Perfil' : '⚠️ Revisar Puntos'}`;
+        const authScore = audit.authenticity_score !== undefined ? audit.authenticity_score : audit.score;
+        document.getElementById("audit-score-text").innerText = `Puntuación de Voz: ${audit.score}/100 | Autenticidad: ${authScore}/100 — ${audit.passed ? '✅ Auténtico y Natural' : '⚠️ Revisar Puntos'}`;
         document.getElementById("audit-cadence").innerText = audit.cadence_analysis;
 
         const issuesContainer = document.getElementById("audit-issues-container");
-        if (audit.issues && audit.issues.length > 0) {
-          issuesContainer.innerHTML = "<strong>Detalles a mejorar:</strong><ul>" +
-            audit.issues.map(i => `<li><strong>${i.rule_id}:</strong> ${i.description} ${i.snippet ? `<em>("${i.snippet}")</em>` : ''}</li>`).join("") +
-            "</ul>";
-        } else {
-          issuesContainer.innerHTML = "<p style='color:#166534;'>No se detectaron antipatrones de IA ni muletillas vacías.</p>";
+        let issuesHtml = "";
+
+        if (audit.warnings && audit.warnings.length > 0) {
+          issuesHtml += "<div style='color:#b91c1c; margin-bottom:0.5rem;'><strong>⚠️ Banderas de Autenticidad:</strong><ul>" +
+            audit.warnings.map(w => `<li>${w}</li>`).join("") + "</ul></div>";
         }
 
+        if (audit.issues && audit.issues.length > 0) {
+          issuesHtml += "<strong>Detalles a mejorar:</strong><ul>" +
+            audit.issues.map(i => `<li><strong>${i.rule_id}:</strong> ${i.description} ${i.snippet ? `<em>("${i.snippet}")</em>` : ''}</li>`).join("") +
+            "</ul>";
+        } else if (!audit.warnings || audit.warnings.length === 0) {
+          issuesHtml = "<p style='color:#166534;'>No se detectaron antipatrones de IA ni muletillas vacías.</p>";
+        }
+
+        issuesContainer.innerHTML = issuesHtml;
         document.getElementById("audit-box").classList.remove("hidden");
       } catch (err) {
         alert("Error al auditar el texto: " + err.message);
       }
     }
+
+    let mediaRecorder = null;
+    let audioChunks = [];
+
+    async function uploadAudioFile(fileInput) {
+      if (!fileInput.files || fileInput.files.length === 0) return;
+      const file = fileInput.files[0];
+      const statusDiv = document.getElementById("audio-status");
+      statusDiv.innerText = `⏳ Subiendo y transcribiendo ${file.name}...`;
+      statusDiv.classList.remove("hidden");
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/api/audio/transcribe", {
+          method: "POST",
+          body: formData
+        });
+        if (!res.ok) throw new Error("Error al procesar archivo de audio");
+        const data = await res.json();
+        const textarea = document.getElementById("idea-input");
+        const prevText = textarea.value.trim();
+        textarea.value = (prevText ? prevText + "\n\n" : "") + `[Notas de Voz - ${file.name}]:\n` + data.transcription;
+        statusDiv.innerText = "✨ ¡Audio transcripto e incorporado con éxito!";
+      } catch (err) {
+        alert("Error: " + err.message);
+        statusDiv.classList.add("hidden");
+      }
+    }
+
+    async function toggleAudioRecording() {
+      const btn = document.getElementById("btn-record-audio");
+      const statusDiv = document.getElementById("audio-status");
+
+      if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+        btn.innerText = "🎙️ Grabar Voz";
+        btn.style.background = "";
+        btn.style.color = "";
+        return;
+      }
+
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        return alert("Tu navegador no soporta grabación directa de audio. Usa la opción 'Subir Audio de Voz'.");
+      }
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) audioChunks.push(event.data);
+        };
+
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(audioChunks, { type: "audio/webm" });
+          stream.getTracks().forEach(track => track.stop());
+
+          statusDiv.innerText = "⏳ Transcribiendo nota de voz...";
+          statusDiv.classList.remove("hidden");
+
+          const formData = new FormData();
+          formData.append("file", audioBlob, "grabacion_voz.webm");
+
+          try {
+            const res = await fetch("/api/audio/transcribe", {
+              method: "POST",
+              body: formData
+            });
+            if (!res.ok) throw new Error("Error en servidor al transcribir voz");
+            const data = await res.json();
+            const textarea = document.getElementById("idea-input");
+            const prevText = textarea.value.trim();
+            textarea.value = (prevText ? prevText + "\n\n" : "") + "[Nota de Voz Grabada]:\n" + data.transcription;
+            statusDiv.innerText = "✨ ¡Grabación transcripta e incorporada con éxito!";
+          } catch (err) {
+            alert("Error al transcribir grabación: " + err.message);
+            statusDiv.classList.add("hidden");
+          }
+        };
+
+        mediaRecorder.start();
+        btn.innerText = "🔴 Detener Grabación";
+        btn.style.background = "#dc2626";
+        btn.style.color = "#ffffff";
+        statusDiv.innerText = "🎙️ Grabando voz... Habla con tranquilidad y presiona 'Detener Grabación' al finalizar.";
+        statusDiv.classList.remove("hidden");
+
+      } catch (err) {
+        alert("No se pudo acceder al micrófono: " + err.message);
+      }
+    }
+
+
 
     function showFeedbackForm(defaultText) {
       const form = document.getElementById("feedback-form");
@@ -572,6 +768,7 @@
       document.getElementById("loader-4").classList.remove("hidden");
 
       try {
+        await saveDraftChanges();
         const resRev = await fetch(`/api/ideas/${currentSessionId}/revise`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

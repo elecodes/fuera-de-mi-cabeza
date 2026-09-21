@@ -7,7 +7,8 @@ from app.models.draft import Draft
 class VoiceEditor:
     """
     Servicio encargado de editar y revisar el borrador en base al feedback del autor,
-    garantizando que el texto mantenga la voz única sin sonar artificial.
+    garantizando que el texto mantenga la voz única sin sonar artificial,
+    e incluyendo un bucle de aprendizaje continuo para actualizar el perfil editorial.
     """
 
     def __init__(
@@ -15,11 +16,15 @@ class VoiceEditor:
         llm_client: LLMClient,
         profile_path: Path | str | None = None,
         prompt_path: Path | str | None = None,
+        learn_prompt_path: Path | str | None = None,
     ):
         self.llm_client = llm_client
         base_dir = Path(__file__).resolve().parent.parent.parent
         self.profile_path = Path(profile_path) if profile_path else base_dir / "data" / "editorial_profile.md"
         self.prompt_path = Path(prompt_path) if prompt_path else base_dir / "app" / "prompts" / "revise_draft.md"
+        self.learn_prompt_path = (
+            Path(learn_prompt_path) if learn_prompt_path else base_dir / "app" / "prompts" / "learn_preference.md"
+        )
 
     def _load_profile(self) -> str:
         if self.profile_path.exists():
@@ -50,7 +55,9 @@ class VoiceEditor:
             "Eres el editor de voz de 'Fuera de mi cabeza'. "
             "Edita y redacta SIEMPRE en Español de España. "
             "Elimina strictly antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres, "
-            "afirmaciones cautelosas, metáforas clichés ('brújula, no mapa'), entusiasmo artificial, cierres circulares ('En resumen'), "
+            "afirmaciones cautelosas, metáforas clichés ('brújula, no mapa'), adjetivos inflados, verbos de relleno, "
+            "repeticiones de 'profundizar', falsos contrastes ('no obstante'), "
+            "entusiasmo artificial, cierres circulares ('En resumen'), "
             "preguntas de transición armadas, emojis decorativos y abuso de rayas (—). "
             "Aplica el feedback recibido y devuelve un borrador revisado en JSON."
         )
@@ -63,6 +70,56 @@ class VoiceEditor:
         if "title" not in data or not data["title"]:
             data["title"] = current_draft.title
         return Draft.model_validate(data)
+
+    async def save_preference_to_profile(self, user_correction: str) -> str:
+        """
+        Bucle de aprendizaje continuo: recibe una corrección o preferencia del autor durante la edición,
+        sintetiza una regla limpia y la incorpora de forma permanente a data/editorial_profile.md.
+        """
+        editorial_profile = self._load_profile()
+        if not self.learn_prompt_path.exists():
+            # Fallback simple si no existe la plantilla
+            rule_entry = f"\n- **Preferencia aprendida**: {user_correction.strip()}\n"
+            updated_profile = editorial_profile + rule_entry
+            if self.profile_path:
+                self.profile_path.write_text(updated_profile, encoding="utf-8")
+            return updated_profile
+
+        prompt_template = self.learn_prompt_path.read_text(encoding="utf-8")
+        formatted_prompt = (
+            prompt_template.replace("{editorial_profile}", editorial_profile)
+            .replace("{user_correction}", user_correction)
+        )
+
+        system_prompt = (
+            "Eres el sintetizador de reglas para el Perfil Editorial de 'Fuera de mi cabeza'. "
+            "Responde SIEMPRE con un objeto JSON válido con la estructura solicitada."
+        )
+
+        raw_response = await self.llm_client.generate(
+            prompt=formatted_prompt,
+            system_prompt=system_prompt,
+        )
+
+        clean_json = self._clean_json_output(raw_response)
+        try:
+            data = json.loads(clean_json)
+            updated_markdown = data.get("updated_profile_markdown")
+            synthesized_rule = data.get("synthesized_rule", "")
+
+            if not updated_markdown or len(updated_markdown.strip()) < 50:
+                # Si el LLM no devolvió el markdown completo, anexamos la regla sintetizada
+                rule_text = synthesized_rule or user_correction
+                updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {rule_text}\n"
+        except Exception:
+            rule_text = user_correction
+            updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {rule_text}\n"
+
+        if self.profile_path:
+            self.profile_path.parent.mkdir(parents=True, exist_ok=True)
+            self.profile_path.write_text(updated_markdown, encoding="utf-8")
+
+        return updated_markdown
 
     @staticmethod
     def _clean_json_output(text: str) -> str:

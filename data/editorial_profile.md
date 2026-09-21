@@ -261,3 +261,7 @@ El objetivo no es sonar informal. Es conseguir que el texto **no parezca constru
 9. **Preguntas de transición prefabricadas:** Prohibidos ganchos tipo "¿La trampa?", "¿El detalle clave?", "¿La verdad brutal?".
 10. **Explosión de emojis:** Prohibido el uso decorativo o excesivo de emoticonos en el texto.
 11. **El guión largo (—):** Prohibido el uso desmedido de la raya / em-dash para simular pausas reflexivas.
+12. **Adjetivos inflados:** Prohibido el uso de adjetivos inflados tipo *crucial*, *esencial*, *clave*, *fundamental*, *robusto*, *innovador*, *dinámico*.
+13. **Verbos de relleno:** Prohibido el uso de verbos inflados sin sustancia concreta como *optimizar*, *potenciar*, *impulsar*, *maximizar*.
+14. **Repeticiones y falsos contrastes:** Evitar el uso reiterado de *profundizar* o el uso forzado de conectores de contraste como *no obstante* / *sin embargo* cuando no hay una oposición o contraste real de ideas.
+
