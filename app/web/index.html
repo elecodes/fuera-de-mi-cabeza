@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fuera de mi cabeza — Editor Personal</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%232c2c2c'/%3E%3Cpath d='M50 20 L75 50 L60 80 L50 72 L40 80 L25 50 Z' fill='%23d97706'/%3E%3Ccircle cx='50' cy='50' r='4' fill='%232c2c2c'/%3E%3Cline x1='50' y1='54' x2='50' y2='72' stroke='%232c2c2c' stroke-width='3'/%3E%3C/svg%3E">
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <style>
     :root {
       --bg: #faf9f6;
@@ -127,20 +128,104 @@
       color: var(--muted);
       margin-top: 0.3rem;
     }
-    .draft-content {
+    textarea.draft-content {
+      width: 100%;
+      min-height: 280px;
+      resize: vertical;
       background: #fdfbf7;
       border-left: 3px solid var(--accent);
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
       padding: 1.2rem;
       white-space: pre-wrap;
       font-family: Georgia, serif;
       font-size: 1.05rem;
+      line-height: 1.6;
       margin-top: 0.5rem;
       outline: none;
       border-radius: 0 var(--radius) var(--radius) 0;
+      box-sizing: border-box;
     }
-    .draft-content:focus {
+    textarea.draft-content:focus {
       background: #ffffff;
       box-shadow: 0 0 0 2px var(--accent);
+    }
+    .draft-preview-content {
+      background: #ffffff;
+      border-left: 3px solid var(--accent);
+      border-top: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 1.5rem;
+      font-family: Georgia, serif;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: var(--text);
+      margin-top: 0.5rem;
+      min-height: 280px;
+      box-sizing: border-box;
+    }
+    .draft-preview-content h1 {
+      font-size: 1.7rem;
+      font-family: Georgia, serif;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: #111;
+    }
+    .draft-preview-content h2 {
+      font-size: 1.35rem;
+      font-family: Georgia, serif;
+      margin-top: 1.5rem;
+      margin-bottom: 0.75rem;
+      color: #1f2937;
+      border-bottom: 1px solid #f3f4f6;
+      padding-bottom: 0.3rem;
+    }
+    .draft-preview-content h3 {
+      font-size: 1.15rem;
+      margin-top: 1.2rem;
+      margin-bottom: 0.5rem;
+    }
+    .draft-preview-content p {
+      margin-bottom: 1.2rem;
+    }
+    .draft-preview-content blockquote {
+      border-left: 3px solid #d97706;
+      margin: 1rem 0;
+      padding-left: 1rem;
+      color: #4b5563;
+      font-style: italic;
+    }
+    .draft-preview-content ul, .draft-preview-content ol {
+      margin-bottom: 1.2rem;
+      padding-left: 1.5rem;
+    }
+    .draft-preview-content li {
+      margin-bottom: 0.4rem;
+    }
+    .draft-preview-content hr {
+      border: none;
+      border-top: 1px solid #e5e7eb;
+      margin: 2rem 0;
+    }
+    input.draft-title-input {
+      width: 100%;
+      font-family: Georgia, serif;
+      font-size: 1.5rem;
+      font-weight: bold;
+      border: none;
+      border-bottom: 2px solid var(--border);
+      background: transparent;
+      padding: 0.4rem 0;
+      margin-top: 0.5rem;
+      outline: none;
+      box-sizing: border-box;
+      color: var(--text);
+    }
+    input.draft-title-input:focus {
+      border-bottom-color: var(--accent);
     }
     .editable-hint {
       font-size: 0.85rem;
@@ -300,10 +385,17 @@
   <div id="step-4" class="step-card hidden">
     <div class="badge">BORRADOR</div>
     <div id="draft-metrics" style="font-size:0.85rem; font-weight:600; color:var(--accent); margin-top:0.3rem;"></div>
-    <h2 id="draft-title" style="font-family: Georgia, serif; margin-top: 0.5rem;" contenteditable="true" onblur="saveDraftChanges()"></h2>
+    <input type="text" id="draft-title" class="draft-title-input" onblur="saveDraftChanges()" placeholder="Título del borrador..." />
 
-    <div id="draft-body" class="draft-content" contenteditable="true" onblur="saveDraftChanges()"></div>
-    <div class="editable-hint">✏️ Puedes editar o escribir directamente en el título y el cuerpo del borrador. Los cambios se guardan al hacer clic fuera.</div>
+    <div style="display: flex; gap: 0.5rem; margin-top: 0.8rem; margin-bottom: 0.2rem;">
+      <button type="button" id="tab-btn-preview" class="secondary" onclick="switchDraftTab('preview')" style="font-size:0.85rem; padding:0.4rem 0.8rem; font-weight:600; background:var(--text); color:#ffffff; margin:0;">📖 Vista Previa Formateada</button>
+      <button type="button" id="tab-btn-edit" class="secondary" onclick="switchDraftTab('edit')" style="font-size:0.85rem; padding:0.4rem 0.8rem; font-weight:600; margin:0;">✏️ Editar Texto / Markdown</button>
+    </div>
+
+    <div id="draft-preview" class="draft-preview-content"></div>
+    <textarea id="draft-body" class="draft-content hidden" oninput="autoResizeTextarea(this); updateFormattedPreview();" onblur="saveDraftChanges()" placeholder="Escribe o edita el cuerpo del borrador aquí..."></textarea>
+
+    <div class="editable-hint">✏️ Alterna entre la <strong>Vista Previa Formateada</strong> para leer con estilo Substack y el <strong>Editor de Texto</strong> para modificar o escribir notas <code>[Nota: ...]</code>. Los cambios se guardan al salir del editor.</div>
 
     <div style="margin-top: 1.2rem;">
       <button onclick="copyDraftToClipboard()">📋 Copiar borrador al portapapeles</button>
@@ -319,6 +411,7 @@
     <div style="margin-top: 1.5rem;" id="feedback-actions">
       <strong>¿Te suena natural?</strong><br/>
       <button onclick="acceptDraft()">Sí, me representa</button>
+      <button style="background: linear-gradient(135deg, #e11d48, var(--accent)); color: white;" onclick="submitRevisionDirect()">✨ Revisar borrador con mis cambios/notas</button>
       <button class="secondary" onclick="showFeedbackForm('No suena a mí')">No suena a mí</button>
       <button class="secondary" onclick="showFeedbackForm('')">Dar feedback específico al agente</button>
     </div>
@@ -573,12 +666,72 @@
       }
     }
 
+    function autoResizeTextarea(el) {
+      if (!el) return;
+      el.style.height = 'auto';
+      el.style.height = (el.scrollHeight + 10) + 'px';
+    }
+
+    function updateFormattedPreview() {
+      const content = document.getElementById("draft-body").value;
+      const preview = document.getElementById("draft-preview");
+      if (!preview) return;
+
+      if (window.marked && typeof window.marked.parse === 'function') {
+        preview.innerHTML = window.marked.parse(content);
+      } else {
+        let html = content
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+          .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+          .replace(/\n\n/g, '</p><p>')
+          .replace(/\n/g, '<br/>');
+        preview.innerHTML = '<p>' + html + '</p>';
+      }
+    }
+
+    function switchDraftTab(mode) {
+      const previewDiv = document.getElementById("draft-preview");
+      const bodyTextarea = document.getElementById("draft-body");
+      const btnPreview = document.getElementById("tab-btn-preview");
+      const btnEdit = document.getElementById("tab-btn-edit");
+
+      if (mode === 'preview') {
+        updateFormattedPreview();
+        previewDiv.classList.remove("hidden");
+        bodyTextarea.classList.add("hidden");
+
+        btnPreview.style.background = "var(--text)";
+        btnPreview.style.color = "#ffffff";
+        btnEdit.style.background = "transparent";
+        btnEdit.style.color = "var(--text)";
+      } else {
+        previewDiv.classList.add("hidden");
+        bodyTextarea.classList.remove("hidden");
+        autoResizeTextarea(bodyTextarea);
+
+        btnEdit.style.background = "var(--text)";
+        btnEdit.style.color = "#ffffff";
+        btnPreview.style.background = "transparent";
+        btnPreview.style.color = "var(--text)";
+      }
+    }
+
     function renderDraft(draft) {
       if (!draft) return;
       const title = draft.title || "(Substack Note)";
       const content = draft.content || "";
-      document.getElementById("draft-title").innerText = title;
-      document.getElementById("draft-body").innerText = content;
+      document.getElementById("draft-title").value = title;
+      document.getElementById("draft-body").value = content;
+
+      const bodyTextarea = document.getElementById("draft-body");
+      autoResizeTextarea(bodyTextarea);
+      updateFormattedPreview();
+      switchDraftTab('preview');
 
       const words = content.trim().split(/\s+/).filter(w => w.length > 0).length;
       const fmtLabel = draft.format === 'note' ? 'PÍLDORA / NOTE' : 'ARTÍCULO SUBSTACK';
@@ -589,8 +742,9 @@
 
     async function saveDraftChanges() {
       if (!currentSessionId) return;
-      const title = document.getElementById("draft-title").innerText.trim();
-      const content = document.getElementById("draft-body").innerText.trim();
+      const title = document.getElementById("draft-title").value.trim();
+      const content = document.getElementById("draft-body").value.trim();
+      updateFormattedPreview();
       try {
         await fetch(`/api/ideas/${currentSessionId}/draft/update`, {
           method: "POST",
@@ -603,8 +757,8 @@
     }
 
     function copyDraftToClipboard() {
-      const title = document.getElementById("draft-title").innerText.trim();
-      const content = document.getElementById("draft-body").innerText.trim();
+      const title = document.getElementById("draft-title").value.trim();
+      const content = document.getElementById("draft-body").value.trim();
       const fullText = (title && !title.includes("Substack Note") ? title + "\n\n" : "") + content;
 
       navigator.clipboard.writeText(fullText).then(() => {
@@ -616,7 +770,7 @@
 
     async function auditVoice() {
       try {
-        const content = document.getElementById("draft-body").innerText.trim();
+        const content = document.getElementById("draft-body").value.trim();
         const res = await fetch(`/api/ideas/${currentSessionId}/audit`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -761,9 +915,19 @@
       alert("¡Borrador aprobado! Listo para tu Substack.");
     }
 
+    async function submitRevisionDirect() {
+      const feedbackInput = document.getElementById("feedback-input");
+      if (!feedbackInput.value.trim()) {
+        feedbackInput.value = "Integrar las notas y modificaciones realizadas directamente en el borrador";
+      }
+      await submitRevision();
+    }
+
     async function submitRevision() {
-      const feedback = document.getElementById("feedback-input").value.trim();
-      if (!feedback) return alert("Por favor introduce tu feedback.");
+      let feedback = document.getElementById("feedback-input").value.trim();
+      if (!feedback) {
+        feedback = "Integrar las notas y modificaciones realizadas directamente en el borrador";
+      }
 
       document.getElementById("loader-4").classList.remove("hidden");
 
@@ -783,6 +947,10 @@
           renderDraft(data.draft);
           document.getElementById("feedback-input").value = "";
           document.getElementById("feedback-form").classList.add("hidden");
+          const statusMetric = document.getElementById("draft-metrics");
+          if (statusMetric) {
+            statusMetric.innerText += " | ✨ ¡Nuevo borrador revisado e integrado!";
+          }
         } else {
           throw new Error("No se recibió un borrador válido del servidor");
         }

@@ -200,23 +200,62 @@ class MockLLMClient:
                     pass
 
             current_draft_content = ""
-            if 'Borrador Actual:' in prompt:
+            if 'Borrador Actual' in prompt:
                 try:
-                    current_draft_content = prompt.split('Borrador Actual:')[1].split('- **Feedback Recibido')[0].strip(' \n"\'')
+                    after_marker = prompt.split('Borrador Actual')[1]
+                    raw_content = after_marker.split('- **Feedback Recibido')[0]
+                    # Limpiar encabezados como '(incluye modificaciones directas y notas del autor):' o ':'
+                    lines = raw_content.splitlines()
+                    cleaned_lines = []
+                    for line in lines:
+                        if line.strip().startswith('(') or line.strip() == ':' or line.strip().startswith('**:'):
+                            continue
+                        cleaned_lines.append(line)
+                    current_draft_content = "\n".join(cleaned_lines).strip()
+                    if current_draft_content.startswith(':'):
+                        current_draft_content = current_draft_content[1:].strip()
                 except Exception:
                     pass
 
             base_content = current_draft_content or DEFAULT_REVISION_RESPONSE["content"]
             clean_lines = [l for l in base_content.splitlines() if not l.startswith("### 📝") and not l.startswith("- **Modificación") and not l.startswith("- **Ajuste") and not l.startswith("- **Voz")]
-            clean_base = "\n".join(clean_lines).strip()
+            raw_base = "\n".join(clean_lines).strip()
 
-            integrated_rev = (
-                f"{clean_base}\n\n"
-                f"## Ajuste de Tono e Identidad\n\n"
-                f"Para responder a tu indicación de hacer el texto más fluido y cercano, eliminamos cualquier formulación "
-                f"distante o sobrecargada. La idea es que la lectura avance con soltura conversacional, "
-                f"enfocándonos directamente en la experiencia de creación sin adornos innecesarios ni tecnicismos."
-            )
+            # Procesar y eliminar etiquetas inline entre corchetes [Nota: ...] o [...]
+            import re
+            clean_base = re.sub(r'\[(?:Nota:?|nota:?|cambiar:?|reemplazar:?)?\s*([^\]]+)\]', r'\1 (frase reescrita según nota)', raw_base)
+            clean_base = re.sub(r'\[[^\]]+\]', '', clean_base).strip()
+
+            sanitized_fb = self._sanitize_feedback(feedback_val) if feedback_val else "Ajuste de tono e identidad"
+            fb_lower = feedback_val.lower()
+
+            if any(term in fb_lower for term in ["divide", "dividir", "2 post", "2 párrafos", "partes", "parte 1", "es muy largo", "acortar"]):
+                # Fraccionar el texto base en 2 entregas diferenciadas
+                paragraphs = [p.strip() for p in clean_base.split("\n\n") if p.strip()]
+                half = max(1, len(paragraphs) // 2)
+                part1_text = "\n\n".join(paragraphs[:half])
+                part2_text = "\n\n".join(paragraphs[half:]) if half < len(paragraphs) else "Continúa la segunda parte con las reflexiones de cierre..."
+
+                integrated_rev = (
+                    f"# Parte 1: Construir tus propias herramientas (Entrega I)\n\n"
+                    f"{part1_text}\n\n"
+                    f"---\n\n"
+                    f"# Parte 2: De la intuición al sistema articulado (Entrega II)\n\n"
+                    f"{part2_text}\n\n"
+                    f"*Nota del Editor: El post original ha sido dividido en 2 entregas independientes según tu indicación.*"
+                )
+            else:
+                paragraphs = [p.strip() for p in clean_base.split("\n\n") if p.strip()]
+                if len(paragraphs) >= 2 and any(k in fb_lower for k in ["párrafo", "parrafo", "frase", "cambia", "cambiar", "reescribir", "segundo"]):
+                    # Modificar in-place el párrafo indicado dentro del texto
+                    target_idx = 1 if len(paragraphs) > 1 else 0
+                    paragraphs[target_idx] = f"{paragraphs[target_idx]} (Párrafo reescrito según la indicación: '{sanitized_fb}')."
+                    integrated_rev = "\n\n".join(paragraphs)
+                elif paragraphs and any(k in fb_lower for k in ["párrafo", "parrafo", "frase", "cambia", "cambiar", "reescribir"]):
+                    paragraphs[0] = f"{paragraphs[0]} (Párrafo modificado según la indicación: '{sanitized_fb}')."
+                    integrated_rev = "\n\n".join(paragraphs)
+                else:
+                    integrated_rev = clean_base
 
             return json.dumps({
                 "format": "article",

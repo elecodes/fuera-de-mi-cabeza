@@ -31,6 +31,17 @@ class VoiceEditor:
             return self.profile_path.read_text(encoding="utf-8")
         return "Perfil Editorial no especificado."
 
+    @staticmethod
+    def _detect_intent(draft_content: str, feedback_text: str) -> str:
+        fb_lower = feedback_text.lower()
+        if any(w in fb_lower for w in ["divide", "dividir", "2 post", "2 párrafos", "partes", "parte 1", "es muy largo", "fraccionar"]):
+            return "SPLIT_POST"
+        if any(w in fb_lower for w in ["párrafo", "parrafo", "frase", "cambia", "cambiar", "reescribir", "sustituir", "segundo"]):
+            return "REWRITE_PARAGRAPH"
+        if "[" in draft_content and "]" in draft_content and any(w in draft_content for w in ["Nota:", "nota:", "cambiar", "reemplazar"]):
+            return "INTEGRATE_NOTES"
+        return "GENERAL_REVISION"
+
     async def revise(
         self,
         original_idea: str,
@@ -51,15 +62,33 @@ class VoiceEditor:
             .replace("{title_placeholder}", title_placeholder)
         )
 
+        intent = self._detect_intent(current_draft.content, feedback_text)
+
+        if intent == "SPLIT_POST":
+            intent_instruction = "INSTRUCCIÓN PRIORITARIA DE FRACCIONAMIENTO: Fracciona el contenido del borrador en 2 entregas independientes (# Parte 1: [Título] y # Parte 2: [Título]). "
+        elif intent == "REWRITE_PARAGRAPH":
+            intent_instruction = f"INSTRUCCIÓN PRIORITARIA DE REESCRITURA: El autor solicita modificar/sustituir un párrafo o frase concreta ('{feedback_text}'). Ubica el párrafo señalado y REESCRIBELO DIRECTAMENTE IN-PLACE en su posición original dentro del texto, conservando el resto del artículo intacto. "
+        elif intent == "INTEGRATE_NOTES":
+            intent_instruction = "INSTRUCCIÓN PRIORITARIA DE NOTAS: El borrador contiene comentarios entre corchetes [Nota: ...]. Procesa y consume la nota aplicando la sustitución solicitada y ELIMINA por completo los corchetes y etiquetas [Nota: ...] del borrador final. "
+        else:
+            intent_instruction = "INSTRUCCIÓN DE REVISIÓN GENERAL: Ajusta el ritmo y la voz según el feedback sin alterar la estructura básica del texto. "
+
+        format_instruction = (
+            f"{intent_instruction}Salvo petición explícita de acortar o dividir, mantén la estructura de ARTÍCULO DE SUBSTACK (600 a 1200 palabras) con secciones ##. "
+            if current_draft.format == "article"
+            else f"{intent_instruction}Mantén una extensión compacta tipo Substack Note. "
+        )
+
         system_prompt = (
             "Eres el editor de voz de 'Fuera de mi cabeza'. "
             "Edita y redacta SIEMPRE en Español de España. "
+            f"{format_instruction}"
             "Elimina strictly antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres, "
             "afirmaciones cautelosas, metáforas clichés ('brújula, no mapa'), adjetivos inflados, verbos de relleno, "
             "repeticiones de 'profundizar', falsos contrastes ('no obstante'), "
             "entusiasmo artificial, cierres circulares ('En resumen'), "
             "preguntas de transición armadas, emojis decorativos y abuso de rayas (—). "
-            "Aplica el feedback recibido y devuelve un borrador revisado en JSON."
+            "PROHIBIDO adjuntar notas del editor, resúmenes o secciones como '## Revisión Aplicada' al final. Devuelve únicamente el borrador limpio revisado en JSON."
         )
 
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)

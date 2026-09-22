@@ -24,7 +24,17 @@ from app.services.profile_generator import ProfileGenerator
 from app.services.audio_transcriber import AudioTranscriber
 from app.memory.editorial_memory import EditorialMemory
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(title="Fuera de mi cabeza — Personal Editorial Agent", version="0.4.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 session_manager = SessionManager()
@@ -55,7 +65,7 @@ class AuditInput(BaseModel):
 
 
 class RevisionInput(BaseModel):
-    feedback: str
+    feedback: str = "Integrar las notas y modificaciones realizadas directamente en el borrador"
 
 
 class PreferenceInput(BaseModel):
@@ -80,19 +90,23 @@ import httpx
 import socket
 from urllib.parse import urlparse
 
+import httpx
+
 async def check_omniroute_running(base_url: str) -> bool:
+    url = f"{base_url.rstrip('/')}/models"
+    try:
+        async with httpx.AsyncClient(timeout=1.5) as client:
+            resp = await client.get(url)
+            if resp.status_code < 500:
+                return True
+    except Exception:
+        pass
+
     try:
         parsed = urlparse(base_url)
         host = parsed.hostname or "127.0.0.1"
         port = parsed.port or 20128
         with socket.create_connection((host, port), timeout=0.5):
-            return True
-    except Exception:
-        pass
-
-    try:
-        res = subprocess.run(["pgrep", "-f", "omniroute"], capture_output=True, text=True)
-        if res.returncode == 0 and res.stdout.strip():
             return True
     except Exception:
         pass
@@ -149,6 +163,16 @@ async def start_omniroute():
         return {"message": "OmniRoute ya se encuentra activo.", "running": True}
 
     try:
+        parsed = urlparse(base_url)
+        port = parsed.port or 20128
+        # Intentar liberar puerto ocupado por procesos obsoletos
+        try:
+            subprocess.run("pkill -f omniroute || true", shell=True, capture_output=True)
+            subprocess.run(f"lsof -t -i :{port} | xargs kill -9 || true", shell=True, capture_output=True)
+            await asyncio.sleep(0.5)
+        except Exception:
+            pass
+
         enhanced_path = get_enhanced_path()
         omniroute_bin = shutil.which("omniroute", path=enhanced_path) or shutil.which("omnirouter", path=enhanced_path)
         if omniroute_bin:
@@ -157,14 +181,13 @@ async def start_omniroute():
             npx_bin = shutil.which("npx", path=enhanced_path) or "npx"
             cmd = [npx_bin, "-y", "omniroute", "serve"]
 
-
         env = os.environ.copy()
         env["PATH"] = enhanced_path
-        subprocess.Popen(cmd, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        log_file = open("/tmp/omniroute_start.log", "a")
+        subprocess.Popen(cmd, env=env, stdout=log_file, stderr=log_file, start_new_session=True)
 
-
-        for _ in range(5):
-            await asyncio.sleep(0.9)
+        for _ in range(8):
+            await asyncio.sleep(1.0)
             if await check_omniroute_running(base_url):
                 return {"message": "OmniRoute se ha iniciado correctamente.", "running": True}
 
@@ -384,13 +407,15 @@ async def revise_draft(session_id: str, payload: RevisionInput):
         llm = get_llm_client()
         editor = VoiceEditor(llm_client=llm)
 
+        feedback_text = payload.feedback.strip() if payload and payload.feedback and payload.feedback.strip() else "Integrar las notas y modificaciones realizadas directamente en el borrador"
+
         revised_draft = await editor.revise(
             original_idea=session.original_idea,
             current_draft=session.draft,
-            feedback_text=payload.feedback,
+            feedback_text=feedback_text,
         )
 
-        session.feedback.append(payload.feedback)
+        session.feedback.append(feedback_text)
         session.revisions.append(revised_draft.content)
         session.draft = revised_draft
         session_manager.save_session(session)
