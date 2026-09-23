@@ -315,7 +315,7 @@ async def plan_content(session_id: str):
 
     try:
         llm = get_llm_client()
-        planner = ContentPlanner(llm_client=llm)
+        planner = ContentPlanner(llm_client=llm, editorial_memory=editorial_memory)
         plan = await planner.plan(
             original_idea=session.original_idea,
             analysis=session.analysis,
@@ -339,7 +339,7 @@ async def generate_draft(session_id: str, payload: DraftRequestInput):
 
     try:
         llm = get_llm_client()
-        generator = DraftGenerator(llm_client=llm)
+        generator = DraftGenerator(llm_client=llm, editorial_memory=editorial_memory)
 
         fmt = payload.format or session.content_plan.format
 
@@ -405,7 +405,7 @@ async def revise_draft(session_id: str, payload: RevisionInput):
 
     try:
         llm = get_llm_client()
-        editor = VoiceEditor(llm_client=llm)
+        editor = VoiceEditor(llm_client=llm, editorial_memory=editorial_memory)
 
         feedback_text = payload.feedback.strip() if payload and payload.feedback and payload.feedback.strip() else "Integrar las notas y modificaciones realizadas directamente en el borrador"
 
@@ -443,18 +443,30 @@ async def learn_editor_preference(session_id: str, payload: LearnPreferenceInput
 
     try:
         llm = get_llm_client()
-        editor = VoiceEditor(llm_client=llm)
+        editor = VoiceEditor(llm_client=llm, editorial_memory=editorial_memory)
         await editor.save_preference_to_profile(payload.user_correction)
         return session
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al guardar preferencia: {str(e)}")
 
 
+@app.get("/api/memory")
+async def get_editorial_memory():
+    return editorial_memory.get_all_memory()
+
 
 @app.post("/api/memory/preference")
 async def add_memory_preference(payload: PreferenceInput):
     editorial_memory.add_preference(payload.category, payload.preference)
     return {"message": "Preferencia guardada correctamente en memoria editorial."}
+
+
+@app.delete("/api/memory/preference")
+async def delete_memory_preference(payload: PreferenceInput):
+    success = editorial_memory.delete_preference(payload.category, payload.preference)
+    if success:
+        return {"message": "Preferencia eliminada correctamente de la memoria."}
+    raise HTTPException(status_code=404, detail="La preferencia no fue encontrada en esa categoría.")
 
 
 @app.get("/api/sessions/{session_id}", response_model=EditorialSession)

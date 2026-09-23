@@ -3,31 +3,41 @@ from pathlib import Path
 from app.llm.client import LLMClient
 from app.models.content_plan import ContentPlan
 from app.models.draft import Draft
+from app.memory.editorial_memory import EditorialMemory
 
 
 class DraftGenerator:
     """
     Servicio encargado de redactar el primer borrador (Note o Article)
-    respetando estrictamente la voz del autor sin inventar historias.
+    respetando estrictamente la voz, muletillas y estilo del autor.
     """
 
     def __init__(
         self,
         llm_client: LLMClient,
+        editorial_memory: EditorialMemory | None = None,
         profile_path: Path | str | None = None,
         note_prompt_path: Path | str | None = None,
         article_prompt_path: Path | str | None = None,
     ):
         self.llm_client = llm_client
+        self.editorial_memory = editorial_memory or EditorialMemory()
         base_dir = Path(__file__).resolve().parent.parent.parent
         self.profile_path = Path(profile_path) if profile_path else base_dir / "data" / "editorial_profile.md"
         self.note_prompt_path = Path(note_prompt_path) if note_prompt_path else base_dir / "app" / "prompts" / "generate_note.md"
         self.article_prompt_path = Path(article_prompt_path) if article_prompt_path else base_dir / "app" / "prompts" / "generate_article.md"
 
     def _load_profile(self) -> str:
+        profile = ""
         if self.profile_path.exists():
-            return self.profile_path.read_text(encoding="utf-8")
-        return "Perfil Editorial no especificado."
+            profile = self.profile_path.read_text(encoding="utf-8")
+        else:
+            profile = "Perfil Editorial no especificado."
+
+        memory_ctx = self.editorial_memory.get_context()
+        if memory_ctx:
+            return f"{profile}\n\n{memory_ctx}"
+        return profile
 
     async def generate_note(
         self,
@@ -49,9 +59,12 @@ class DraftGenerator:
             .replace("{key_points}", formatted_key_points)
         )
 
+        memory_instructions = self.editorial_memory.get_context()
         system_prompt = (
             "Eres el redactor de 'Fuera de mi cabeza'. "
             "Redacta el borrador SIEMPRE en Español de España. "
+            "INCORPORA FIELMENTE LAS EXPRESIONES, MULETILLAS Y ESTILO APRENDIDO DEL AUTOR. "
+            f"{memory_instructions}\n"
             "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
             "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
@@ -89,11 +102,14 @@ class DraftGenerator:
             .replace("{ending_direction}", content_plan.ending_direction)
         )
 
+        memory_instructions = self.editorial_memory.get_context()
         system_prompt = (
             "Eres el redactor de 'Fuera de mi cabeza'. "
             "Redacta el borrador SIEMPRE en Español de España. "
             "EXIGENCIA RIGUROSA DE CONCISIÓN Y DENSIDAD (CERO PAJA): Redacta un ARTÍCULO de Substack denso y bien enfocado (entre 300 y 600 palabras). "
             "Es preferible un texto de 350 palabras preciso y memorable que un texto largo inflado con frases de relleno. "
+            "INCORPORA FIELMENTE LAS EXPRESIONES, MULETILLAS Y ESTILO APRENDIDO DEL AUTOR. "
+            f"{memory_instructions}\n"
             "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
             "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "

@@ -295,6 +295,46 @@
     </div>
   </div>
 
+  <!-- SECCIÓN: Memoria de Voz y Expresiones Aprendidas -->
+  <div class="step-card" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-weight:700; color:#166534; font-size:1.05rem;">🧠 Tu Voz y Expresiones Aprendidas</div>
+      <button class="secondary" onclick="toggleMemoryPanel()" style="font-size:0.8rem; margin:0; padding:0.3rem 0.6rem;">
+        <span id="toggle-memory-icon">▼</span> Ver Expresiones y Reglas de Tono
+      </button>
+    </div>
+    <div id="memory-panel" class="hidden" style="margin-top:1rem; border-top:1px solid #bbf7d0; padding-top:1rem;">
+      <p style="font-size:0.88rem; color:#14532d; margin-bottom:0.8rem;">
+        El agente inyecta estas muletillas, expresiones y reglas en <strong>cada nuevo borrador</strong> de Notes y Artículos para darles tu estilo natural.
+      </p>
+
+      <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap:1rem; margin-bottom:1rem;">
+        <div style="background:#ffffff; border:1px solid #dcfce7; border-radius:var(--radius); padding:0.8rem;">
+          <strong style="color:#166534; font-size:0.9rem;">💬 Expresiones y muletillas favoritas:</strong>
+          <ul id="memory-list-expressions" style="font-size:0.85rem; padding-left:1.2rem; margin-top:0.4rem; color:#166534;"></ul>
+        </div>
+        <div style="background:#ffffff; border:1px solid #fee2e2; border-radius:var(--radius); padding:0.8rem;">
+          <strong style="color:#991b1b; font-size:0.9rem;">🚫 Palabras y tics a evitar:</strong>
+          <ul id="memory-list-forbidden" style="font-size:0.85rem; padding-left:1.2rem; margin-top:0.4rem; color:#991b1b;"></ul>
+        </div>
+        <div style="background:#ffffff; border:1px solid #e0f2fe; border-radius:var(--radius); padding:0.8rem;">
+          <strong style="color:#0369a1; font-size:0.9rem;">⚡ Reglas de ritmo y tono:</strong>
+          <ul id="memory-list-style" style="font-size:0.85rem; padding-left:1.2rem; margin-top:0.4rem; color:#0369a1;"></ul>
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+        <select id="memory-add-category" style="font-size:0.85rem; padding:0.35rem 0.5rem; border-radius:var(--radius); border:1px solid var(--border);">
+          <option value="favorite_expressions">💬 Añadir muletilla/expresión favorita</option>
+          <option value="forbidden_words">🚫 Añadir palabra/tic a evitar</option>
+          <option value="style_rules">⚡ Añadir regla de estilo o ritmo</option>
+        </select>
+        <input type="text" id="memory-add-text" placeholder="Ej: 'el caso es que' o 'no usar crucial'" style="font-size:0.85rem; padding:0.35rem 0.5rem; flex:1; min-width:200px; border-radius:var(--radius); border:1px solid var(--border);" />
+        <button onclick="addManualMemoryRule()" style="font-size:0.8rem; padding:0.4rem 0.8rem; background:#166534; color:#fff; margin:0;">+ Enseñar al agente</button>
+      </div>
+    </div>
+  </div>
+
   <!-- PASO 1: Brain Dump / Ideas Sueltas -->
   <div id="step-1" class="step-card">
     <div class="step-title">¿Qué tienes en la cabeza hoy?</div>
@@ -426,7 +466,13 @@
         <button type="button" class="secondary" onclick="applyFeedbackChip('💬 Añadir un ejemplo práctico o anécdota concreta en el segundo párrafo')" style="font-size:0.8rem; padding:0.25rem 0.55rem; margin:0;">💬 Pedir ejemplo práctico</button>
         <button type="button" class="secondary" onclick="applyFeedbackChip('🧹 Eliminar antítesis (\'No es X, es Y\'), frases triádicas y muletillas de IA')" style="font-size:0.8rem; padding:0.25rem 0.55rem; margin:0;">🧹 Limpiar tics/clichés</button>
       </div>
-      <textarea id="feedback-input" rows="3" placeholder="Ej: Demasiado formal, prefiero frases más breves al inicio..."></textarea>
+      <textarea id="feedback-input" rows="3" placeholder="Ej: Demasiado formal, prefiero usar la expresión 'el caso es que'..."></textarea>
+      <div style="margin-top:0.4rem; margin-bottom:0.8rem;">
+        <label style="display:inline-flex; align-items:center; gap:0.4rem; font-size:0.85rem; color:#15803d; font-weight:600; cursor:pointer;">
+          <input type="checkbox" id="check-learn-voice" checked />
+          💡 Enseñar este ajuste a mi Memoria Editorial para futuros borradores
+        </label>
+      </div>
       <div>
         <button onclick="submitRevision()">Revisar Borrador</button>
         <button class="secondary" onclick="saveMemoryRule()">💾 Guardar regla en Memoria</button>
@@ -962,6 +1008,16 @@
         const data = await resRev.json();
         if (data && data.draft) {
           renderDraft(data.draft);
+
+          // Auto-aprendizaje de voz si el checkbox está activo
+          if (document.getElementById("check-learn-voice")?.checked && currentSessionId && feedback) {
+            fetch(`/api/ideas/${currentSessionId}/learn-preference`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ user_correction: feedback })
+            }).then(() => loadEditorialMemory()).catch(e => console.error("Error auto-learning voice:", e));
+          }
+
           document.getElementById("feedback-input").value = "";
           document.getElementById("feedback-form").classList.add("hidden");
           const statusMetric = document.getElementById("draft-metrics");
@@ -983,13 +1039,21 @@
       if (!feedback) return alert("Escribe primero la regla o preferencia de estilo.");
 
       try {
-        const res = await fetch("/api/memory/preference", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ category: "style_rules", preference: feedback })
-        });
-        const data = await res.json();
-        alert(data.message);
+        if (currentSessionId) {
+          await fetch(`/api/ideas/${currentSessionId}/learn-preference`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_correction: feedback })
+          });
+        } else {
+          await fetch("/api/memory/preference", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category: "style_rules", preference: feedback })
+          });
+        }
+        await loadEditorialMemory();
+        alert("¡Guardado! El agente ha aprendido esta preferencia para futuros borradores.");
       } catch (err) {
         alert("Error al guardar preferencia: " + err.message);
       }
@@ -1049,8 +1113,105 @@
       }
     }
 
+    function toggleMemoryPanel() {
+      const panel = document.getElementById("memory-panel");
+      const icon = document.getElementById("toggle-memory-icon");
+      if (panel.classList.contains("hidden")) {
+        panel.classList.remove("hidden");
+        icon.innerText = "▲";
+        loadEditorialMemory();
+      } else {
+        panel.classList.add("hidden");
+        icon.innerText = "▼";
+      }
+    }
+
+    async function loadEditorialMemory() {
+      try {
+        const res = await fetch("/api/memory");
+        if (!res.ok) return;
+        const data = await res.json();
+
+        renderMemoryList("memory-list-expressions", data.favorite_expressions || [], "favorite_expressions");
+        renderMemoryList("memory-list-forbidden", data.forbidden_words || [], "forbidden_words");
+
+        const styleRulesCombined = [
+          ...(data.style_rules || []),
+          ...(data.rhythm_rules || []),
+          ...(data.opening_styles || [])
+        ];
+        renderMemoryList("memory-list-style", styleRulesCombined, "style_rules");
+      } catch (err) {
+        console.error("Error al cargar memoria editorial:", err);
+      }
+    }
+
+    function renderMemoryList(elementId, items, category) {
+      const ul = document.getElementById(elementId);
+      if (!ul) return;
+      if (!items || items.length === 0) {
+        ul.innerHTML = "<li style='font-style:italic; color:#9ca3af;'>Sin expresiones guardadas</li>";
+        return;
+      }
+      ul.innerHTML = items.map(item => `
+        <li style="margin-bottom:0.35rem; display:flex; justify-content:space-between; align-items:center; background:#f9fafb; padding:0.2rem 0.4rem; border-radius:4px;">
+          <span style="font-weight:500;">${escapeHtml(item)}</span>
+          <button type="button" onclick="deleteMemoryRule('${category}', '${escapeJsString(item)}')" style="font-size:0.7rem; padding:0.1rem 0.35rem; background:#ef4444; color:#fff; border:none; border-radius:3px; cursor:pointer; margin-left:0.5rem;" title="Eliminar regla">✕</button>
+        </li>
+      `).join("");
+    }
+
+    function escapeHtml(text) {
+      if (!text) return "";
+      return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    function escapeJsString(str) {
+      return (str || "").replace(/'/g, "\\'").replace(/"/g, "&quot;");
+    }
+
+    async function deleteMemoryRule(category, preference) {
+      try {
+        const res = await fetch("/api/memory/preference", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category, preference })
+        });
+        if (res.ok) {
+          await loadEditorialMemory();
+        }
+      } catch (err) {
+        console.error("Error eliminando preferencia:", err);
+      }
+    }
+
+    async function addManualMemoryRule() {
+      const catSelect = document.getElementById("memory-add-category");
+      const textInput = document.getElementById("memory-add-text");
+      const category = catSelect.value;
+      const preference = textInput.value.trim();
+
+      if (!preference) return alert("Por favor escribe una expresión o regla.");
+
+      try {
+        const res = await fetch("/api/memory/preference", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ category, preference })
+        });
+        if (res.ok) {
+          textInput.value = "";
+          await loadEditorialMemory();
+          alert("¡Aprendido! Tu voz y estilo han sido actualizados.");
+        }
+      } catch (err) {
+        alert("Error guardando preferencia: " + err.message);
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", () => {
       checkSystemStatus();
+      loadEditorialMemory();
       setInterval(checkSystemStatus, 4000);
     });
   </script>

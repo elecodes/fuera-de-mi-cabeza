@@ -3,6 +3,7 @@ from pathlib import Path
 from app.llm.client import LLMClient
 from app.models.analysis import IdeaAnalysis, NarrativeArc
 from app.models.content_plan import ContentPlan
+from app.memory.editorial_memory import EditorialMemory
 
 
 class ContentPlanner:
@@ -14,18 +15,27 @@ class ContentPlanner:
     def __init__(
         self,
         llm_client: LLMClient,
+        editorial_memory: EditorialMemory | None = None,
         profile_path: Path | str | None = None,
         prompt_path: Path | str | None = None,
     ):
         self.llm_client = llm_client
+        self.editorial_memory = editorial_memory or EditorialMemory()
         base_dir = Path(__file__).resolve().parent.parent.parent
         self.profile_path = Path(profile_path) if profile_path else base_dir / "data" / "editorial_profile.md"
         self.prompt_path = Path(prompt_path) if prompt_path else base_dir / "app" / "prompts" / "content_plan.md"
 
     def _load_profile(self) -> str:
+        profile = ""
         if self.profile_path.exists():
-            return self.profile_path.read_text(encoding="utf-8")
-        return "Perfil Editorial no especificado."
+            profile = self.profile_path.read_text(encoding="utf-8")
+        else:
+            profile = "Perfil Editorial no especificado."
+
+        memory_ctx = self.editorial_memory.get_context()
+        if memory_ctx:
+            return f"{profile}\n\n{memory_ctx}"
+        return profile
 
     def _load_prompt_template(self) -> str:
         if self.prompt_path.exists():
@@ -65,9 +75,11 @@ class ContentPlanner:
             .replace("{user_answers}", formatted_answers)
         )
 
+        memory_instructions = self.editorial_memory.get_context()
         system_prompt = (
             "Eres el planificador editorial de 'Fuera de mi cabeza'. "
             "Escribe SIEMPRE en Español de España (castellano peninsular: tú, tienes, etc., sin voseo ni modismos argentinos). "
+            f"{memory_instructions}\n"
             "Responde SIEMPRE con un objeto JSON válido con la estructura solicitada."
         )
 

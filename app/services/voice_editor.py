@@ -2,23 +2,26 @@ import json
 from pathlib import Path
 from app.llm.client import LLMClient
 from app.models.draft import Draft
+from app.memory.editorial_memory import EditorialMemory
 
 
 class VoiceEditor:
     """
     Servicio encargado de editar y revisar el borrador en base al feedback del autor,
     garantizando que el texto mantenga la voz única sin sonar artificial,
-    e incluyendo un bucle de aprendizaje continuo para actualizar el perfil editorial.
+    e incluyendo un bucle de aprendizaje continuo para actualizar el perfil editorial y la memoria.
     """
 
     def __init__(
         self,
         llm_client: LLMClient,
+        editorial_memory: EditorialMemory | None = None,
         profile_path: Path | str | None = None,
         prompt_path: Path | str | None = None,
         learn_prompt_path: Path | str | None = None,
     ):
         self.llm_client = llm_client
+        self.editorial_memory = editorial_memory or EditorialMemory()
         base_dir = Path(__file__).resolve().parent.parent.parent
         self.profile_path = Path(profile_path) if profile_path else base_dir / "data" / "editorial_profile.md"
         self.prompt_path = Path(prompt_path) if prompt_path else base_dir / "app" / "prompts" / "revise_draft.md"
@@ -27,9 +30,16 @@ class VoiceEditor:
         )
 
     def _load_profile(self) -> str:
+        profile = ""
         if self.profile_path.exists():
-            return self.profile_path.read_text(encoding="utf-8")
-        return "Perfil Editorial no especificado."
+            profile = self.profile_path.read_text(encoding="utf-8")
+        else:
+            profile = "Perfil Editorial no especificado."
+
+        memory_ctx = self.editorial_memory.get_context()
+        if memory_ctx:
+            return f"{profile}\n\n{memory_ctx}"
+        return profile
 
     @staticmethod
     def _detect_intent(draft_content: str, feedback_text: str) -> str:
@@ -74,15 +84,18 @@ class VoiceEditor:
             intent_instruction = "INSTRUCCIÓN DE REVISIÓN GENERAL: Ajusta el ritmo y la voz según el feedback sin alterar la estructura básica del texto. "
 
         format_instruction = (
-            f"{intent_instruction}Salvo petición explícita de acortar o dividir, mantén la estructura de ARTÍCULO DE SUBSTACK (600 a 1200 palabras) con secciones ##. "
+            f"{intent_instruction}Salvo petición explícita de acortar o dividir, mantén la estructura de ARTÍCULO DE SUBSTACK (300 a 600 palabras) con secciones ##. "
             if current_draft.format == "article"
             else f"{intent_instruction}Mantén una extensión compacta tipo Substack Note. "
         )
 
+        memory_instructions = self.editorial_memory.get_context()
         system_prompt = (
             "Eres el editor de voz de 'Fuera de mi cabeza'. "
             "Edita y redacta SIEMPRE en Español de España. "
             f"{format_instruction}"
+            "INCORPORA FIELMENTE LAS EXPRESIONES Y MULETILLAS APRENDIDAS DEL AUTOR. "
+            f"{memory_instructions}\n"
             "Elimina strictly antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres, "
             "afirmaciones cautelosas, metáforas clichés ('brújula, no mapa'), adjetivos inflados, verbos de relleno, "
             "repeticiones de 'profundizar', falsos contrastes ('no obstante'), "
@@ -103,50 +116,61 @@ class VoiceEditor:
     async def save_preference_to_profile(self, user_correction: str) -> str:
         """
         Bucle de aprendizaje continuo: recibe una corrección o preferencia del autor durante la edición,
-        sintetiza una regla limpia y la incorpora de forma permanente a data/editorial_profile.md.
+        sintetiza una regla limpia y la incorpora de forma permanente a data/editorial_profile.md
+        y data/editorial_memory.json.
         """
         editorial_profile = self._load_profile()
-        if not self.learn_prompt_path.exists():
-            # Fallback simple si no existe la plantilla
-            rule_entry = f"\n- **Preferencia aprendida**: {user_correction.strip()}\n"
-            updated_profile = editorial_profile + rule_entry
-            if self.profile_path:
-                self.profile_path.write_text(updated_profile, encoding="utf-8")
-            return updated_profile
 
-        prompt_template = self.learn_prompt_path.read_text(encoding="utf-8")
-        formatted_prompt = (
-            prompt_template.replace("{editorial_profile}", editorial_profile)
-            .replace("{user_correction}", user_correction)
-        )
+        # Determinar categoría para la memoria editorial
+        fb_lower = user_correction.lower()
+        if any(w in fb_lower for w in ["expresión", "muletilla", "frase", "giro", "usar", "decir"]):
+            cat = "favorite_expressions"
+        elif any(w in fb_lower for w in ["no usar", "evitar", "eliminar", "palabra", "vicio", "tic"]):
+            cat = "forbidden_words"
+        elif any(w in fb_lower for w in ["ritmo", "oraciones", "largo", "corto", "frases"]):
+            cat = "rhythm_rules"
+        else:
+            cat = "style_rules"
 
-        system_prompt = (
-            "Eres el sintetizador de reglas para el Perfil Editorial de 'Fuera de mi cabeza'. "
-            "Responde SIEMPRE con un objeto JSON válido con la estructura solicitada."
-        )
+        synthesized_rule = user_correction.strip()
 
-        raw_response = await self.llm_client.generate(
-            prompt=formatted_prompt,
-            system_prompt=system_prompt,
-        )
+        if self.learn_prompt_path.exists():
+            prompt_template = self.learn_prompt_path.read_text(encoding="utf-8")
+            formatted_prompt = (
+                prompt_template.replace("{editorial_profile}", editorial_profile)
+                .replace("{user_correction}", user_correction)
+            )
 
-        clean_json = self._clean_json_output(raw_response)
-        try:
-            data = json.loads(clean_json)
-            updated_markdown = data.get("updated_profile_markdown")
-            synthesized_rule = data.get("synthesized_rule", "")
+            system_prompt = (
+                "Eres el sintetizador de reglas para el Perfil Editorial de 'Fuera de mi cabeza'. "
+                "Responde SIEMPRE con un objeto JSON válido con la estructura solicitada."
+            )
 
-            if not updated_markdown or len(updated_markdown.strip()) < 50:
-                # Si el LLM no devolvió el markdown completo, anexamos la regla sintetizada
-                rule_text = synthesized_rule or user_correction
-                updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {rule_text}\n"
-        except Exception:
-            rule_text = user_correction
-            updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {rule_text}\n"
+            try:
+                raw_response = await self.llm_client.generate(
+                    prompt=formatted_prompt,
+                    system_prompt=system_prompt,
+                )
 
+                clean_json = self._clean_json_output(raw_response)
+                data = json.loads(clean_json)
+                updated_markdown = data.get("updated_profile_markdown")
+                synthesized_rule = data.get("synthesized_rule", user_correction.strip())
+
+                if not updated_markdown or len(updated_markdown.strip()) < 50:
+                    updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {synthesized_rule}\n"
+            except Exception:
+                updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {synthesized_rule}\n"
+        else:
+            updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {synthesized_rule}\n"
+
+        # Guardar en editorial_profile.md
         if self.profile_path:
             self.profile_path.parent.mkdir(parents=True, exist_ok=True)
             self.profile_path.write_text(updated_markdown, encoding="utf-8")
+
+        # Guardar también en editorial_memory.json
+        self.editorial_memory.add_preference(category=cat, preference=synthesized_rule)
 
         return updated_markdown
 
