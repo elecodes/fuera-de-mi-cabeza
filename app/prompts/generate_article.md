@@ -29,10 +29,11 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
    - Toma las notas, pensamientos y respuestas del autor como materia prima conceptual y transfórmalos en párrafos fluidos y articulados en castellano peninsular.
    - **PROHIBIDO** copiar y pegar textualmente viñetas, guiones (`-`), números, etiquetas ("Pensamiento 1:", "Reflexión:") o fragmentos literales del prompt inicial.
    - **PROHIBIDO** iniciar el borrador con muletillas repetitivas como *"Llevo bastante tiempo dándole vueltas a esta intuición..."* o *"En el mundo actual..."*. Empieza directamente con una observación narrativa concreta, una pregunta de reflexión o una experiencia real de construcción.
-3. **LONGITUD Y PROFUNDIDAD DEL ARTÍCULO**:
-   - Un **Artículo** es una entrega completa para Substack de extensión media/larga (entre 600 y 1200 palabras, con al menos 4-6 párrafos desarrollados en profundidad repartidos en secciones `##`).
-   - Cada punto clave del plan de contenido debe explicarse minuciosamente: no te limites a enunciarlo en una sola oración. Desarrollá el argumento, las consecuencias en la práctica, los matices y las observaciones reales aportadas por el autor.
-   - Construí párrafos completos con buen ritmo: introducción de la observación → explicación matizada del 'por qué' → implicación práctica → cierre limpio.
+3. **LONGITUD Y PROFUNDIDAD DEL ARTÍCULO (CERO PAJA)**:
+   - Un **Artículo** para Substack debe ser denso, directo y articulado (entre 300 y 600 palabras en 3-5 párrafos bien construidos, usando secciones `##` solo si la estructura lo exige).
+   - **Cero Relleno / Cero Paja**: Es preferible un texto de 350 palabras denso, preciso y memorable que un texto largo inflado con frases de relleno o rodeos ceremoniales.
+   - Desarrolla los puntos clave aportando el 'por qué', las implicaciones prácticas y los matices reales del autor, sin inflar artificialmente el conteo de palabras.
+   - Construí párrafos completos con buen ritmo: observación concreta → explicación matizada del 'por qué' → implicación práctica → cierre limpio.
 4. **Voz del autor y Hábitos de Escritura Natural**:
    - Aplica estrictamente la **Guía de Estilo y Hábitos de Escritura Natural** del `{editorial_profile}`:
      * Guíate por los **Ejemplos few-shot** (robótico vs. natural).
