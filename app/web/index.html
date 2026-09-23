@@ -418,6 +418,14 @@
 
     <div id="feedback-form" class="hidden" style="margin-top: 1.5rem;">
       <label><strong>¿Qué te gustaría ajustar?</strong></label>
+      <div style="margin-top: 0.4rem; margin-bottom: 0.6rem; display: flex; flex-wrap: wrap; gap: 0.4rem;">
+        <span style="font-size:0.8rem; color:var(--muted); font-weight:600; width:100%;">⚡ Atajos de feedback rápido:</span>
+        <button type="button" class="secondary" onclick="applyFeedbackChip('✂️ Hacer el borrador más breve, directo y eliminar explicaciones redundantes')" style="font-size:0.8rem; padding:0.25rem 0.55rem; margin:0;">✂️ Más breve y directo</button>
+        <button type="button" class="secondary" onclick="applyFeedbackChip('💥 Tono más tajante, conversacional y enérgico, sin sonar cauteloso')" style="font-size:0.8rem; padding:0.25rem 0.55rem; margin:0;">💥 Tono más tajante</button>
+        <button type="button" class="secondary" onclick="applyFeedbackChip('🧩 Dividir este post en 2 entregas independientes (# Parte 1 y # Parte 2)')" style="font-size:0.8rem; padding:0.25rem 0.55rem; margin:0;">🧩 Dividir en 2 posts</button>
+        <button type="button" class="secondary" onclick="applyFeedbackChip('💬 Añadir un ejemplo práctico o anécdota concreta en el segundo párrafo')" style="font-size:0.8rem; padding:0.25rem 0.55rem; margin:0;">💬 Pedir ejemplo práctico</button>
+        <button type="button" class="secondary" onclick="applyFeedbackChip('🧹 Eliminar antítesis (\'No es X, es Y\'), frases triádicas y muletillas de IA')" style="font-size:0.8rem; padding:0.25rem 0.55rem; margin:0;">🧹 Limpiar tics/clichés</button>
+      </div>
       <textarea id="feedback-input" rows="3" placeholder="Ej: Demasiado formal, prefiero frases más breves al inicio..."></textarea>
       <div>
         <button onclick="submitRevision()">Revisar Borrador</button>
@@ -481,8 +489,8 @@
         const qContainer = document.getElementById("questions-container");
         qContainer.innerHTML = currentAnalysis.questions.map((q, idx) => `
           <div style="margin-bottom: 0.8rem;">
-            <label style="display:block; font-size:0.95rem; margin-bottom:0.2rem;">${q}</label>
-            <input type="text" class="user-answer-input" placeholder="Tu respuesta o contexto..." />
+            <label style="display:block; font-size:0.95rem; margin-bottom:0.2rem; font-weight:600; color:#374151;">${idx + 1}. ${q}</label>
+            <textarea class="user-answer-input" rows="2" oninput="autoResizeTextarea(this)" placeholder="Tu respuesta, contexto o anécdota..."></textarea>
           </div>
         `).join("");
 
@@ -902,6 +910,15 @@
     }
 
 
+
+    function applyFeedbackChip(text) {
+      showFeedbackForm(text);
+      const input = document.getElementById("feedback-input");
+      if (input) {
+        input.focus();
+        autoResizeTextarea(input);
+      }
+    }
 
     function showFeedbackForm(defaultText) {
       const form = document.getElementById("feedback-form");

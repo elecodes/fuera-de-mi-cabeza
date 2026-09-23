@@ -24,7 +24,11 @@ Redacta la Note SIEMPRE en Español de España (castellano peninsular: tú, tien
    - Una pregunta abierta
    - Un pequeño aprendizaje o idea desarrollada
 
-3. **REGLA ABSOLUTA DE CONTENIDO**: El contenido debe basarse **únicamente** en la idea original, las respuestas del autor y el plan. **NO inventes experiencias personales, anécdotas, datos ni historias que el autor no haya mencionado.**
+3. **TRANSFORMACIÓN NARRATIVA CONTINUA (PROHIBIDO COPY-PASTE LITERARIO Y MULETILLAS REPETITIVAS)**:
+   - Toma las notas y pensamientos del autor como materia prima conceptual y transfórmalos en párrafos fluidos y articulados en castellano peninsular.
+   - **PROHIBIDO** copiar y pegar textualmente viñetas, guiones (`-`), números, etiquetas ("Pensamiento 1:", "Reflexión:") o fragmentos literales del prompt inicial.
+   - **PROHIBIDO** iniciar la Note con frases fijas o repetitivas como *"Llevo bastante tiempo dándole vueltas a esta intuición..."*. Entra directamente a la idea desde una observación o situación concreta.
+4. **REGLA ABSOLUTA DE CONTENIDO**: El contenido debe basarse **únicamente** en la idea original, las respuestas del autor y el plan. **NO inventes experiencias personales, anécdotas, datos ni historias que el autor no haya mencionado.**
 4. **Voz del autor y Hábitos de Escritura Natural**:
    - Aplica rigurosamente los **Ejemplos few-shot**, **Ritmo y cadencia**, **Conectores preferidos** y **Puntos de entrada narrativos** detallados en el `{editorial_profile}`.
    - Entra directamente a la idea desde una observación o situación concreta; no uses introducciones académicas ni vacías.

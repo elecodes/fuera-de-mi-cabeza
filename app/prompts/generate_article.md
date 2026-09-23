@@ -25,7 +25,10 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
    - Introducción que enganche desde un punto de entrada narrativo concreto (un momento, una observación, un contraste o un detalle real)
    - Desarrollo fluido de los puntos clave con cadencia variable de frases
    - Cierre sutil, sin moraleja ni conclusión artificialmente inspiradora o circular
-2. **REGLA ABSOLUTA DE CONTENIDO**: Basar la redacción **únicamente** en la idea del autor, sus respuestas y el plan. **NO inventar experiencias personales, anécdotas ficticias, estadísticas ni historias.**
+2. **TRANSFORMACIÓN NARRATIVA CONTINUA (PROHIBIDO COPY-PASTE LITERARIO Y MULETILLAS REPETITIVAS)**:
+   - Toma las notas, pensamientos y respuestas del autor como materia prima conceptual y transfórmalos en párrafos fluidos y articulados en castellano peninsular.
+   - **PROHIBIDO** copiar y pegar textualmente viñetas, guiones (`-`), números, etiquetas ("Pensamiento 1:", "Reflexión:") o fragmentos literales del prompt inicial.
+   - **PROHIBIDO** iniciar el borrador con muletillas repetitivas como *"Llevo bastante tiempo dándole vueltas a esta intuición..."* o *"En el mundo actual..."*. Empieza directamente con una observación narrativa concreta, una pregunta de reflexión o una experiencia real de construcción.
 3. **LONGITUD Y PROFUNDIDAD DEL ARTÍCULO**:
    - Un **Artículo** es una entrega completa para Substack de extensión media/larga (entre 600 y 1200 palabras, con al menos 4-6 párrafos desarrollados en profundidad repartidos en secciones `##`).
    - Cada punto clave del plan de contenido debe explicarse minuciosamente: no te limites a enunciarlo en una sola oración. Desarrollá el argumento, las consecuencias en la práctica, los matices y las observaciones reales aportadas por el autor.

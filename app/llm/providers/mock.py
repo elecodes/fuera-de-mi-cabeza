@@ -38,8 +38,9 @@ DEFAULT_EXPLORE_RESPONSE = {
     "emotional_tone": "Reflexivo, honesto y curioso",
     "recommended_format": "article",
     "questions": [
-        "¿Qué experiencia concreta o proyecto reciente detonó esta idea?",
-        "¿Qué es lo principal que te gustaría descubrir o comunicar a través de este texto?",
+        "¿Qué hecho, proyecto o conversación específica de esta semana detonó esta intuición?",
+        "Mencionas la importancia de esto, pero ¿en qué momento exacto chocaste con la contradicción o la fricción práctica?",
+        "¿Qué fue lo más difícil de admitir o qué costo tuvo tomar este camino en lugar de la opción más fácil?"
     ],
 }
 
@@ -137,7 +138,15 @@ class MockLLMClient:
     @staticmethod
     def _clean_idea_summary(idea_text: str) -> str:
         clean = idea_text.replace('[Nota de Voz Grabada]:', '').replace('[Notas de Voz - grabacion_voz.webm]:', '')
-        lines = [line.strip() for line in clean.splitlines() if line.strip() and not line.startswith('[')]
+        lines = []
+        import re
+        for line in clean.splitlines():
+            line_str = line.strip()
+            if not line_str or line_str.startswith('['):
+                continue
+            cleaned_line = re.sub(r'^(?:[-*•]\s*|\d+\.\s*|(?:Pensamiento|Reflexión|Idea|Nota)\s*\d*:?\s*)', '', line_str, flags=re.IGNORECASE).strip()
+            if cleaned_line:
+                lines.append(cleaned_line)
         return " ".join(lines) if lines else clean.strip()
 
     @staticmethod
@@ -277,44 +286,112 @@ class MockLLMClient:
 
         # 4. Detección de Plan de Contenido
         elif "content planner" in prompt_lower or "central_message" in prompt_lower or "title_options" in prompt_lower:
-            plan_res = dict(DEFAULT_PLAN_RESPONSE)
-            plan_res["title_options"] = [
-                "Construir tus propias herramientas: el valor de crear agentes a tu medida",
-                "De la cabeza al ordenador: cómo colaborar con agentes para redactar en Substack",
-                "Sacar las ideas de la cabeza sin perder tu voz"
-            ]
-            plan_res["central_message"] = "Crear un sistema de agentes colaboradores para convertir notas sueltas en artículos auténticos."
-            return json.dumps(plan_res, ensure_ascii=False)
+            topic = clean_idea if clean_idea else "esta reflexión"
+            title_1 = f"Reflexiones sobre {topic.lower()[:50]}" if len(topic) > 5 else "Reflexiones fuera de mi cabeza"
+            title_2 = f"De la idea a la práctica: {topic.lower()[:45]}" if len(topic) > 5 else "De la teoría a la versión 0.1"
+            title_3 = f"Lo que aprendí sobre {topic.lower()[:40]}" if len(topic) > 5 else "Aprender construyendo cosas reales"
+
+            return json.dumps({
+                "format": "article",
+                "title_options": [title_1, title_2, title_3],
+                "central_message": f"Profundizar en {topic} conectando experiencias reales y evitando simplificaciones vacías.",
+                "opening_direction": f"Iniciar con una observación directa y sincera sobre {topic}.",
+                "key_points": [
+                    f"El contexto inicial y por qué nos preocupa este tema: {topic}",
+                    "Las fricciones prácticas y dudas que surgen al intentar aplicarlo",
+                    "Una conclusión reflexiva para seguir explorando con criterio propio"
+                ],
+                "ending_direction": "Cierre abierto y sutil sin moralejas pretenciosas."
+            }, ensure_ascii=False)
 
         # 5. Detección de Notas
         elif "generate note" in prompt_lower or "format\": \"note" in prompt_lower:
+            topic = clean_idea if clean_idea else "esta idea"
             return json.dumps({
                 "format": "note",
                 "title": None,
-                "content": "Una reflexión rápida: construir tus propias herramientas no es para complicarte la vida, sino para eliminar la fricción entre tener una idea en la cabeza y verla estructurada sin perder tu voz."
+                "content": f"Una reflexión rápida sobre {topic}: a veces nos quedamos atascados refinando conceptos en la cabeza. El verdadero aprendizaje ocurre cuando ponemos a prueba esta visión en la práctica y observamos los resultados con honestidad."
             }, ensure_ascii=False)
 
         # 6. Detección de Artículos
         elif "generate article" in prompt_lower or "prompt: article" in prompt_lower or "redacta un artículo completo" in prompt_lower or "article" in prompt_lower:
+            title_val = ""
+            for marker in ["Título Elegido / Asignado:", "Título Elegido:", "chosen_title:", "Título del Artículo:"]:
+                if marker in prompt:
+                    try:
+                        title_val = prompt.split(marker)[1].split('\n')[0].strip(' "\'-*')
+                        if title_val and len(title_val) > 2:
+                            break
+                    except Exception:
+                        pass
+
+            if not title_val or title_val == "Sin título":
+                title_val = f"Reflexiones sobre {clean_idea[:50]}" if clean_idea else "Reflexiones fuera de mi cabeza"
+
+            message_val = ""
+            if "Mensaje Central:" in prompt:
+                try:
+                    message_val = prompt.split("Mensaje Central:")[1].split('\n')[0].strip(' "\'-*')
+                except Exception:
+                    pass
+
+            key_points_text = ""
+            if "Puntos Clave a Desarrollar:" in prompt:
+                try:
+                    after_kp = prompt.split("Puntos Clave a Desarrollar:")[1]
+                    key_points_text = after_kp.split("##")[0].split("Respuestas del Autor")[0].strip()
+                except Exception:
+                    pass
+
+            answers_text = ""
+            if "Respuestas del Autor a Preguntas Socráticas:" in prompt:
+                try:
+                    after_ans = prompt.split("Respuestas del Autor a Preguntas Socráticas:")[1]
+                    answers_text = after_ans.split("##")[0].strip()
+                except Exception:
+                    pass
+
+            idea_text = clean_idea or "esta reflexión"
+            
+            import re
+            clean_title = re.sub(r'^(?:Reflexiones sobre\s*)+', 'Reflexiones sobre ', title_val, flags=re.IGNORECASE)
+            clean_title = re.sub(r'^(?:[-*•]\s*|\d+\.\s*|(?:Pensamiento|Reflexión|Idea)\s*\d*:?\s*)', '', clean_title, flags=re.IGNORECASE).strip()
+            if clean_title:
+                clean_title = clean_title[0].upper() + clean_title[1:]
+
+            openings = [
+                f"A veces la mejor manera de entender un problema es ponerlo por escrito. Últimamente he estado pensando sobre {idea_text.lower() if idea_text[0].isupper() else idea_text}.",
+                f"Hay una cuestión sobre {idea_text.lower()[:80] if len(idea_text) > 5 else 'este tema'} que nos obliga a mirar más allá de la teoría. Cuando te paras a analizarlo con calma, la distancia entre lo que pensamos y lo que ejecutamos se vuelve evidente.",
+                f"En cualquier proceso de creación, las intuiciones más valiosas surgen cuando atamos cabos entre ideas que parecían sueltas. Hoy quiero profundizar en {idea_text.lower()[:80] if len(idea_text) > 5 else 'esta reflexión'}."
+            ]
+            opening_sentence = openings[abs(hash(idea_text)) % len(openings)]
+
+            kp_lines = [re.sub(r'^(?:[-*•]\s*|\d+\.\s*|(?:Pensamiento|Reflexión|Idea)\s*\d*:?\s*)', '', l, flags=re.IGNORECASE).strip() for l in key_points_text.splitlines() if l.strip()]
+            sec1_title = kp_lines[0] if len(kp_lines) > 0 and len(kp_lines[0]) > 3 else "De la observación inicial a la práctica"
+            sec2_title = kp_lines[1] if len(kp_lines) > 1 and len(kp_lines[1]) > 3 else "Aprendizajes y tensiones durante el proceso"
+            sec3_title = kp_lines[2] if len(kp_lines) > 2 and len(kp_lines[2]) > 3 else "Un cambio de perspectiva con criterio propio"
+
+            ans_section = f"\n\nAl responder a las preguntas de profundización, el escenario se aclara: {answers_text.replace(chr(10), ' ')}" if answers_text and "Sin respuestas" not in answers_text and len(answers_text) > 3 else ""
+
             article_body = (
-                "# Construir tus propias herramientas: el valor de crear agentes a tu medida\n\n"
-                "Llevo tiempo dándole vueltas a la diferencia entre adaptar nuestro flujo de trabajo a herramientas de terceros "
-                "o construir un sistema propio que realmente entienda cómo procesamos las ideas.\n\n"
-                "Cuando trabajas en conceptos complejos, el teclado a veces se convierte en un cuello de botella. "
-                "Dictar notas de voz, capturar intuiciones al vuelo y permitir que un grupo de agentes colaboren para ordenar ese material "
-                "no es una cuestión de automatización vacía: es una forma de mantener la autenticidad y sacar las ideas de la cabeza.\n\n"
-                "## De la intuición suelta al sistema articulado\n\n"
-                "Lo importante no está en delegar la escritura en la inteligencia artificial, sino en usarla como caja de resonancia. "
-                "Un agente editorial no debe inventar historias ni imponer un tono corporativo. Su trabajo es formular las preguntas adecuadas, "
-                "desafiar tus premisas mediante entrevistas y estructurar el caos inicial.\n\n"
-                "## Conectar piezas sin perder la voz personal\n\n"
-                "Al integrar notas habladas y textos libres en un mismo cuaderno digital, se reduce la fricción entre la idea inicial "
-                "y el borrador final listo para Substack. Lo verdaderamente valioso es que el resultado siga sonando a ti."
+                f"# {clean_title}\n\n"
+                f"{opening_sentence}\n\n"
+                f"{message_val if message_val else 'Cuando analizas la situación con perspectiva, la clave no está en acumular conceptos teóricos, sino en observar qué ocurre cuando llevamos estas ideas al terreno práctico.'}"
+                f"{ans_section}\n\n"
+                f"## {sec1_title}\n\n"
+                f"Existe una trampa habitual al pensar en esto: asumir que necesitamos tener todo resuelto antes de dar el primer paso. "
+                f"En la práctica, al abordar '{sec1_title.lower()}', descubres que la claridad no precede a la acción, sino que surge directamente de ella.\n\n"
+                f"## {sec2_title}\n\n"
+                f"Al poner a prueba estas ideas, la teoría choca con la realidad. Lo más valioso de '{sec2_title.lower()}' "
+                f"es que los descubrimientos principales casi nunca ocurren durante la planificación inicial, sino durante la ejecución directa.\n\n"
+                f"## {sec3_title}\n\n"
+                f"Al final, lo importante no es aferrarte a una postura rígida, sino mantener el criterio para aprender y ajustar sobre la marcha. "
+                f"Sacar estos pensamientos de la cabeza es el primer paso para construir algo que realmente valga la pena."
             )
 
             return json.dumps({
                 "format": "article",
-                "title": "Construir tus propias herramientas: el valor de crear agentes a tu medida",
+                "title": title_val,
                 "content": article_body
             }, ensure_ascii=False)
 
