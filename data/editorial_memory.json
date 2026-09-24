@@ -9,14 +9,25 @@
     "Evitar finalizar textos con preguntas retóricas.",
     "- No inventar ejemplos, datos o demostraciones que no existan; describir únicamente lo que se ha observado o probado.",
     "No suena a mí y demasiado  texto inventado",
-    "Integrar las notas y modificaciones realizadas directamente en el borrador"
+    "Integrar las notas y modificaciones realizadas directamente en el borrador",
+    "Evitar enumeraciones en tríada que suenen forzadas; preferir construcciones más naturales o dividir la lista en elementos separados.",
+    "Evita enumeraciones de tres ítems consecutivos que suenen forzadas; reescribe la idea con una construcción más natural o separa los elementos.",
+    "Evitar metáforas cliché (como la del \"tren\"), cierres genéricos y vocabulario vago o anglicismos; usar expresiones precisas en español (p.ej., \"lista de comprobación\" en lugar de \"checklist\") y describir acciones concretas en vez de frases como \"dar órdenes claras\".",
+    "Integrar las notas y modificaciones directamente en el borrador, sin crear documentos o versiones separadas.",
+    "- Integrar todas las notas y modificaciones directamente en el borrador, sin crear versiones separadas."
   ],
   "recurring_themes": [],
   "preferred_structures": [],
   "words_to_avoid": [],
   "examples": [],
-  "favorite_expressions": [],
+  "favorite_expressions": [
+    "Redactar con claridad la función de las listas de comprobación, indicando explícitamente que evitan perder el hilo y resaltando la necesidad de identificar claramente las tareas a realizar."
+  ],
   "forbidden_words": [],
   "opening_styles": [],
-  "rhythm_rules": []
+  "rhythm_rules": [
+    "Usar siempre español peninsular (tú, tienes, has probado) evitando el voseo, y no emplear enumeraciones de tres ítems que resulten forzadas; reformular la idea en construcciones más naturales o dividir la lista en elementos separados.",
+    "Mantener los párrafos breves y claros, eliminando repeticiones y redundancias; expresar la idea de forma directa sin alargar innecesariamente.",
+    "Redactar párrafos breves y claros, evitando frases largas; describir la función de las listas de comprobación de forma explícita y concisa."
+  ]
 }

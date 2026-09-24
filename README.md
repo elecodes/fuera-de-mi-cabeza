@@ -26,9 +26,12 @@ fuera-de-mi-cabeza/
 ├── scripts/
 │   └── update_diagram_metadata.py # Actualizador automático de metadatos de versión y Git
 ├── data/
-│   ├── editorial_profile.md     # Perfil e identidad del autor, reglas de ritmo y antipatrones IA
+│   ├── voice_guide.md           # Guía de voz, hábitos de escritura, ritmo y antipatrones a evitar
+│   ├── voice_samples.md         # Muestras reales de texto del autor (gitignored por privacidad)
+│   ├── editorial_profile.md     # Perfil e identidad del autor
 │   ├── editorial_memory.json    # Persistencia local de reglas y preferencias de estilo
 │   └── sessions/                # Persistencia local JSON de sesiones
+
 ├── app/
 │   ├── main.py                  # Endpoints FastAPI, Web UI y rutas de diagramas
 │   ├── models/

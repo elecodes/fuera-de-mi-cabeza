@@ -18,11 +18,16 @@ When Groq requests failed, the pipeline fell back to `MockLLMClient`, which was 
 ## Decision Outcome
 
 1. **`EditorialMemory` Architecture (`app/memory/editorial_memory.py`)**: Designed a structured, JSON-backed persistent store for author voice preferences categorized into `favorite_expressions`, `forbidden_words`, `style_rules`, `rhythm_rules`, and `opening_styles`. Exposed REST API endpoints (`GET /api/memory`, `POST /api/memory/preference`, `DELETE /api/memory/preference`, and `/api/ideas/{session_id}/learn-preference`) and integrated a Web UI *"🧠 Tu Voz y Expresiones Aprendidas"* management panel.
-2. **Prompt Payload Condensation**: Refactored `_load_profile()` across `DraftGenerator`, `ContentPlanner`, and `VoiceEditor` to extract core guidelines while suppressing verbatim few-shot text blocks, dropping prompt payloads from ~31KB to ~11KB and eliminating Groq 413/429 errors.
-3. **Draft Quality & Fallback Fixes**: Refactored `app/prompts/generate_note.md` to guarantee well-developed, multi-paragraph Substack Notes. Updated `MockLLMClient` to derive clean topic summaries rather than echoing raw input prompt text verbatim.
+2. **Modularized `voice_guide.md` & Gitignored `voice_samples.md`**: Extracted positive writing habits, cadence rules, and Peninsular tone into `data/voice_guide.md`. Added support for injecting real author writing samples from `data/voice_samples.md` (gitignored for privacy) into Note, Article, and Revision prompts.
+3. **`[FALTA: ...]` Sincerity Rule & Concentrated Anti-Patterns**: Updated `app/prompts/generate_article.md` to mandate marking missing information with `[FALTA: ...]` instead of hallucinating details or adding filler. Moved prohibition lists into `data/voice_guide.md` to keep prompts focused on positive writing.
+4. **Prompt Payload Condensation**: Refactored `_load_profile()` across `DraftGenerator`, `ContentPlanner`, and `VoiceEditor` to extract core guidelines while suppressing verbatim few-shot text blocks, dropping prompt payloads from ~31KB to ~11KB and eliminating Groq 413/429 errors.
+5. **Flat Layout Package Discovery Fix**: Added `[tool.setuptools] packages = ["app"]` in `pyproject.toml` to fix editable installation (`pip install -e .[dev]`).
 
 ### Positive Consequences
 
 * **Continuous Learning**: The editorial agent continuously learns from author feedback and applies learned style preferences to all future draft generations.
+* **Privacy & Real Samples**: Real writing samples in `data/voice_samples.md` guide the model without risking privacy leakage on public Git repositories.
+* **Sincerity over Hallucination**: Articles mark missing context explicitly with `[FALTA: ...]` rather than inflating word count with generalities.
 * **Reliable Groq LLM Execution**: Reduced prompt size ensures 100% success rate on Groq free-tier models with response latency under 1.5 seconds.
-* **Coherent & Articulate Drafts**: Drafts synthesize and expand user thoughts into polished Peninsular Spanish prose without verbatim prompt echo or spelling artifacts.
+* **Clean Editable Installation**: `pip install -e .[dev]` installs seamlessly without setuptools package discovery collisions.
+

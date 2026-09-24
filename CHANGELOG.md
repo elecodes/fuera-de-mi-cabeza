@@ -9,15 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - **Continuous Editorial Memory (`EditorialMemory`)**: Introduced structured JSON persistence (`data/editorial_memory.json`) capturing author voice preferences across five key dimensions (`favorite_expressions`, `forbidden_words`, `style_rules`, `rhythm_rules`, `opening_styles`).
+- **Dedicated Voice Guide & Real Samples (`voice_guide.md` & `voice_samples.md`)**: Modularized voice rules into `data/voice_guide.md` focusing on positive writing habits, rhythm, and Peninsular Spanish tone. Added gitignored `data/voice_samples.md` for real author text samples, automatically injected into Note, Article, and Revision prompts.
 - **Personalized Voice Learning REST Endpoints**: Added `/api/memory`, `/api/memory/preference`, `/api/ideas/{session_id}/learn-preference`, and deletion endpoints to capture and manage author feedback continuously.
 - **Web UI Memory Management Panel**: Integrated *"🧠 Tu Voz y Expresiones Aprendidas"* panel in `index.html` featuring interactive badge deletion, custom preference input, and auto-learning toggle.
 
 ### Changed
+- **Article Prompt `[FALTA: ...]` Rule**: Refactored `app/prompts/generate_article.md` to strictly enforce marking missing information or context with `[FALTA: ...]` instead of inventing facts or adding filler text.
+- **Concentrated Anti-Pattern Rules**: Moved verbose prohibition lists from individual prompts into `data/voice_guide.md`, allowing prompts to focus on positive writing guidance.
 - **65% Prompt Payload Reduction**: Optimized profile loading in `DraftGenerator`, `ContentPlanner`, and `VoiceEditor` to extract core guidelines while stripping verbose verbatim few-shot text blocks, dropping prompt payloads from 31KB to ~11KB and eliminating Groq API 413/429 errors.
 - **Enhanced Substack Note Synthesis Prompt**: Refactored `app/prompts/generate_note.md` to strictly enforce 2-3 paragraph articulate note synthesis, natural Peninsular Spanish grammar, and custom opening style adherence.
 
 ### Fixed
+- **Flat Layout Setuptools Build**: Added `[tool.setuptools] packages = ["app"]` in `pyproject.toml` to fix `pip install -e .[dev]` in flat repository layout.
 - **Mock LLM Raw Prompt Echoing**: Fixed `MockLLMClient` topic extraction to prevent verbatim prompt text dumping into generated titles and introductory paragraphs during provider fallback.
+
 
 ## [0.4.1] - 2026-09-22
 
