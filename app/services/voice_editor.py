@@ -30,35 +30,30 @@ class VoiceEditor:
         )
 
     def _load_profile(self) -> str:
-        profile = ""
-        if self.profile_path.exists():
-            raw_profile = self.profile_path.read_text(encoding="utf-8")
-            lines = raw_profile.splitlines()
-            if "### Ejemplos Few-Shot: Escritura Robótica vs. Escritura Natural" in raw_profile:
-                header_part = []
-                tail_part = []
-                in_examples = False
-                for line in lines:
-                    if "### Ejemplos Few-Shot: Escritura Robótica vs. Escritura Natural" in line:
-                        in_examples = True
-                        continue
-                    if in_examples and line.startswith("## Ritmo y cadencia"):
-                        in_examples = False
-                    if not in_examples:
-                        if line.startswith("## Ritmo y cadencia") or tail_part:
-                            tail_part.append(line)
-                        else:
-                            header_part.append(line)
-                profile = "\n".join(header_part + tail_part)
-            else:
-                profile = raw_profile
-        else:
-            profile = "Perfil Editorial no especificado."
+        base_dir = Path(__file__).resolve().parent.parent.parent
+        guide_path = base_dir / "data" / "voice_guide.md"
+        samples_path = base_dir / "data" / "voice_samples.md"
 
-        memory_ctx = self.editorial_memory.get_context()
+        parts = []
+        if guide_path.exists():
+            parts.append(guide_path.read_text(encoding="utf-8"))
+        elif self.profile_path.exists():
+            raw_profile = self.profile_path.read_text(encoding="utf-8")
+            parts.append(raw_profile)
+        else:
+            parts.append("Perfil Editorial no especificado.")
+
+        if samples_path.exists():
+            samples_content = samples_path.read_text(encoding="utf-8").strip()
+            if samples_content and "[Pega aquí" not in samples_content:
+                parts.append(f"## Muestras Reales de Voz del Autor:\n{samples_content}")
+
+        memory_ctx = self.editorial_memory.get_context() if self.editorial_memory else ""
         if memory_ctx:
-            return f"{profile}\n\n{memory_ctx}"
-        return profile
+            parts.append(memory_ctx)
+
+        return "\n\n".join(parts)
+
 
     @staticmethod
     def _detect_intent(draft_content: str, feedback_text: str) -> str:
