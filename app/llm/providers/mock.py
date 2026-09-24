@@ -305,12 +305,47 @@ class MockLLMClient:
             }, ensure_ascii=False)
 
         # 5. Detección de Notas
-        elif "generate note" in prompt_lower or "format\": \"note" in prompt_lower:
-            topic = clean_idea if clean_idea else "esta idea"
+        elif "generate note" in prompt_lower or 'format": "note' in prompt_lower or "píldora reflexiva" in prompt_lower:
+            key_points_text = ""
+            if "Puntos Clave:" in prompt:
+                try:
+                    after_kp = prompt.split("Puntos Clave:")[1]
+                    key_points_text = after_kp.split("##")[0].split("Respuestas del Autor")[0].strip()
+                except Exception:
+                    pass
+
+            answers_text = ""
+            if "Respuestas del Autor:" in prompt:
+                try:
+                    after_ans = prompt.split("Respuestas del Autor:")[1]
+                    answers_text = after_ans.split("##")[0].strip()
+                except Exception:
+                    pass
+
+            topic = clean_idea if clean_idea else "esta reflexión"
+
+            import re
+            kp_lines = [re.sub(r'^(?:[-*•]\s*|\d+\.\s*|(?:Pensamiento|Reflexión|Idea)\s*\d*:?\s*)', '', l, flags=re.IGNORECASE).strip() for l in key_points_text.splitlines() if l.strip()]
+
+            p1 = f"Al pararme a analizar {topic.lower() if topic[0].isupper() else topic}, queda claro que las intuiciones iniciales suelen necesitar el filtro de la práctica. En el papel todo parece encajar, pero el verdadero valor aparece cuando observamos el comportamiento real."
+
+            if kp_lines:
+                p2 = f"En la práctica, {kp_lines[0].lower() if kp_lines[0][0].isupper() else kp_lines[0]}. " + (f"Además, {kp_lines[1].lower() if kp_lines[1][0].isupper() else kp_lines[1]}." if len(kp_lines) > 1 else "Ahí es donde se aprende a ajustar sobre la marcha sin quedarse atrapado en supuestos.")
+            else:
+                p2 = "La cuestión es que acumular ideas en la cabeza no sirve de nada si no nos atrevemos a probarlas. La fricción inicial no es un problema del proceso, sino el precio de entrada para aprender algo útil."
+
+            if answers_text and "Sin respuestas" not in answers_text and len(answers_text) > 3:
+                clean_ans = answers_text.replace('\n', ' ').strip('- *')
+                p3 = f"Al responder a estas preguntas, el escenario se aclara: {clean_ans}. Sacar estos pensamientos de la cabeza es el primer paso para construir con criterio propio."
+            else:
+                p3 = "Al final, sacar estos pensamientos de la cabeza y ponerlos a prueba es lo único que nos permite avanzar con criterio propio."
+
+            note_body = f"{p1}\n\n{p2}\n\n{p3}"
+
             return json.dumps({
                 "format": "note",
                 "title": None,
-                "content": f"Una reflexión rápida sobre {topic}: a veces nos quedamos atascados refinando conceptos en la cabeza. El verdadero aprendizaje ocurre cuando ponemos a prueba esta visión en la práctica y observamos los resultados con honestidad."
+                "content": note_body
             }, ensure_ascii=False)
 
         # 6. Detección de Artículos

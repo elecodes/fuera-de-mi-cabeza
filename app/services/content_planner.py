@@ -28,7 +28,26 @@ class ContentPlanner:
     def _load_profile(self) -> str:
         profile = ""
         if self.profile_path.exists():
-            profile = self.profile_path.read_text(encoding="utf-8")
+            raw_profile = self.profile_path.read_text(encoding="utf-8")
+            lines = raw_profile.splitlines()
+            if "### Ejemplos Few-Shot: Escritura Robótica vs. Escritura Natural" in raw_profile:
+                header_part = []
+                tail_part = []
+                in_examples = False
+                for line in lines:
+                    if "### Ejemplos Few-Shot: Escritura Robótica vs. Escritura Natural" in line:
+                        in_examples = True
+                        continue
+                    if in_examples and line.startswith("## Ritmo y cadencia"):
+                        in_examples = False
+                    if not in_examples:
+                        if line.startswith("## Ritmo y cadencia") or tail_part:
+                            tail_part.append(line)
+                        else:
+                            header_part.append(line)
+                profile = "\n".join(header_part + tail_part)
+            else:
+                profile = raw_profile
         else:
             profile = "Perfil Editorial no especificado."
 
