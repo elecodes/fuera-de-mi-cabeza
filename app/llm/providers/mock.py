@@ -360,8 +360,12 @@ class MockLLMClient:
                     except Exception:
                         pass
 
-            if not title_val or title_val == "Sin título":
-                title_val = f"Reflexiones sobre {clean_idea[:50]}" if clean_idea else "Reflexiones fuera de mi cabeza"
+            topic_summary = clean_idea.split('.')[0].split('..')[0].strip() if clean_idea else "esta reflexión"
+            if len(topic_summary) > 50:
+                topic_summary = topic_summary[:50].rsplit(' ', 1)[0] + "..."
+
+            if not title_val or title_val == "Sin título" or "quiero contar" in title_val.lower():
+                title_val = f"Reflexiones sobre {topic_summary}" if topic_summary else "Reflexiones fuera de mi cabeza"
 
             message_val = ""
             if "Mensaje Central:" in prompt:
@@ -386,8 +390,6 @@ class MockLLMClient:
                 except Exception:
                     pass
 
-            idea_text = clean_idea or "esta reflexión"
-            
             import re
             clean_title = re.sub(r'^(?:Reflexiones sobre\s*)+', 'Reflexiones sobre ', title_val, flags=re.IGNORECASE)
             clean_title = re.sub(r'^(?:[-*•]\s*|\d+\.\s*|(?:Pensamiento|Reflexión|Idea)\s*\d*:?\s*)', '', clean_title, flags=re.IGNORECASE).strip()
@@ -395,11 +397,11 @@ class MockLLMClient:
                 clean_title = clean_title[0].upper() + clean_title[1:]
 
             openings = [
-                f"A veces la mejor manera de entender un problema es ponerlo por escrito. Últimamente he estado pensando sobre {idea_text.lower() if idea_text[0].isupper() else idea_text}.",
-                f"Hay una cuestión sobre {idea_text.lower()[:80] if len(idea_text) > 5 else 'este tema'} que nos obliga a mirar más allá de la teoría. Cuando te paras a analizarlo con calma, la distancia entre lo que pensamos y lo que ejecutamos se vuelve evidente.",
-                f"En cualquier proceso de creación, las intuiciones más valiosas surgen cuando atamos cabos entre ideas que parecían sueltas. Hoy quiero profundizar en {idea_text.lower()[:80] if len(idea_text) > 5 else 'esta reflexión'}."
+                f"A veces la mejor manera de entender un problema es ponerlo por escrito. Últimamente he estado pensando sobre {topic_summary.lower() if topic_summary[0].isupper() else topic_summary}.",
+                f"Hay una cuestión sobre {topic_summary.lower() if topic_summary[0].isupper() else topic_summary} que nos obliga a mirar más allá de la teoría. Cuando te paras a analizarlo con calma, la distancia entre lo que pensamos y lo que ejecutamos se vuelve evidente.",
+                f"En cualquier proceso de creación, las intuiciones más valiosas surgen cuando atamos cabos entre ideas que parecían sueltas. Hoy quiero profundizar en {topic_summary.lower() if topic_summary[0].isupper() else topic_summary}."
             ]
-            opening_sentence = openings[abs(hash(idea_text)) % len(openings)]
+            opening_sentence = openings[abs(hash(topic_summary)) % len(openings)]
 
             kp_lines = [re.sub(r'^(?:[-*•]\s*|\d+\.\s*|(?:Pensamiento|Reflexión|Idea)\s*\d*:?\s*)', '', l, flags=re.IGNORECASE).strip() for l in key_points_text.splitlines() if l.strip()]
             sec1_title = kp_lines[0] if len(kp_lines) > 0 and len(kp_lines[0]) > 3 else "De la observación inicial a la práctica"
