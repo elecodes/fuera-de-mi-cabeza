@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.4.1)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.5.0)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -95,3 +95,10 @@ El botón **"🔍 Auditar Voz Editorial"** analiza tu texto en tiempo real contr
 - **Voz Peninsular:** Redacción en **Español de España (castellano peninsular)** (*tú, tienes, has vivido*).
 - **Varianza de Cadencia:** Oraciones cortas de énfasis combinadas espontáneamente con explicaciones matizadas.
 - **Filtros Antipatrones IA:** Cero antítesis ("No es X, es Y"), cero introducciones vacías, cero frases triádicas, cero muletillas cautelosas, cero cierres circulares y cero emojis decorativos.
+
+### 4. Aprendizaje Continuo & Memoria Editorial (`EditorialMemory`)
+El agente aprende continuamente de tu feedback y ajusta su estilo post a post:
+- **Persistencia en JSON (`data/editorial_memory.json`):** Almacena muletillas favoritas, palabras prohibidas, reglas de estilo/ritmo y formas de abrir tus notas (ej. *"Llevo bastante tiempo dándole vueltas a esta intuición: ..."*).
+- **Panel Interactivo de Gestión de Voz:** En la UI web puedes añadir o eliminar reglas de estilo en tiempo real con un solo clic.
+- **Optimización de Payload (65% Reducción):** Extrae las directrices clave de voz omitiendo bloques de texto repetitivos, permitiendo respuestas en menos de 1.5s en la API de Groq sin errores 413/429.
+

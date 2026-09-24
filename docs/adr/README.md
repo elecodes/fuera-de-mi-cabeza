@@ -12,3 +12,5 @@ This directory contains records of major architectural decisions made in the "Fu
 | [0005](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0005-optional-adversarial-grill-my-argument-interview-mode.md) | Optional Adversarial "Grill My Argument" Interview Mode | Accepted | 2026-09-17 |
 | [0006](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0006-webm-audio-transcription-and-resilient-llm-fallback-pipeline.md) | WebM Audio Transcription & Resilient Multi-Tier LLM Fallback Pipeline | Accepted | 2026-09-21 |
 | [0007](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0007-in-place-draft-revisions-omniroute-process-lifecycle-and-markdown-tab-preview.md) | In-Place Draft Revisions, OmniRoute Process Lifecycle, and Markdown Tab Preview | Accepted | 2026-09-22 |
+| [0008](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0008-continuous-editorial-memory-and-personalized-voice-learning.md) | Continuous Editorial Memory, Personalized Voice Learning, and Prompt Payload Condensation | Accepted | 2026-09-24 |
+
