@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.5.0)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.5.1)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -42,12 +42,14 @@ fuera-de-mi-cabeza/
 │   │   ├── voice_audit.py       # Modelo de reporte de auditoría editorial
 │   │   └── session.py           # Modelo de sesión editorial
 │   ├── services/
+│   │   ├── voice_profile.py     # Carga centralizada de voz (voice_guide, voice_samples y memory)
 │   │   ├── idea_explorer.py     # Analiza ideas, desglosa pensamientos y sintetiza arcos
 │   │   ├── content_planner.py   # Genera el plan según el arco narrativo elegido
 │   │   ├── draft_generator.py   # Redacta Substack Notes o Artículos
-│   │   ├── voice_auditor.py     # Audita la naturalidad y antipatrones de IA (editorial_profile.md)
+│   │   ├── voice_auditor.py     # Audita la naturalidad y antipatrones de IA
 │   │   ├── voice_editor.py      # Ajusta el texto según tu feedback
 │   │   └── session_manager.py   # Guarda el estado de la sesión
+
 │   ├── llm/
 │   │   ├── client.py            # Protocol LLMClient
 │   │   └── providers/           # Mock LLM y cliente HTTPX OpenAI-compatible

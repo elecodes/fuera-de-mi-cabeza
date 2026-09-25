@@ -20,11 +20,14 @@
   "favorite_expressions": [
     "Explicar con claridad qué resuelve una lista de comprobación: evita perder el hilo y deja claras las tareas pendientes."
   ],
-  "forbidden_words": [],
+  "forbidden_words": [
+    "No utilizar formulaciones antitéticas del tipo 'No se trata de X, sino de Y' y suprimir cualquier referencia redundante que describa la lista de comprobación como un mapa interno."
+  ],
   "opening_styles": [],
   "rhythm_rules": [
     "Español peninsular (tú, tienes, has probado), sin voseo.",
     "Evitar enumeraciones de tres ítems forzadas; reformular la idea o separar los elementos.",
-    "Párrafos breves y claros, sin repeticiones ni redundancias."
+    "Párrafos breves y claros, sin repeticiones ni redundancias.",
+    "Escribir párrafos más breves, claros y cercanos, evitando construcciones confusas y asegurando que el mensaje sea fácilmente comprensible."
   ]
 }

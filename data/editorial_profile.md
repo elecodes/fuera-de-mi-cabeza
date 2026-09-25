@@ -22,3 +22,9 @@ versión que realmente usan los prompts).
 - Evitar enumeraciones de tres ítems forzadas.
 - Párrafos breves y claros, sin repeticiones ni redundancias.
 - Explicar con claridad qué resuelve una lista de comprobación.
+
+
+- **Preferencia aprendida**: Escribir párrafos más breves, claros y cercanos, evitando construcciones confusas y asegurando que el mensaje sea fácilmente comprensible.
+
+
+- **Preferencia aprendida**: No utilizar formulaciones antitéticas del tipo 'No se trata de X, sino de Y' y suprimir cualquier referencia redundante que describa la lista de comprobación como un mapa interno.

@@ -5,7 +5,7 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.5.1] - 2026-09-25
 
 ### Added
 - **`app/services/voice_profile.py`**: única función (`load_voice_profile`) que combina `voice_guide.md`, `voice_samples.md` y `editorial_memory.json`. Sustituye seis implementaciones de `_load_profile` que estaban duplicadas o incompletas.
