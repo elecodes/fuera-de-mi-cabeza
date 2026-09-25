@@ -4,6 +4,7 @@ from app.llm.client import LLMClient
 from app.models.analysis import IdeaAnalysis, NarrativeArc
 from app.models.content_plan import ContentPlan
 from app.memory.editorial_memory import EditorialMemory
+from app.services.voice_profile import load_voice_profile
 
 
 class ContentPlanner:
@@ -26,29 +27,7 @@ class ContentPlanner:
         self.prompt_path = Path(prompt_path) if prompt_path else base_dir / "app" / "prompts" / "content_plan.md"
 
     def _load_profile(self) -> str:
-        base_dir = Path(__file__).resolve().parent.parent.parent
-        guide_path = base_dir / "data" / "voice_guide.md"
-        samples_path = base_dir / "data" / "voice_samples.md"
-
-        parts = []
-        if guide_path.exists():
-            parts.append(guide_path.read_text(encoding="utf-8"))
-        elif self.profile_path.exists():
-            raw_profile = self.profile_path.read_text(encoding="utf-8")
-            parts.append(raw_profile)
-        else:
-            parts.append("Perfil Editorial no especificado.")
-
-        if samples_path.exists():
-            samples_content = samples_path.read_text(encoding="utf-8").strip()
-            if samples_content and "[Pega aquí" not in samples_content:
-                parts.append(f"## Muestras Reales de Voz del Autor:\n{samples_content}")
-
-        memory_ctx = self.editorial_memory.get_context() if self.editorial_memory else ""
-        if memory_ctx:
-            parts.append(memory_ctx)
-
-        return "\n\n".join(parts)
+        return load_voice_profile(self.editorial_memory, self.profile_path)
 
 
     def _load_prompt_template(self) -> str:

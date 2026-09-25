@@ -5,6 +5,18 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **`app/services/voice_profile.py`**: única función (`load_voice_profile`) que combina `voice_guide.md`, `voice_samples.md` y `editorial_memory.json`. Sustituye seis implementaciones de `_load_profile` que estaban duplicadas o incompletas.
+- `VoiceAuditor`, `ArgumentGriller` e `IdeaExplorer` reciben ahora `editorial_memory`, así que el auditor de voz, la entrevista adversarial y el análisis de idea ven las mismas reglas aprendidas que el generador y el editor.
+
+### Fixed
+- **Memoria editorial envenenada por síntesis fallida:** cuando la llamada al LLM para sintetizar una regla fallaba, `save_preference_to_profile` guardaba el comentario del autor tal cual (con erratas y a medio cortar) como si fuera una regla limpia. Ahora reintenta una vez y, si no logra una síntesis válida, lanza un error en vez de guardar nada.
+- **`editorial_profile.md` se sobrescribía con todo el contexto en cada feedback:** cada corrección volcaba `voice_guide.md` + `voice_samples.md` + `editorial_memory.json` completos dentro de `editorial_profile.md`, duplicando contenido y haciendo crecer el archivo sin control. Ahora solo se le añade la nueva regla en una línea.
+- **Deduplicación por similitud, no solo exacta:** `EditorialMemory.add_preference` descartaba únicamente duplicados exactos, así que variantes casi idénticas de la misma regla ("evitar tríos forzados" repetido tres veces con distinta redacción) se acumulaban. Ahora usa una comparación por similitud.
+- Limpieza manual, una sola vez, de `data/editorial_memory.json` y `data/editorial_profile.md`: se han consolidado y reescrito las reglas que habían quedado mal formadas o duplicadas.
+
 ## [0.5.0] - 2026-09-24
 
 ### Added

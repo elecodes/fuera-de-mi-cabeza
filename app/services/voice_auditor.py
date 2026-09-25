@@ -2,6 +2,8 @@ import json
 import re
 from pathlib import Path
 from app.llm.client import LLMClient
+from app.memory.editorial_memory import EditorialMemory
+from app.services.voice_profile import load_voice_profile
 from app.models.voice_audit import VoiceAuditReport, VoiceAuditIssue
 
 
@@ -33,18 +35,18 @@ class VoiceAuditor:
     def __init__(
         self,
         llm_client: LLMClient,
+        editorial_memory: EditorialMemory | None = None,
         profile_path: Path | str | None = None,
         prompt_path: Path | str | None = None,
     ):
         self.llm_client = llm_client
+        self.editorial_memory = editorial_memory
         base_dir = Path(__file__).resolve().parent.parent.parent
         self.profile_path = Path(profile_path) if profile_path else base_dir / "data" / "editorial_profile.md"
         self.prompt_path = Path(prompt_path) if prompt_path else base_dir / "app" / "prompts" / "audit_voice.md"
 
     def _load_profile(self) -> str:
-        if self.profile_path.exists():
-            return self.profile_path.read_text(encoding="utf-8")
-        return "Perfil Editorial no especificado."
+        return load_voice_profile(self.editorial_memory, self.profile_path)
 
     def _load_prompt_template(self) -> str:
         if self.prompt_path.exists():

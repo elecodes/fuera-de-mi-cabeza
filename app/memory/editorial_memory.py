@@ -1,3 +1,4 @@
+import difflib
 import json
 from pathlib import Path
 
@@ -85,6 +86,8 @@ class EditorialMemory:
 
         return "\n".join(lines)
 
+    _DUPLICATE_SIMILARITY_THRESHOLD = 0.8
+
     def add_preference(self, category: str, preference: str) -> None:
         if not preference or not preference.strip():
             return
@@ -95,7 +98,12 @@ class EditorialMemory:
             if category not in data:
                 data[category] = []
             clean_pref = preference.strip()
-            if clean_pref not in data[category]:
+            is_duplicate = any(
+                difflib.SequenceMatcher(None, clean_pref.lower(), existing.lower()).ratio()
+                >= self._DUPLICATE_SIMILARITY_THRESHOLD
+                for existing in data[category]
+            )
+            if not is_duplicate:
                 data[category].append(clean_pref)
             self.memory_file.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
         except Exception as e:

@@ -3,6 +3,7 @@ from pathlib import Path
 from app.llm.client import LLMClient
 from app.models.draft import Draft
 from app.memory.editorial_memory import EditorialMemory
+from app.services.voice_profile import load_voice_profile
 
 
 class VoiceEditor:
@@ -30,29 +31,7 @@ class VoiceEditor:
         )
 
     def _load_profile(self) -> str:
-        base_dir = Path(__file__).resolve().parent.parent.parent
-        guide_path = base_dir / "data" / "voice_guide.md"
-        samples_path = base_dir / "data" / "voice_samples.md"
-
-        parts = []
-        if guide_path.exists():
-            parts.append(guide_path.read_text(encoding="utf-8"))
-        elif self.profile_path.exists():
-            raw_profile = self.profile_path.read_text(encoding="utf-8")
-            parts.append(raw_profile)
-        else:
-            parts.append("Perfil Editorial no especificado.")
-
-        if samples_path.exists():
-            samples_content = samples_path.read_text(encoding="utf-8").strip()
-            if samples_content and "[Pega aquí" not in samples_content:
-                parts.append(f"## Muestras Reales de Voz del Autor:\n{samples_content}")
-
-        memory_ctx = self.editorial_memory.get_context() if self.editorial_memory else ""
-        if memory_ctx:
-            parts.append(memory_ctx)
-
-        return "\n\n".join(parts)
+        return load_voice_profile(self.editorial_memory, self.profile_path)
 
 
     @staticmethod
@@ -146,47 +125,57 @@ class VoiceEditor:
         else:
             cat = "style_rules"
 
-        synthesized_rule = user_correction.strip()
+        if not self.learn_prompt_path.exists():
+            raise FileNotFoundError(f"No se encontró el template de síntesis en {self.learn_prompt_path}")
 
-        if self.learn_prompt_path.exists():
-            prompt_template = self.learn_prompt_path.read_text(encoding="utf-8")
-            formatted_prompt = (
-                prompt_template.replace("{editorial_profile}", editorial_profile)
-                .replace("{user_correction}", user_correction)
-            )
+        prompt_template = self.learn_prompt_path.read_text(encoding="utf-8")
+        formatted_prompt = (
+            prompt_template.replace("{editorial_profile}", editorial_profile)
+            .replace("{user_correction}", user_correction)
+        )
 
-            system_prompt = (
-                "Eres el sintetizador de reglas para el Perfil Editorial de 'Fuera de mi cabeza'. "
-                "Responde SIEMPRE con un objeto JSON válido con la estructura solicitada."
-            )
+        system_prompt = (
+            "Eres el sintetizador de reglas para el Perfil Editorial de 'Fuera de mi cabeza'. "
+            "Responde SIEMPRE con un objeto JSON válido con la estructura solicitada."
+        )
 
+        # Se intenta sintetizar la corrección en una regla limpia hasta dos veces.
+        # Si la síntesis falla, NUNCA se guarda el comentario en bruto del autor como
+        # si fuera una regla: eso es lo que llenó editorial_memory.json de texto sin
+        # limpiar en el pasado. Mejor fallar de forma visible que envenenar la memoria.
+        synthesized_rule: str | None = None
+        last_error: Exception | None = None
+        for _ in range(2):
             try:
                 raw_response = await self.llm_client.generate(
                     prompt=formatted_prompt,
                     system_prompt=system_prompt,
                 )
-
                 clean_json = self._clean_json_output(raw_response)
                 data = json.loads(clean_json)
-                updated_markdown = data.get("updated_profile_markdown")
-                synthesized_rule = data.get("synthesized_rule", user_correction.strip())
+                candidate = data.get("synthesized_rule", "").strip()
+                if candidate:
+                    synthesized_rule = candidate
+                    break
+            except Exception as e:
+                last_error = e
 
-                if not updated_markdown or len(updated_markdown.strip()) < 50:
-                    updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {synthesized_rule}\n"
-            except Exception:
-                updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {synthesized_rule}\n"
-        else:
-            updated_markdown = editorial_profile + f"\n\n- **Preferencia aprendida**: {synthesized_rule}\n"
+        if synthesized_rule is None:
+            raise RuntimeError(
+                "No se pudo sintetizar una regla limpia a partir del feedback. "
+                "No se ha guardado nada en la memoria editorial."
+            ) from last_error
 
-        # Guardar en editorial_profile.md
+        note = f"\n\n- **Preferencia aprendida**: {synthesized_rule}\n"
         if self.profile_path:
             self.profile_path.parent.mkdir(parents=True, exist_ok=True)
-            self.profile_path.write_text(updated_markdown, encoding="utf-8")
+            with self.profile_path.open("a", encoding="utf-8") as fh:
+                fh.write(note)
 
-        # Guardar también en editorial_memory.json
+        # Fuente de verdad para lo que se inyecta en los prompts.
         self.editorial_memory.add_preference(category=cat, preference=synthesized_rule)
 
-        return updated_markdown
+        return synthesized_rule
 
     @staticmethod
     def _clean_json_output(text: str) -> str:

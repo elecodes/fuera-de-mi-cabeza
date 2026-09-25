@@ -238,7 +238,7 @@ async def explore_idea(session_id: str):
 
     try:
         llm = get_llm_client()
-        explorer = IdeaExplorer(llm_client=llm)
+        explorer = IdeaExplorer(llm_client=llm, editorial_memory=editorial_memory)
         analysis = await explorer.analyze(session.original_idea)
 
         session.analysis = analysis
@@ -282,7 +282,7 @@ async def trigger_grill_mode(session_id: str):
 
     try:
         client = get_llm_client()
-        griller = ArgumentGriller(llm_client=client)
+        griller = ArgumentGriller(llm_client=client, editorial_memory=editorial_memory)
         questions = await griller.generate_grill_questions(
             idea=session.original_idea,
             arc_title=session.selected_arc.title,
@@ -387,7 +387,7 @@ async def audit_draft(session_id: str, payload: AuditInput | None = None):
 
     try:
         llm = get_llm_client()
-        auditor = VoiceAuditor(llm_client=llm)
+        auditor = VoiceAuditor(llm_client=llm, editorial_memory=editorial_memory)
         audit_report = await auditor.audit(text_to_audit)
 
         session.voice_audit = audit_report

@@ -2,32 +2,29 @@
   "likes": [],
   "dislikes": [],
   "style_rules": [
-    "Evitar palabras infladas",
-    "no usemos simbolos: «  »",
-    "en que yo mismo ...seria en que yo misma(en femenino.  antithesis: Se detectó una estructura antitética prohibida del tipo \"No se trata de X, sino de Y\". (\"No se trata de delegar la creación, sino de usar la capacidad de la máquina para explorar ángulos que quizás pasarías por alto.\")",
-    "No suena a mí. Es demasiado formal.Ademas me gustaria que en este caso hablara en un tono mas en primera persona, lo que me pasa a mi...quizas a vosotros tambien os pasa",
-    "Evitar finalizar textos con preguntas retóricas.",
-    "- No inventar ejemplos, datos o demostraciones que no existan; describir únicamente lo que se ha observado o probado.",
-    "No suena a mí y demasiado  texto inventado",
-    "Integrar las notas y modificaciones realizadas directamente en el borrador",
-    "Evitar enumeraciones en tríada que suenen forzadas; preferir construcciones más naturales o dividir la lista en elementos separados.",
-    "Evita enumeraciones de tres ítems consecutivos que suenen forzadas; reescribe la idea con una construcción más natural o separa los elementos.",
-    "Evitar metáforas cliché (como la del \"tren\"), cierres genéricos y vocabulario vago o anglicismos; usar expresiones precisas en español (p.ej., \"lista de comprobación\" en lugar de \"checklist\") y describir acciones concretas en vez de frases como \"dar órdenes claras\".",
-    "Integrar las notas y modificaciones directamente en el borrador, sin crear documentos o versiones separadas.",
-    "- Integrar todas las notas y modificaciones directamente en el borrador, sin crear versiones separadas."
+    "Evitar adjetivos y verbos inflados (crucial, esencial, clave, optimizar, potenciar).",
+    "No usar comillas angulares (« »).",
+    "Usar femenino cuando la autora habla de sí misma (yo misma, no yo mismo).",
+    "No inventar ejemplos, datos ni demostraciones que no existan; describir solo lo observado o probado.",
+    "Hablar en primera persona, desde la experiencia propia, en vez de generalizar sobre lo que le pasa a todo el mundo.",
+    "Evitar finalizar los textos con preguntas retóricas.",
+    "Integrar las notas y modificaciones directamente en el borrador, sin crear versiones o documentos separados.",
+    "Evitar metáforas cliché (como la del tren) y cierres genéricos; usar vocabulario preciso en español en vez de anglicismos (lista de comprobación, no checklist).",
+    "Describir acciones concretas en vez de frases vagas como dar órdenes claras.",
+    "Evitar palabras infladas"
   ],
   "recurring_themes": [],
   "preferred_structures": [],
   "words_to_avoid": [],
   "examples": [],
   "favorite_expressions": [
-    "Redactar con claridad la función de las listas de comprobación, indicando explícitamente que evitan perder el hilo y resaltando la necesidad de identificar claramente las tareas a realizar."
+    "Explicar con claridad qué resuelve una lista de comprobación: evita perder el hilo y deja claras las tareas pendientes."
   ],
   "forbidden_words": [],
   "opening_styles": [],
   "rhythm_rules": [
-    "Usar siempre español peninsular (tú, tienes, has probado) evitando el voseo, y no emplear enumeraciones de tres ítems que resulten forzadas; reformular la idea en construcciones más naturales o dividir la lista en elementos separados.",
-    "Mantener los párrafos breves y claros, eliminando repeticiones y redundancias; expresar la idea de forma directa sin alargar innecesariamente.",
-    "Redactar párrafos breves y claros, evitando frases largas; describir la función de las listas de comprobación de forma explícita y concisa."
+    "Español peninsular (tú, tienes, has probado), sin voseo.",
+    "Evitar enumeraciones de tres ítems forzadas; reformular la idea o separar los elementos.",
+    "Párrafos breves y claros, sin repeticiones ni redundancias."
   ]
 }

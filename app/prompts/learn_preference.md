@@ -15,16 +15,15 @@ El autor acaba de hacer una corrección de estilo o preferencia durante una sesi
 
 ## Instrucciones:
 1. Analiza la corrección o preferencia expresada por el autor.
-2. Sintetízala en una regla clara, directa y concisa en formato Markdown.
-3. Evita redundancias con reglas preexistentes en el perfil editorial.
-4. Genera una actualización limpia para añadir a las reglas o hábitos de redacción del perfil editorial.
+2. Sintetízala en **una sola frase de regla**, clara, directa, completa y bien escrita (sin cortes a medias, sin errores tipográficos y sin repetir literalmente el comentario del autor palabra por palabra).
+3. Evita redundancias con reglas ya presentes en el perfil editorial: si la corrección repite algo que ya existe, sintetiza igualmente la regla (se filtrará por similitud al guardarla).
+4. No incluyas explicaciones ni contexto adicional, solo la regla en sí.
 
 ## Formato de Salida Obligatorio (JSON estrictamente válido):
-Devuelve únicamente un objeto JSON:
+Devuelve únicamente un objeto JSON, sin ningún otro campo:
 
 ```json
 {
-  "synthesized_rule": "Regla limpia sintetizada",
-  "updated_profile_markdown": "# Perfil Editorial...\n"
+  "synthesized_rule": "Regla limpia sintetizada en una frase"
 }
 ```
