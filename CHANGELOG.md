@@ -5,7 +5,7 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.6.0] - 2026-09-25
 
 ### Changed
 - **Note, Article y Revision ya no piden JSON al LLM.** Antes el modelo tenía que devolver el borrador entero envuelto en `{"format": ..., "title": ..., "content": "..."}`, con la prosa como un único string escapado; un error de escapado (comillas, saltos de línea) rompía el parseo, y escribir "pensando en el formato" volvía la prosa más rígida.
@@ -13,17 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - **Article**: el LLM devuelve título y contenido separados por `===TITULO===` / `===CONTENIDO===` (nuevo helper `app/services/text_output.py`).
   - **Revision**: el LLM devuelve solo el contenido revisado en plano. El título y el formato ya no se le piden al modelo: se conservan siempre del borrador anterior.
 - `MockLLMClient` (modo local sin API key) actualizado para devolver las mismas respuestas en texto plano, no JSON.
+- **Preguntas de `idea_explorer` ancladas a escena y detalle concreto, no a tema general.** Antes pedían "el evento o fricción" en abstracto y el modelo solía responder con temas generales. Ahora cada una de las 3 preguntas exige un hecho concreto (un momento, un lugar, una frase textual, una cifra, una herramienta) y el prompt incluye una "prueba de concreción" y ejemplos de pregunta mala/buena para cada tipo.
+- Se añadió la regla de no volver a preguntar por un detalle que el autor ya dio en la idea original.
+- `MockLLMClient` actualizado con preguntas de ejemplo en el mismo estilo, para que el modo local sin API key sea coherente con el prompt real.
 
 ### Fixed
 - **Bug de título en revisión:** si el modelo devolvía un `title` no vacío durante una revisión, sustituía el título del borrador aunque el autor no hubiera pedido cambiarlo. Ahora la revisión nunca puede tocar el título.
 - **Contexto de memoria duplicado:** `generate_note`, `generate_article` y `revise` llamaban a `editorial_memory.get_context()` por su cuenta en el `system_prompt`, además de recibirlo ya incluido dentro de `editorial_profile` (vía `load_voice_profile`). Se quitó la llamada duplicada.
-
-## [Unreleased]
-
-### Changed
-- **Preguntas de `idea_explorer` ancladas a escena y detalle concreto, no a tema general.** Antes pedían "el evento o fricción" en abstracto y el modelo solía responder con temas generales. Ahora cada una de las 3 preguntas exige un hecho concreto (un momento, un lugar, una frase textual, una cifra, una herramienta) y el prompt incluye una "prueba de concreción" y ejemplos de pregunta mala/buena para cada tipo.
-- Se añadió la regla de no volver a preguntar por un detalle que el autor ya dio en la idea original.
-- `MockLLMClient` actualizado con preguntas de ejemplo en el mismo estilo, para que el modo local sin API key sea coherente con el prompt real.
 
 ## [0.5.1] - 2026-09-25
 

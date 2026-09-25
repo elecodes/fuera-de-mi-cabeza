@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.5.1)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.6.0)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -43,6 +43,7 @@ fuera-de-mi-cabeza/
 │   │   └── session.py           # Modelo de sesión editorial
 │   ├── services/
 │   │   ├── voice_profile.py     # Carga centralizada de voz (voice_guide, voice_samples y memory)
+│   │   ├── text_output.py       # Parseo de salida en texto plano del LLM (título + contenido, sin JSON)
 │   │   ├── idea_explorer.py     # Analiza ideas, desglosa pensamientos y sintetiza arcos
 │   │   ├── content_planner.py   # Genera el plan según el arco narrativo elegido
 │   │   ├── draft_generator.py   # Redacta Substack Notes o Artículos
@@ -90,7 +91,7 @@ python3 -m pytest
 ## ⚙️ Características Clave & Voz Editorial
 
 ### 1. Brain Dumps & Arcos Narrativos
-Puedes ingresar notas sueltas, viñetas o fragmentos de ideas. El agente desglosa tus pensamientos y te ofrece 2–3 **Arcos Narrativos** interactivos para elegir cómo quieres ordenar y conectar tus ideas antes de planificar.
+Puedes ingresar notas sueltas, viñetas o fragmentos de ideas. El agente desglosa tus pensamientos y te ofrece 2–3 **Arcos Narrativos** interactivos para elegir cómo quieres ordenar y conectar tus ideas antes de planificar. Las preguntas de profundización están ancladas a escena y detalle concreto (un momento, un lugar, una frase textual, una cifra), no a temas generales, y no repreguntan por un dato que ya diste en la idea original.
 
 ### 2. Edición Directa & Copiado al Portapapeles
 En el cuaderno web (`index.html`), puedes hacer clic y editar directamente el borrador generado (`contenteditable`). Un botón dedicado de **"📋 Copiar borrador al portapapeles"** te permite llevar el texto listo a Substack.
@@ -106,4 +107,7 @@ El agente aprende continuamente de tu feedback y ajusta su estilo post a post:
 - **Persistencia en JSON (`data/editorial_memory.json`):** Almacena muletillas favoritas, palabras prohibidas, reglas de estilo/ritmo y formas de abrir tus notas (ej. *"Llevo bastante tiempo dándole vueltas a esta intuición: ..."*).
 - **Panel Interactivo de Gestión de Voz:** En la UI web puedes añadir o eliminar reglas de estilo en tiempo real con un solo clic.
 - **Optimización de Payload (65% Reducción):** Extrae las directrices clave de voz omitiendo bloques de texto repetitivos, permitiendo respuestas en menos de 1.5s en la API de Groq sin errores 413/429.
+
+### 5. Salida en Texto Plano (sin JSON envolvente)
+Note, Article y Revision ya no le piden al LLM que envuelva el borrador en un objeto JSON. El modelo devuelve el texto tal cual (Note y Revision) o título + contenido separados por los marcadores `===TITULO===` / `===CONTENIDO===` (Article), parseados por [`app/services/text_output.py`](app/services/text_output.py). Esto evita errores de escapado en textos largos y deja que el modelo escriba prosa sin tener que pensar en el formato de salida. `content_planner`, `idea_explorer`, `voice_auditor` y `argument_griller` siguen usando JSON, porque ahí sí devuelven varios campos estructurados (listas, arrays).
 
