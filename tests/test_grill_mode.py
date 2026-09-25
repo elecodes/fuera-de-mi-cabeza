@@ -1,5 +1,6 @@
 import json
 from unittest.mock import patch
+import pytest
 from fastapi.testclient import TestClient
 from app.main import app
 from app.llm.providers.mock import MockLLMClient
@@ -28,6 +29,24 @@ def test_argument_griller_service():
 
         assert len(questions) == 3
         assert "¿Qué diría un escéptico de tu postura?" in questions[0]
+
+    import asyncio
+    asyncio.run(_run())
+
+
+def test_argument_griller_raises_on_invalid_json_instead_of_silent_fallback():
+    async def _run():
+        # Antes, una respuesta que no era JSON válido se disfrazaba de éxito
+        # devolviendo 3 preguntas genéricas de repuesto sin que nadie se enterara.
+        mock_llm = MockLLMClient(default_response="esto no es json")
+        griller = ArgumentGriller(llm_client=mock_llm)
+
+        with pytest.raises(RuntimeError):
+            await griller.generate_grill_questions(
+                idea="Pensar con IA",
+                arc_title="Del problema al aprendizaje",
+                thought_sequence=["1. Duda"],
+            )
 
     import asyncio
     asyncio.run(_run())

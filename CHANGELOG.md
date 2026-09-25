@@ -5,6 +5,14 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-09-25
+
+### Changed
+- **`grill_argument.md` ("Grill My Argument"): concreción adaptada a cada pregunta.** La de contra-argumento ahora pide un contraejemplo concreto, la de evidencia personal pide un proyecto real con fecha aproximada (mismo patrón que `idea_explorer`, ADR 0011), y la de alcance/frontera pide un caso límite específico en vez de una declaración de alcance general. Se añadieron pares de ejemplo mala/buena pregunta para las 3, y la regla de no repreguntar por un detalle que la idea o el arco ya dan.
+
+### Fixed
+- **Fallo silencioso en el modo Grill:** si el LLM devolvía JSON inválido, `ArgumentGriller.generate_grill_questions` devolvía en silencio 3 preguntas genéricas de repuesto en vez de fallar. Ahora lanza un error, que el endpoint `/api/ideas/{session_id}/grill` ya capturaba y devolvía como un 500 con el detalle.
+
 ## [0.6.0] - 2026-09-25
 
 ### Changed

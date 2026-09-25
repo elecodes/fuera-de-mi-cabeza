@@ -61,14 +61,17 @@ class ArgumentGriller:
         clean_json = self._clean_json_output(raw_response)
         try:
             data = json.loads(clean_json)
-            questions = data.get("grill_questions", [])
-            return questions[:3]
-        except Exception:
-            return [
-                "¿Qué contra-argumento principal le harías a tu postura?",
-                "¿En qué vivencia personal específica comprobaste esta idea?",
-                "¿En qué casos no aplicaría esta reflexión?"
-            ]
+        except Exception as e:
+            # Antes, un JSON inválido se disfrazaba de éxito devolviendo 3
+            # preguntas genéricas de repuesto en silencio. Mejor fallar de
+            # forma visible: el endpoint /grill ya captura esta excepción
+            # y la devuelve como un error 500 con el detalle.
+            raise RuntimeError(
+                "No se pudo interpretar la respuesta del LLM para el modo Grill."
+            ) from e
+
+        questions = data.get("grill_questions", [])
+        return questions[:3]
 
     @staticmethod
     def _clean_json_output(text: str) -> str:
