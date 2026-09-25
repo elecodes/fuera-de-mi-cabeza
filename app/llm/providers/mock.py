@@ -38,9 +38,9 @@ DEFAULT_EXPLORE_RESPONSE = {
     "emotional_tone": "Reflexivo, honesto y curioso",
     "recommended_format": "article",
     "questions": [
-        "¿Qué hecho, proyecto o conversación específica de esta semana detonó esta intuición?",
-        "Mencionas la importancia de esto, pero ¿en qué momento exacto chocaste con la contradicción o la fricción práctica?",
-        "¿Qué fue lo más difícil de admitir o qué costo tuvo tomar este camino en lugar de la opción más fácil?"
+        "¿Qué estabas haciendo justo antes de que se te ocurriera esto? ¿Dónde estabas y con quién?",
+        "¿Cuál fue la frase exacta, el mensaje o el momento concreto en el que notaste esa fricción?",
+        "¿Qué fue lo primero que hiciste (o dejaste de hacer) justo después de que pasara esto?"
     ],
 }
 
