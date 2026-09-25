@@ -45,11 +45,14 @@ def test_full_api_flow():
         "ending_direction": "Cierre reflexivo",
     }
 
-    mock_draft_json = {
-        "format": "article",
-        "title": "IA para Aprender",
-        "content": "Contenido del artículo sobre IA...",
-    }
+    # Ya no se pide JSON al LLM para el draft: título y contenido van
+    # separados por los marcadores ===TITULO=== / ===CONTENIDO===.
+    mock_draft_response = (
+        "===TITULO===\n"
+        "IA para Aprender\n"
+        "===CONTENIDO===\n"
+        "Contenido del artículo sobre IA..."
+    )
 
     mock_audit_json = {
         "score": 95,
@@ -58,11 +61,9 @@ def test_full_api_flow():
         "issues": []
     }
 
-    mock_revised_json = {
-        "format": "article",
-        "title": "IA para Aprender",
-        "content": "Contenido del artículo revisado...",
-    }
+    # La revisión tampoco pide JSON: solo el contenido revisado en plano
+    # (el título y el formato se conservan del borrador anterior).
+    mock_revised_response = "Contenido del artículo revisado..."
 
     # 2. Explore
     mock_explore_llm = MockLLMClient(default_response=json.dumps(mock_analysis_json))
@@ -90,11 +91,12 @@ def test_full_api_flow():
         assert res_plan.json()["content_plan"]["central_message"] == "La IA amplifica el pensamiento."
 
     # 6. Draft
-    mock_draft_llm = MockLLMClient(default_response=json.dumps(mock_draft_json))
+    mock_draft_llm = MockLLMClient(default_response=mock_draft_response)
     with patch("app.main.get_llm_client", return_value=mock_draft_llm):
         res_draft = client.post(f"/api/ideas/{session_id}/draft", json={"format": "article"})
         assert res_draft.status_code == 200
         assert res_draft.json()["draft"]["title"] == "IA para Aprender"
+        assert res_draft.json()["draft"]["content"] == "Contenido del artículo sobre IA..."
 
     # 7. Audit
     mock_audit_llm = MockLLMClient(default_response=json.dumps(mock_audit_json))
@@ -108,7 +110,7 @@ def test_full_api_flow():
     assert res_mem.status_code == 200
 
     # 9. Revise
-    mock_revise_llm = MockLLMClient(default_response=json.dumps(mock_revised_json))
+    mock_revise_llm = MockLLMClient(default_response=mock_revised_response)
     with patch("app.main.get_llm_client", return_value=mock_revise_llm):
         res_rev = client.post(f"/api/ideas/{session_id}/revise", json={"feedback": "Hacerlo más cercano"})
         assert res_rev.status_code == 200

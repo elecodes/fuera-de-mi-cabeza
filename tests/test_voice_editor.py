@@ -1,5 +1,4 @@
 import asyncio
-import json
 from app.llm.providers.mock import MockLLMClient
 from app.models.draft import Draft
 from app.services.voice_editor import VoiceEditor
@@ -13,13 +12,12 @@ def test_voice_editor_revise():
             content="Este es el borrador inicial. [Nota: Añadir anécdota sobre mi primer trabajo].",
         )
 
-        mock_revised_json = {
-            "format": "article",
-            "title": "Mi carrera como dev",
-            "content": "Este es el borrador revisado integrando la anécdota de mi primer trabajo en una empresa pequeña.",
-        }
+        # Ya no se pide JSON: el LLM devuelve directamente el texto revisado en plano.
+        mock_revised_response = (
+            "Este es el borrador revisado integrando la anécdota de mi primer trabajo en una empresa pequeña."
+        )
 
-        mock_llm = MockLLMClient(default_response=json.dumps(mock_revised_json))
+        mock_llm = MockLLMClient(default_response=mock_revised_response)
         editor = VoiceEditor(llm_client=mock_llm)
 
         revised = await editor.revise(
@@ -28,9 +26,37 @@ def test_voice_editor_revise():
             feedback_text="Mantené el tono conversational y desarrollá la nota sobre el primer trabajo",
         )
 
+        # El formato y el título se conservan del borrador original: la revisión
+        # nunca los reescribe por su cuenta, solo el contenido.
         assert revised.format == "article"
         assert revised.title == "Mi carrera como dev"
         assert "anécdota" in revised.content
+
+    asyncio.run(_run())
+
+
+def test_voice_editor_revise_ignores_title_even_if_model_tries_to_change_it():
+    async def _run():
+        initial_draft = Draft(
+            format="article",
+            title="Mi carrera como dev",
+            content="Borrador inicial.",
+        )
+
+        # Si el modelo, pese a la instrucción, intenta colar un título nuevo dentro
+        # del texto plano, no debe sustituir el título real del borrador.
+        mock_llm = MockLLMClient(default_response="===TITULO===\nUn título inventado\n===CONTENIDO===\nTexto revisado.")
+        editor = VoiceEditor(llm_client=mock_llm)
+
+        revised = await editor.revise(
+            original_idea="Idea inicial",
+            current_draft=initial_draft,
+            feedback_text="ajusta el tono",
+        )
+
+        assert revised.title == "Mi carrera como dev"
+
+    asyncio.run(_run())
 
 def test_voice_editor_multiple_revisions():
     async def _run():

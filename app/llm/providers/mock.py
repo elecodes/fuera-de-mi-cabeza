@@ -266,11 +266,7 @@ class MockLLMClient:
                 else:
                     integrated_rev = clean_base
 
-            return json.dumps({
-                "format": "article",
-                "title": "Construir tus propias herramientas: el valor de crear agentes a tu medida",
-                "content": integrated_rev
-            }, ensure_ascii=False)
+            return integrated_rev
 
         # 3. Detección de Exploración de Ideas
         elif "idea explorer" in prompt_lower or "core_idea" in prompt_lower or "socratic synthesizer" in prompt_lower:
@@ -342,11 +338,7 @@ class MockLLMClient:
 
             note_body = f"{p1}\n\n{p2}\n\n{p3}"
 
-            return json.dumps({
-                "format": "note",
-                "title": None,
-                "content": note_body
-            }, ensure_ascii=False)
+            return note_body
 
         # 6. Detección de Artículos
         elif "generate article" in prompt_lower or "prompt: article" in prompt_lower or "redacta un artículo completo" in prompt_lower or "article" in prompt_lower:
@@ -426,11 +418,7 @@ class MockLLMClient:
                 f"Sacar estos pensamientos de la cabeza es el primer paso para construir algo que realmente valga la pena."
             )
 
-            return json.dumps({
-                "format": "article",
-                "title": title_val,
-                "content": article_body
-            }, ensure_ascii=False)
+            return f"===TITULO===\n{title_val}\n===CONTENIDO===\n{article_body}"
 
-        return json.dumps(DEFAULT_ARTICLE_RESPONSE, ensure_ascii=False)
+        return f"===TITULO===\n{DEFAULT_ARTICLE_RESPONSE['title']}\n===CONTENIDO===\n{DEFAULT_ARTICLE_RESPONSE['content']}"
 

@@ -1,10 +1,10 @@
-import json
 from pathlib import Path
 from app.llm.client import LLMClient
 from app.models.content_plan import ContentPlan
 from app.models.draft import Draft
 from app.memory.editorial_memory import EditorialMemory
 from app.services.voice_profile import load_voice_profile
+from app.services.text_output import strip_code_fences, parse_titled_content
 
 
 class DraftGenerator:
@@ -31,7 +31,6 @@ class DraftGenerator:
     def _load_profile(self) -> str:
         return load_voice_profile(self.editorial_memory, self.profile_path)
 
-
     async def generate_note(
         self,
         original_idea: str,
@@ -52,23 +51,23 @@ class DraftGenerator:
             .replace("{key_points}", formatted_key_points)
         )
 
-        memory_instructions = self.editorial_memory.get_context()
+        # Nota: las reglas aprendidas (editorial_memory) ya están incluidas dentro
+        # de `editorial_profile` vía load_voice_profile; no se repiten aquí para
+        # no duplicar contenido en el prompt.
         system_prompt = (
             "Eres el redactor de 'Fuera de mi cabeza'. "
             "Redacta el borrador SIEMPRE en Español de España. "
-            "INCORPORA FIELMENTE LAS EXPRESIONES, MULETILLAS Y ESTILO APRENDIDO DEL AUTOR. "
-            f"{memory_instructions}\n"
+            "INCORPORA FIELMENTE LAS EXPRESIONES, MULETILLAS Y ESTILO APRENDIDO DEL AUTOR, "
+            "tal como aparecen en el Perfil Editorial y Guía de Voz. "
             "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
             "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
-            "Genera un borrador en formato JSON."
+            "Devuelve únicamente el texto plano de la Note, sin JSON."
         )
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
 
-        clean_json_str = self._clean_json_output(raw_response)
-        data = json.loads(clean_json_str)
-        data["format"] = "note"
-        return Draft.model_validate(data)
+        content = strip_code_fences(raw_response)
+        return Draft.model_validate({"format": "note", "title": None, "content": content})
 
     async def generate_article(
         self,
@@ -95,37 +94,27 @@ class DraftGenerator:
             .replace("{ending_direction}", content_plan.ending_direction)
         )
 
-        memory_instructions = self.editorial_memory.get_context()
+        # Nota: las reglas aprendidas (editorial_memory) ya están incluidas dentro
+        # de `editorial_profile` vía load_voice_profile; no se repiten aquí para
+        # no duplicar contenido en el prompt.
         system_prompt = (
             "Eres el redactor de 'Fuera de mi cabeza'. "
             "Redacta el borrador SIEMPRE en Español de España. "
             "EXIGENCIA RIGUROSA DE CONCISIÓN Y DENSIDAD (CERO PAJA): Redacta un ARTÍCULO de Substack denso y bien enfocado (entre 300 y 600 palabras). "
             "Es preferible un texto de 350 palabras preciso y memorable que un texto largo inflado con frases de relleno. "
-            "INCORPORA FIELMENTE LAS EXPRESIONES, MULETILLAS Y ESTILO APRENDIDO DEL AUTOR. "
-            f"{memory_instructions}\n"
+            "INCORPORA FIELMENTE LAS EXPRESIONES, MULETILLAS Y ESTILO APRENDIDO DEL AUTOR, "
+            "tal como aparecen en el Perfil Editorial y Guía de Voz. "
             "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
             "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
-            "Genera un borrador de artículo en formato JSON."
+            "Devuelve el título y el contenido separados por los marcadores ===TITULO=== / ===CONTENIDO===, sin JSON."
         )
 
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
 
-        clean_json_str = self._clean_json_output(raw_response)
-        data = json.loads(clean_json_str)
-        data["format"] = "article"
-        if not data.get("title"):
-            data["title"] = title
-        return Draft.model_validate(data)
-
-    @staticmethod
-    def _clean_json_output(text: str) -> str:
-        text = text.strip()
-        if text.startswith("```"):
-            lines = text.splitlines()
-            if lines[0].startswith("```"):
-                lines = lines[1:]
-            if lines and lines[-1].startswith("```"):
-                lines = lines[:-1]
-            text = "\n".join(lines).strip()
-        return text
+        parsed_title, content = parse_titled_content(raw_response)
+        return Draft.model_validate({
+            "format": "article",
+            "title": parsed_title or title,
+            "content": content,
+        })

@@ -28,11 +28,6 @@ Redacta la Note SIEMPRE en Español de España (castellano peninsular: tú, tien
    - Aplica la `Guía de Voz Editorial` del `{editorial_profile}` (cadencia variable, cero antítesis "No es X, es Y", cero adjetivos inflados o frases ceremoniales).
 
 
-## Formato de Salida Obligatorio (JSON strictly válido):
-Devolvé únicamente un objeto JSON con la siguiente estructura:
-
-{
-  "format": "note",
-  "title": null,
-  "content": "Texto de la Note aquí..."
-}
+## Formato de Salida Obligatorio:
+Devuelve ÚNICAMENTE el texto de la Note, en Markdown plano.
+No uses JSON, no envuelvas el texto entre comillas, no añadas ningún título, etiqueta o comentario antes o después. Solo el texto de la Note.

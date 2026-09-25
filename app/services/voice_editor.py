@@ -4,6 +4,7 @@ from app.llm.client import LLMClient
 from app.models.draft import Draft
 from app.memory.editorial_memory import EditorialMemory
 from app.services.voice_profile import load_voice_profile
+from app.services.text_output import strip_code_fences
 
 
 class VoiceEditor:
@@ -82,29 +83,36 @@ class VoiceEditor:
             else f"{intent_instruction}Mantén una extensión compacta tipo Substack Note. "
         )
 
-        memory_instructions = self.editorial_memory.get_context()
+        # Nota: las reglas aprendidas (editorial_memory) ya están incluidas dentro
+        # de `editorial_profile` vía load_voice_profile; no se repiten aquí para
+        # no duplicar contenido en el prompt.
         system_prompt = (
             "Eres el editor de voz de 'Fuera de mi cabeza'. "
             "Edita y redacta SIEMPRE en Español de España. "
             f"{format_instruction}"
-            "INCORPORA FIELMENTE LAS EXPRESIONES Y MULETILLAS APRENDIDAS DEL AUTOR. "
-            f"{memory_instructions}\n"
+            "INCORPORA FIELMENTE LAS EXPRESIONES Y MULETILLAS APRENDIDAS DEL AUTOR, "
+            "tal como aparecen en el Perfil Editorial y Guía de Voz. "
             "Elimina strictly antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres, "
             "afirmaciones cautelosas, metáforas clichés ('brújula, no mapa'), adjetivos inflados, verbos de relleno, "
             "repeticiones de 'profundizar', falsos contrastes ('no obstante'), "
             "entusiasmo artificial, cierres circulares ('En resumen'), "
             "preguntas de transición armadas, emojis decorativos y abuso de rayas (—). "
-            "PROHIBIDO adjuntar notas del editor, resúmenes o secciones como '## Revisión Aplicada' al final. Devuelve únicamente el borrador limpio revisado en JSON."
+            "PROHIBIDO adjuntar notas del editor, resúmenes o secciones como '## Revisión Aplicada' al final. "
+            "Devuelve ÚNICAMENTE el texto plano revisado, sin JSON, sin título y sin repetir el formato."
         )
 
         raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
 
-        clean_json_str = self._clean_json_output(raw_response)
-        data = json.loads(clean_json_str)
-        data["format"] = current_draft.format
-        if "title" not in data or not data["title"]:
-            data["title"] = current_draft.title
-        return Draft.model_validate(data)
+        content = strip_code_fences(raw_response)
+        # El formato y el título del borrador se conservan siempre desde current_draft:
+        # a la revisión solo se le pide el contenido, nunca que decida un título nuevo
+        # por su cuenta (antes, si el modelo devolvía un título no vacío, lo sustituía
+        # sin que el autor lo hubiera pedido).
+        return Draft.model_validate({
+            "format": current_draft.format,
+            "title": current_draft.title,
+            "content": content,
+        })
 
     async def save_preference_to_profile(self, user_correction: str) -> str:
         """

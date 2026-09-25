@@ -33,11 +33,10 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
    - Aplica la guía de voz y las reglas de `Guía de Voz Editorial` (evitar antítesis clínicas "No es X, es Y", adjetivos inflados y verbos de relleno).
 
 
-## Formato de Salida Obligatorio (JSON estrictamente válido):
-Devolvé únicamente un objeto JSON con la siguiente estructura:
+## Formato de Salida Obligatorio:
+Devuelve ÚNICAMENTE el título y el contenido del artículo, separados por los siguientes marcadores exactos, sin JSON, sin comillas envolventes, sin ningún comentario adicional:
 
-{
-  "format": "article",
-  "title": "Título del artículo",
-  "content": "Texto completo del artículo redactado en formato Markdown..."
-}
+===TITULO===
+Título del artículo
+===CONTENIDO===
+Texto completo del artículo en formato Markdown...

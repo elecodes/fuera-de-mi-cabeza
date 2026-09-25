@@ -26,11 +26,6 @@ Edita y redacta SIEMPRE en Español de España (castellano peninsular: tú, tien
    - Mantén la fidelidad a lo expresado por el autor sin inventar historias ni datos no proporcionados.
 
 
-## Formato de Salida Obligatorio (JSON strictly válido):
-Devuelve únicamente un objeto JSON con la estructura del borrador actualizado:
-
-{
-  "format": "{format}",
-  "title": "{title_placeholder}",
-  "content": "Texto revisado del borrador en formato Markdown..."
-}
+## Formato de Salida Obligatorio:
+Devuelve ÚNICAMENTE el texto revisado del borrador, en Markdown plano.
+No uses JSON, no repitas el título ni el formato, no envuelvas el texto entre comillas ni añadas ningún comentario antes o después. Solo el contenido revisado.
