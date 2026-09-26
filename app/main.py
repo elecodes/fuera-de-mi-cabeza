@@ -122,15 +122,20 @@ async def check_omniroute_running(base_url: str) -> bool:
 async def get_system_status():
     provider = os.getenv("LLM_PROVIDER", "mock").lower()
     base_url = os.getenv("LLM_BASE_URL", "http://127.0.0.1:20128/v1")
+    model = os.getenv("LLM_MODEL", "")
     omniroute_running = False
 
     if provider in ("openai-compatible", "omniroute", "omnirouter"):
         omniroute_running = await check_omniroute_running(base_url)
 
+    is_mock = provider not in ("groq", "openai", "openai-compatible", "omniroute", "omnirouter")
+
     return {
         "provider": provider,
         "base_url": base_url,
+        "model": model,
         "omniroute_running": omniroute_running,
+        "is_mock": is_mock,
     }
 
 

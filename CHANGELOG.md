@@ -5,6 +5,14 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-09-26
+
+### Changed
+- **`get_llm_client()` avisa en consola qué proveedor y modelo está usando en cada llamada.** Si `LLM_PROVIDER` no está definido o no se reconoce, cae en `MockLLMClient` como hasta ahora (es un modo válido para desarrollo local sin API key), pero ahora lo dice en voz alta, con el valor exacto de `LLM_PROVIDER` que causó la caída — para detectar en segundos un `.env` que no se está cargando desde donde arranca el servidor.
+- **`/api/system/status` devuelve ahora también `model` e `is_mock`**, para comprobar desde el navegador o `curl` qué proveedor está activo sin mirar los logs del servidor.
+
+Ver ADR 0014.
+
 ## [0.6.2] - 2026-09-25
 
 ### Fixed
