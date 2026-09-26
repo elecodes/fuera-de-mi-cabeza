@@ -5,6 +5,16 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2026-09-25
+
+### Fixed
+- **CRÍTICO: `OpenAICompatibleClient` ya no cae en silencio al `MockLLMClient` cuando fallan todos los modelos reales.** Si el modelo principal, todos los `LLM_FALLBACK_MODELS` y el reintento directo a Groq fallaban (clave inválida, rate limit, timeout, modelo retirado), `generate()` devolvía en silencio una respuesta del mock heurístico como si fuera un borrador real y exitoso. Para Note y Article, ese mock construye un párrafo con plantilla alrededor de las ideas/respuestas del autor extraídas del propio prompt — casi un pegado literal. El síntoma: "en el borrador se pegan las ideas que introduje", sin ningún error visible, porque el endpoint recibía un 200 normal.
+  - Ahora `generate()` lanza `RuntimeError` con los modelos intentados y el error real como causa, en vez de devolver texto del mock. Los endpoints de `app/main.py` ya envolvían estas llamadas en `try/except` devolviendo un 500, así que el error real (clave inválida, rate limit, lo que sea) ahora se ve.
+  - `MockLLMClient` solo se usa ahora si se pide explícitamente (`LLM_PROVIDER=mock` o sin definir), nunca como fallback oculto de un proveedor real.
+- Se añadió el `import json` que faltaba en `openai_client.py` (usado en el parseo de respuestas en formato SSE; sin el import, ese camino lanzaría `NameError` en silencio y contribuía a agotar los modelos candidatos).
+
+Ver ADR 0013 para el análisis completo.
+
 ## [0.6.1] - 2026-09-25
 
 ### Changed

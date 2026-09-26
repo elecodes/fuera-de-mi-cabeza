@@ -61,6 +61,60 @@ def test_openai_client_fallback_retry():
     asyncio.run(_run())
 
 
+def test_openai_client_raises_instead_of_silently_falling_back_to_mock():
+    async def _run():
+        # Antes: si fallaban todos los modelos (clave inválida, rate limit,
+        # modelo retirado...), generate() devolvía en silencio una respuesta
+        # de MockLLMClient como si fuera un borrador real y exitoso. Ahora
+        # debe propagar el error real.
+        client = OpenAICompatibleClient(
+            api_key="test-key",
+            model="modelo-principal",
+            fallback_models=["modelo-fallback"],
+            base_url="https://api.groq.com/openai/v1",
+        )
+
+        req = httpx.Request("POST", "https://api.groq.com/openai/v1/chat/completions")
+
+        async def mock_post(url, headers, json):
+            resp = httpx.Response(status_code=401, json={"error": "Invalid API Key"}, request=req)
+            resp.raise_for_status()
+
+        with patch.object(httpx.AsyncClient, "post", side_effect=mock_post):
+            with pytest.raises(RuntimeError) as exc_info:
+                await client.generate("Hola")
+
+            # El mensaje debe indicar qué modelos se intentaron, no devolver
+            # contenido plantilla/mock disfrazado de respuesta exitosa.
+            assert "modelo-principal" in str(exc_info.value)
+            assert "modelo-fallback" in str(exc_info.value)
+
+    asyncio.run(_run())
+
+
+def test_openai_client_raises_even_when_groq_direct_retry_also_fails():
+    async def _run():
+        client = OpenAICompatibleClient(
+            api_key="test-key",
+            model="modelo-principal",
+            fallback_models=[],
+            base_url="http://127.0.0.1:20128/v1",  # no es groq.com: dispara el reintento directo
+        )
+
+        req = httpx.Request("POST", "http://127.0.0.1:20128/v1/chat/completions")
+
+        async def mock_post(url, headers, json):
+            resp = httpx.Response(status_code=500, json={"error": "boom"}, request=req)
+            resp.raise_for_status()
+
+        with patch.object(httpx.AsyncClient, "post", side_effect=mock_post), \
+             patch.dict("os.environ", {"GROQ_API_KEY": "also-fails-key"}):
+            with pytest.raises(RuntimeError):
+                await client.generate("Hola")
+
+    asyncio.run(_run())
+
+
 def test_get_llm_client_omniroute():
     from app.llm.providers import get_llm_client
     with patch.dict("os.environ", {"LLM_PROVIDER": "omniroute"}):

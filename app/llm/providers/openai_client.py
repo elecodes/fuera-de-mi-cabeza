@@ -1,3 +1,4 @@
+import json
 import os
 import logging
 import httpx
@@ -112,13 +113,23 @@ class OpenAICompatibleClient:
                     return await groq_client.generate(prompt, system_prompt=system_prompt)
                 except Exception as groq_err:
                     logger.error(f"[LLM Error Groq Direct] {groq_err}")
+                    last_exception = groq_err
 
-            logger.warning(f"[LLM Fallback to Mock] Fallaron todos los modelos candidata ({last_exception}). Activando MockLLMClient de emergencia.")
-            print(f"⚠️ [LLM Fallback to Mock] Fallaron los modelos. Usando respuesta Mock de respaldo.")
-            from app.llm.providers.mock import MockLLMClient
-            mock_client = MockLLMClient()
-            return await mock_client.generate(prompt, system_prompt=system_prompt)
+            # IMPORTANTE: nunca caer en silencio al MockLLMClient aquí. Antes, si
+            # fallaban todos los modelos (clave inválida, modelo retirado, rate
+            # limit, timeout...), esta función devolvía una respuesta del mock
+            # como si fuera un borrador real generado con éxito: la persona
+            # recibía un HTTP 200 con sus propias notas pegadas dentro de una
+            # plantilla, sin ningún indicio de que el LLM real nunca respondió.
+            # Ahora se propaga el error real, para que se vea en la interfaz
+            # (y en los logs) qué falló de verdad.
+            attempted = ", ".join(candidate_models)
+            raise RuntimeError(
+                f"No se pudo obtener respuesta de ningún modelo LLM configurado ({attempted}). "
+                f"Último error: {last_exception}"
+            ) from last_exception
 
-        from app.llm.providers.mock import MockLLMClient
-        return await MockLLMClient().generate(prompt, system_prompt=system_prompt)
+        raise RuntimeError(
+            "No se pudo obtener respuesta del LLM: no se intentó ningún modelo candidato."
+        )
 
