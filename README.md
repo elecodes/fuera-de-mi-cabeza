@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.6.3)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.7.0)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -49,6 +49,7 @@ fuera-de-mi-cabeza/
 │   │   ├── draft_generator.py   # Redacta Substack Notes o Artículos
 │   │   ├── voice_auditor.py     # Audita la naturalidad y antipatrones de IA
 │   │   ├── voice_editor.py      # Ajusta el texto según tu feedback
+│   │   ├── drive_uploader.py    # Exporta el borrador a Google Drive como Google Doc nativo
 │   │   └── session_manager.py   # Guarda el estado de la sesión
 
 │   ├── llm/
@@ -110,4 +111,24 @@ El agente aprende continuamente de tu feedback y ajusta su estilo post a post:
 
 ### 5. Salida en Texto Plano (sin JSON envolvente)
 Note, Article y Revision ya no le piden al LLM que envuelva el borrador en un objeto JSON. El modelo devuelve el texto tal cual (Note y Revision) o título + contenido separados por los marcadores `===TITULO===` / `===CONTENIDO===` (Article), parseados por [`app/services/text_output.py`](app/services/text_output.py). Esto evita errores de escapado en textos largos y deja que el modelo escriba prosa sin tener que pensar en el formato de salida. `content_planner`, `idea_explorer`, `voice_auditor` y `argument_griller` siguen usando JSON, porque ahí sí devuelven varios campos estructurados (listas, arrays).
+
+### 6. Exportar a Google Drive
+El botón **"📤 Guardar en Google Drive"** (junto al de copiar al portapapeles) sube el borrador actual a una carpeta de tu Drive como **Google Doc nativo** (editable ahí mismo, con el título, negritas y listas ya aplicados). Es manual, no automático: solo se sube cuando pulsas el botón.
+
+Usa una **cuenta de servicio** de Google, así que no hace falta iniciar sesión desde la app. Configuración, una sola vez:
+
+1. **Crea un proyecto** en [Google Cloud Console](https://console.cloud.google.com/) (o usa uno existente).
+2. **Activa la API de Google Drive**: en el buscador del proyecto, busca "Google Drive API" → *Habilitar*.
+3. **Crea una cuenta de servicio**: *IAM y administración* → *Cuentas de servicio* → *Crear cuenta de servicio*. No necesita ningún rol de IAM especial.
+4. **Genera una clave JSON**: dentro de la cuenta de servicio → pestaña *Claves* → *Agregar clave* → *Crear clave nueva* → tipo **JSON**. Se descarga un archivo — guárdalo en la raíz del repo, por ejemplo como `google-service-account.json` (ya está en `.gitignore`: nunca se sube al repo).
+5. **Comparte tu carpeta de Drive** con la cuenta de servicio: abre la carpeta donde quieres guardar tus borradores → *Compartir* → pega el email de la cuenta de servicio (termina en `...gserviceaccount.com`, lo ves en la consola) → dale rol de **Editor**.
+6. **Copia el ID de la carpeta**: es la parte de la URL después de `folders/` cuando tienes la carpeta abierta en Drive.
+7. **Añade a tu `.env`**:
+   ```
+   GOOGLE_SERVICE_ACCOUNT_FILE=google-service-account.json
+   GOOGLE_DRIVE_FOLDER_ID=el_id_que_copiaste
+   ```
+8. Reinicia el backend. Genera un borrador y pulsa "Guardar en Google Drive" — debería aparecer un enlace para abrir el documento.
+
+Si algo falla (archivo de credenciales no encontrado, carpeta no compartida, permisos), el error real aparece debajo del botón — nunca se guarda nada en silencio.
 

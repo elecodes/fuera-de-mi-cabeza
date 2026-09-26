@@ -1,6 +1,6 @@
 [project]
 name = "fuera-de-mi-cabeza"
-version = "0.6.3"
+version = "0.7.0"
 description = "Personal Editorial Agent para Substack"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -9,6 +9,9 @@ dependencies = [
     "pydantic>=2.9.2",
     "httpx>=0.28.1",
     "python-dotenv>=1.0.0",
+    "google-api-python-client>=2.149.0",
+    "google-auth>=2.35.0",
+    "markdown>=3.7",
 ]
 
 [project.optional-dependencies]

@@ -122,6 +122,65 @@ def test_full_api_flow():
     assert res_get.status_code == 200
     assert res_get.json()["id"] == session_id
 
+    # 11. Export to Drive
+    with patch("app.main.DriveUploader") as MockUploader:
+        MockUploader.return_value.upload_draft_as_google_doc.return_value = "https://docs.google.com/document/d/xyz/edit"
+        res_drive = client.post(f"/api/ideas/{session_id}/export-to-drive")
+        assert res_drive.status_code == 200
+        assert res_drive.json()["drive_url"] == "https://docs.google.com/document/d/xyz/edit"
+        MockUploader.return_value.upload_draft_as_google_doc.assert_called_once_with(
+            title="IA para Aprender",
+            content_markdown="Contenido del artículo revisado...",
+        )
+
+
+def test_export_to_drive_without_draft_returns_400():
+    res = client.post("/api/ideas", json={"idea": "Una idea sin borrador todavía"})
+    session_id = res.json()["id"]
+
+    res_drive = client.post(f"/api/ideas/{session_id}/export-to-drive")
+    assert res_drive.status_code == 400
+
+
+def test_export_to_drive_surfaces_real_error():
+    res = client.post("/api/ideas", json={"idea": "Una idea de prueba"})
+    session_id = res.json()["id"]
+
+    mock_analysis_json = {
+        "core_idea": "Idea de prueba",
+        "connected_thoughts": ["Idea de prueba"],
+        "narrative_arcs": [{
+            "id": "arc-1", "title": "Arco", "thought_sequence": ["1. Paso"], "rationale": "R"
+        }],
+        "possible_angles": ["Ángulo 1"],
+        "potential_audience": "Audiencia",
+        "emotional_tone": "Neutral",
+        "recommended_format": "note",
+        "questions": ["¿Qué estabas haciendo justo antes?"]
+    }
+    with patch("app.main.get_llm_client", return_value=MockLLMClient(default_response=json.dumps(mock_analysis_json))):
+        client.post(f"/api/ideas/{session_id}/explore")
+        client.post(f"/api/ideas/{session_id}/select-arc", json={"arc_id": "arc-1"})
+
+    mock_plan_json = {
+        "format": "note",
+        "title_options": ["Título"], "central_message": "Mensaje",
+        "opening_direction": "Apertura", "key_points": ["Punto"], "ending_direction": "Cierre"
+    }
+    with patch("app.main.get_llm_client", return_value=MockLLMClient(default_response=json.dumps(mock_plan_json))):
+        client.post(f"/api/ideas/{session_id}/plan")
+
+    with patch("app.main.get_llm_client", return_value=MockLLMClient(default_response="Contenido de una nota.")):
+        client.post(f"/api/ideas/{session_id}/draft", json={"format": "note"})
+
+    # Si Drive falla (credenciales, permisos, lo que sea), el error real debe
+    # verse en la respuesta, nunca un 200 silencioso ni un mock disfrazado.
+    with patch("app.main.DriveUploader") as MockUploader:
+        MockUploader.return_value.upload_draft_as_google_doc.side_effect = RuntimeError("GOOGLE_DRIVE_FOLDER_ID no está configurado.")
+        res_drive = client.post(f"/api/ideas/{session_id}/export-to-drive")
+        assert res_drive.status_code == 500
+        assert "GOOGLE_DRIVE_FOLDER_ID" in res_drive.json()["detail"]
+
 
 def test_architecture_endpoint():
     res = client.get("/architecture")

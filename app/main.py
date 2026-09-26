@@ -22,6 +22,7 @@ from app.services.voice_auditor import VoiceAuditor
 from app.services.argument_griller import ArgumentGriller
 from app.services.profile_generator import ProfileGenerator
 from app.services.audio_transcriber import AudioTranscriber
+from app.services.drive_uploader import DriveUploader
 from app.memory.editorial_memory import EditorialMemory
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -79,6 +80,10 @@ class ProfileExtractInput(BaseModel):
 
 class LearnPreferenceInput(BaseModel):
     user_correction: str
+
+
+class DriveExportResult(BaseModel):
+    drive_url: str
 
 
 
@@ -427,6 +432,23 @@ async def revise_draft(session_id: str, payload: RevisionInput):
         return session
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error del servicio LLM: {str(e)}")
+
+
+@app.post("/api/ideas/{session_id}/export-to-drive", response_model=DriveExportResult)
+async def export_draft_to_drive(session_id: str):
+    session = session_manager.get_session(session_id)
+    if not session or not session.draft:
+        raise HTTPException(status_code=400, detail="No hay un borrador activo para exportar a Drive")
+
+    try:
+        uploader = DriveUploader()
+        drive_url = uploader.upload_draft_as_google_doc(
+            title=session.draft.title,
+            content_markdown=session.draft.content,
+        )
+        return DriveExportResult(drive_url=drive_url)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al exportar a Google Drive: {str(e)}")
 
 
 @app.post("/api/profile/extract-tone")

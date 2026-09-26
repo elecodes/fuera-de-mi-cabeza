@@ -440,7 +440,9 @@
     <div style="margin-top: 1.2rem;">
       <button onclick="copyDraftToClipboard()">📋 Copiar borrador al portapapeles</button>
       <button class="secondary" onclick="auditVoice()">🔍 Auditar Voz Editorial (editorial_profile.md)</button>
+      <button class="secondary" onclick="exportDraftToDrive()">📤 Guardar en Google Drive</button>
     </div>
+    <div id="drive-export-status" style="font-size:0.85rem; margin-top:0.4rem;"></div>
 
     <div id="audit-box" class="audit-box hidden">
       <div class="audit-score" id="audit-score-text">Puntuación: 95/100</div>
@@ -807,6 +809,26 @@
         });
       } catch (err) {
         console.error("Error guardando cambios del borrador:", err);
+      }
+    }
+
+    async function exportDraftToDrive() {
+      const statusEl = document.getElementById("drive-export-status");
+      statusEl.textContent = "⏳ Subiendo a Google Drive...";
+      statusEl.style.color = "var(--muted)";
+      try {
+        await saveDraftChanges(); // asegura que el backend tiene la última edición antes de exportar
+        const res = await fetch(`/api/ideas/${currentSessionId}/export-to-drive`, {
+          method: "POST"
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Error al exportar a Google Drive");
+
+        statusEl.innerHTML = `✅ Guardado en Drive — <a href="${data.drive_url}" target="_blank" rel="noopener">Abrir documento</a>`;
+        statusEl.style.color = "var(--accent)";
+      } catch (err) {
+        statusEl.textContent = "❌ " + err.message;
+        statusEl.style.color = "#e11d48";
       }
     }
 

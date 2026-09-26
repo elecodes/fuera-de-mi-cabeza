@@ -5,6 +5,18 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2026-09-26
+
+### Added
+- **Exportar a Google Drive**: nuevo botón "📤 Guardar en Google Drive" junto al de copiar al portapapeles. Sube el borrador actual a una carpeta de Drive como **Google Doc nativo** (editable ahí mismo), usando una cuenta de servicio de Google (sin login interactivo). Es manual: solo se sube al pulsar el botón.
+  - Nuevo servicio `app/services/drive_uploader.py` (`DriveUploader`), con inyección de dependencias para tests (igual que `LLMClient`) y errores explícitos para cada fallo (credenciales, carpeta no configurada/compartida, borrador vacío, fallo de la API).
+  - Nuevo endpoint `POST /api/ideas/{session_id}/export-to-drive`.
+  - Nuevas dependencias: `google-api-python-client`, `google-auth`, `markdown`.
+  - `google-service-account.json` añadido a `.gitignore`.
+  - Pasos de configuración completos en el README, sección "Exportar a Google Drive".
+
+Ver ADR 0015.
+
 ## [0.6.3] - 2026-09-26
 
 ### Changed
