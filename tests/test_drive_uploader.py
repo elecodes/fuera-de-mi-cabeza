@@ -19,9 +19,9 @@ class _FakeFiles:
         self._error = error
         self._captured_calls = captured_calls
 
-    def create(self, body, media_body, fields):
+    def create(self, body, media_body, fields, supportsAllDrives=None):
         if self._captured_calls is not None:
-            self._captured_calls.append({"body": body, "fields": fields})
+            self._captured_calls.append({"body": body, "fields": fields, "supportsAllDrives": supportsAllDrives})
         return _FakeFilesCreate(response=self._response, error=self._error)
 
 
@@ -52,6 +52,7 @@ def test_upload_draft_creates_native_google_doc_in_configured_folder():
     assert body["name"] == "Mi borrador"
     assert body["mimeType"] == "application/vnd.google-apps.document"
     assert body["parents"] == ["folder-xyz"]
+    assert calls[0]["supportsAllDrives"] is True
 
 
 def test_upload_draft_defaults_title_when_none():

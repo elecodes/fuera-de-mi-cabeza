@@ -90,7 +90,12 @@ class DriveUploader:
         try:
             created_file = (
                 service.files()
-                .create(body=file_metadata, media_body=media, fields="id, webViewLink")
+                .create(
+                    body=file_metadata,
+                    media_body=media,
+                    fields="id, webViewLink",
+                    supportsAllDrives=True,
+                )
                 .execute()
             )
         except Exception as e:
