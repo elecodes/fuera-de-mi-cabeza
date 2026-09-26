@@ -126,7 +126,7 @@ Usa una **cuenta de servicio** de Google, así que no hace falta iniciar sesión
 7. **Añade a tu `.env`**:
    ```
    GOOGLE_SERVICE_ACCOUNT_FILE=google-service-account.json
-   GOOGLE_DRIVE_FOLDER_ID=el_id_que_copiaste
+   GOOGLE_DRIVE_FOLDER_ID=
    ```
 8. Reinicia el backend. Genera un borrador y pulsa "Guardar en Google Drive" — debería aparecer un enlace para abrir el documento.
 
