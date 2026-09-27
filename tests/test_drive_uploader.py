@@ -4,6 +4,23 @@ import pytest
 from app.services.drive_uploader import DriveUploader
 
 
+@pytest.fixture(autouse=True)
+def _clear_real_drive_env(monkeypatch):
+    # Aísla TODOS los tests de este archivo de las variables de Drive reales
+    # que pueda tener configuradas la máquina en su .env (se cargan al
+    # importar app.main durante la recolección de tests). Sin esto, un test
+    # que espera un folder_id concreto puede fallar en silencio si la máquina
+    # ya tiene una carpeta real configurada para ese mismo destino.
+    for var in [
+        "GOOGLE_DRIVE_FOLDER_ID",
+        "GOOGLE_DRIVE_FOLDER_BORRADORES",
+        "GOOGLE_DRIVE_FOLDER_NOTES_PUBLICADOS",
+        "GOOGLE_DRIVE_FOLDER_POSTS_PUBLICADOS",
+        "GOOGLE_OAUTH_TOKEN_FILE",
+    ]:
+        monkeypatch.delenv(var, raising=False)
+
+
 class _FakeFilesCreate:
     def __init__(self, response=None, error=None):
         self._response = response
