@@ -11,17 +11,22 @@
     "Integrar las notas y modificaciones directamente en el borrador, sin crear versiones o documentos separados.",
     "Evitar metáforas cliché (como la del tren) y cierres genéricos; usar vocabulario preciso en español en vez de anglicismos (lista de comprobación, no checklist).",
     "Describir acciones concretas en vez de frases vagas como dar órdenes claras.",
-    "Evitar palabras infladas"
+    "Evitar palabras infladas",
+    "No emplear construcciones antitéticas tipo 'no es X; es Y' y cerrar las notas con una referencia a 'sacando fuera de mi cabeza, de mi escritorio...'.",
+    "Mantener un tono íntimo y cercano, como si hablara directamente al lector, evitando cualquier expresión que resulte distante",
+    "Los textos deben concluir con una mención que indique que la reflexión proviene directamente de mi cabeza, mis notas o mi ordenador."
   ],
   "recurring_themes": [],
   "preferred_structures": [],
   "words_to_avoid": [],
   "examples": [],
   "favorite_expressions": [
-    "Explicar con claridad qué resuelve una lista de comprobación: evita perder el hilo y deja claras las tareas pendientes."
+    "Explicar con claridad qué resuelve una lista de comprobación: evita perder el hilo y deja claras las tareas pendientes.",
+    "No crear enumeraciones forzadas de tres ítems; reformula la idea o separa los elementos para evitar frases triádicas."
   ],
   "forbidden_words": [
-    "No utilizar formulaciones antitéticas del tipo 'No se trata de X, sino de Y' y suprimir cualquier referencia redundante que describa la lista de comprobación como un mapa interno."
+    "No utilizar formulaciones antitéticas del tipo 'No se trata de X, sino de Y' y suprimir cualquier referencia redundante que describa la lista de comprobación como un mapa interno.",
+    "Al describir la organización de tus ideas, usa una redacción clara y concreta en primera persona, evita enumeraciones de tres ítems y expresiones genéricas, y detalla la transición de papel a un organizador digital accesible desde el ordenador."
   ],
   "opening_styles": [],
   "rhythm_rules": [

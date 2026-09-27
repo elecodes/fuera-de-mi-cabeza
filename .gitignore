@@ -9,6 +9,10 @@ build/
 data/sessions/*.json
 data/voice_samples.md
 
-# Credenciales de la cuenta de servicio de Google Drive: nunca deben subirse al repo.
+# Credenciales de Google Drive: nunca deben subirse al repo.
 google-service-account.json
 *service-account*.json
+google-oauth-client-secret.json
+google-oauth-token.json
+*oauth-client-secret*.json
+*oauth-token*.json

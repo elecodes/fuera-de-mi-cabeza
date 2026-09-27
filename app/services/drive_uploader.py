@@ -3,22 +3,33 @@ import os
 from pathlib import Path
 
 import markdown as markdown_lib
-from google.oauth2 import service_account
+from google.auth.transport.requests import Request as GoogleAuthRequest
+from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
 
-# Alcance completo de Drive: una cuenta de servicio solo puede escribir en una
-# carpeta que el autor ha compartido con ella explícitamente (como si fuera un
-# colaborador más). El alcance restringido `drive.file` no basta aquí, porque
-# solo cubre archivos que la propia app crea o que el usuario abre a través de
-# un selector de archivos — no una carpeta ajena compartida por ID.
+# NOTA HISTÓRICA (ver ADR 0016): esto usó una cuenta de servicio (ADR 0015),
+# pero las cuentas de servicio tienen 0 GB de cuota propia. Para una carpeta
+# en un Drive personal (no una Unidad Compartida de Workspace), cualquier
+# archivo que la cuenta de servicio intente crear falla con
+# `storageQuotaExceeded`, sin importar el espacio libre del dueño real de la
+# carpeta. Para una cuenta de Gmail normal, sin Workspace, no hay forma de
+# evitarlo con una cuenta de servicio. La alternativa es autenticar como el
+# propio autor (OAuth), para que los archivos se creen bajo su propia cuenta
+# y su propio espacio, tal como si los hubiera creado él mismo desde Drive.
 _DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
 
 
 class DriveUploader:
     """
     Sube un borrador (Note o Article) a una carpeta de Google Drive como un
-    Google Doc nativo, usando una cuenta de servicio.
+    Google Doc nativo, autenticando como el propio autor vía OAuth (no una
+    cuenta de servicio — ver nota histórica arriba).
+
+    Requiere que `scripts/authorize_google_drive.py` se haya ejecutado una
+    vez para generar el archivo de token (GOOGLE_OAUTH_TOKEN_FILE). A partir
+    de ahí, el token se renueva solo (usando el refresh token) sin volver a
+    pedir autorización.
 
     Falla de forma visible (RuntimeError con un mensaje claro) si faltan
     credenciales, falta el ID de la carpeta, o la llamada a la API de Drive
@@ -30,30 +41,47 @@ class DriveUploader:
         self,
         drive_service=None,
         folder_id: str | None = None,
-        service_account_file: str | None = None,
+        token_file: str | None = None,
     ):
         self.folder_id = folder_id or os.getenv("GOOGLE_DRIVE_FOLDER_ID")
-        self._service_account_file = service_account_file or os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
+        self._token_file = token_file or os.getenv("GOOGLE_OAUTH_TOKEN_FILE")
         self._drive_service = drive_service  # inyectable para tests; si no, se construye bajo demanda
 
     def _get_service(self):
         if self._drive_service is not None:
             return self._drive_service
 
-        if not self._service_account_file:
+        if not self._token_file:
             raise RuntimeError(
-                "GOOGLE_SERVICE_ACCOUNT_FILE no está configurado. "
-                "Añade la ruta al JSON de la cuenta de servicio en tu .env."
+                "GOOGLE_OAUTH_TOKEN_FILE no está configurado. "
+                "Ejecuta 'python3 scripts/authorize_google_drive.py' para autorizar el acceso a Drive."
             )
-        if not Path(self._service_account_file).exists():
+        if not Path(self._token_file).exists():
             raise RuntimeError(
-                f"No se encontró el archivo de credenciales en '{self._service_account_file}'. "
-                "Revisa la ruta en GOOGLE_SERVICE_ACCOUNT_FILE."
+                f"No se encontró el archivo de autorización en '{self._token_file}'. "
+                "Ejecuta 'python3 scripts/authorize_google_drive.py' primero (una sola vez)."
             )
 
-        credentials = service_account.Credentials.from_service_account_file(
-            self._service_account_file, scopes=_DRIVE_SCOPES
-        )
+        credentials = Credentials.from_authorized_user_file(self._token_file, _DRIVE_SCOPES)
+
+        if not credentials.valid:
+            if credentials.expired and credentials.refresh_token:
+                try:
+                    credentials.refresh(GoogleAuthRequest())
+                except Exception as e:
+                    raise RuntimeError(
+                        "El token de Google Drive caducó y no se pudo renovar automáticamente. "
+                        "Vuelve a ejecutar 'python3 scripts/authorize_google_drive.py'."
+                    ) from e
+                # El access token cambia al renovarse; se guarda de vuelta para no
+                # tener que renovarlo otra vez en la próxima llamada.
+                Path(self._token_file).write_text(credentials.to_json(), encoding="utf-8")
+            else:
+                raise RuntimeError(
+                    "El token de Google Drive no es válido y no tiene refresh token. "
+                    "Vuelve a ejecutar 'python3 scripts/authorize_google_drive.py'."
+                )
+
         self._drive_service = build("drive", "v3", credentials=credentials)
         return self._drive_service
 
@@ -65,7 +93,7 @@ class DriveUploader:
         if not self.folder_id:
             raise RuntimeError(
                 "GOOGLE_DRIVE_FOLDER_ID no está configurado. "
-                "Añade el ID de la carpeta de Drive (compartida con la cuenta de servicio) en tu .env."
+                "Añade el ID de una carpeta de tu propio Drive en tu .env."
             )
         if not content_markdown or not content_markdown.strip():
             raise RuntimeError("El borrador está vacío: no hay nada que subir a Drive.")

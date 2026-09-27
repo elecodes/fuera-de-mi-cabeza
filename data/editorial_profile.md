@@ -28,3 +28,21 @@ versión que realmente usan los prompts).
 
 
 - **Preferencia aprendida**: No utilizar formulaciones antitéticas del tipo 'No se trata de X, sino de Y' y suprimir cualquier referencia redundante que describa la lista de comprobación como un mapa interno.
+
+
+- **Preferencia aprendida**: No emplear construcciones antitéticas tipo 'no es X; es Y' y cerrar las notas con una referencia a 'sacando fuera de mi cabeza, de mi escritorio...'.
+
+
+- **Preferencia aprendida**: No crear enumeraciones forzadas de tres ítems; reformula la idea o separa los elementos para evitar frases triádicas.
+
+
+- **Preferencia aprendida**: Mantener un tono íntimo y cercano, como si hablara directamente al lector, evitando cualquier expresión que resulte distante
+
+
+- **Preferencia aprendida**: Evita enumeraciones forzadas de tres ítems; reformula la idea o separa los elementos para no crear tríos sintácticos.
+
+
+- **Preferencia aprendida**: Los textos deben concluir con una mención que indique que la reflexión proviene directamente de mi cabeza, mis notas o mi ordenador.
+
+
+- **Preferencia aprendida**: Al describir la organización de tus ideas, usa una redacción clara y concreta en primera persona, evita enumeraciones de tres ítems y expresiones genéricas, y detalla la transición de papel a un organizador digital accesible desde el ordenador.
