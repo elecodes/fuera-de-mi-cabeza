@@ -5,6 +5,20 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.2] - 2026-09-27
+
+### Fixed
+- **CRÍTICO: la exportación a Drive con cuenta de servicio no puede funcionar en una cuenta de Gmail normal.** Las cuentas de servicio tienen 0 GB de cuota propia; cualquier archivo que intenten crear falla con `storageQuotaExceeded`, sin importar el espacio libre del dueño real de la carpeta.
+  - Cambiada la autenticación a **OAuth como el propio autor**: los archivos se crean bajo su propia cuenta, con su propio espacio.
+  - Nuevo script de autorización, una sola vez: `scripts/authorize_google_drive.py`.
+  - `GOOGLE_SERVICE_ACCOUNT_FILE` reemplazado por `GOOGLE_OAUTH_CLIENT_SECRET_FILE` y `GOOGLE_OAUTH_TOKEN_FILE`. La carpeta de Drive ya no necesita compartirse con nadie.
+  - Nueva dependencia: `google-auth-oauthlib`.
+  - `.gitignore` actualizado con los nuevos archivos de credenciales OAuth (el patrón viejo de cuenta de servicio se quedó desactualizado y no los cubría).
+  - Tests de `DriveUploader` aislados del `.env` real con `monkeypatch.delenv(...)`, para que no interfieran con las credenciales reales configuradas en la máquina.
+  - README actualizado con los pasos completos, incluyendo dos errores reales encontrados al configurarlo: `Error 400: redirect_uri_mismatch` (el Client ID debe ser de tipo "App de escritorio", no "Aplicación web") y `Error 403: access_denied` (la propia cuenta debe añadirse como "Usuario de prueba" en la pantalla de consentimiento OAuth, incluso siendo la única usuaria).
+
+Ver ADR 0016.
+
 ## [0.7.0] - 2026-09-26
 
 ### Added
