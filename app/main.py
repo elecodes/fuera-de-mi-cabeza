@@ -82,6 +82,10 @@ class LearnPreferenceInput(BaseModel):
     user_correction: str
 
 
+class DriveExportInput(BaseModel):
+    destination: str | None = None  # "borradores" (por defecto), "notes_publicados" o "posts_publicados"
+
+
 class DriveExportResult(BaseModel):
     drive_url: str
 
@@ -435,7 +439,7 @@ async def revise_draft(session_id: str, payload: RevisionInput):
 
 
 @app.post("/api/ideas/{session_id}/export-to-drive", response_model=DriveExportResult)
-async def export_draft_to_drive(session_id: str):
+async def export_draft_to_drive(session_id: str, payload: DriveExportInput | None = None):
     session = session_manager.get_session(session_id)
     if not session or not session.draft:
         raise HTTPException(status_code=400, detail="No hay un borrador activo para exportar a Drive")
@@ -445,6 +449,7 @@ async def export_draft_to_drive(session_id: str):
         drive_url = uploader.upload_draft_as_google_doc(
             title=session.draft.title,
             content_markdown=session.draft.content,
+            destination=payload.destination if payload else None,
         )
         return DriveExportResult(drive_url=drive_url)
     except Exception as e:

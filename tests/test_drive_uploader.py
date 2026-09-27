@@ -69,14 +69,68 @@ def test_upload_draft_defaults_title_when_none():
 
 
 def test_upload_draft_raises_without_folder_id(monkeypatch):
-    # Aísla el test del .env real: si GOOGLE_DRIVE_FOLDER_ID está configurado
-    # en la máquina (como debería estarlo en uso normal), este test necesita
-    # comprobar el caso en que NO lo está, sin que el .env real se cuele.
+    # Aísla el test del .env real: si las variables de carpeta están
+    # configuradas en la máquina (como debería ser en uso normal), este test
+    # necesita comprobar el caso en que NO lo están, sin que el .env real se cuele.
     monkeypatch.delenv("GOOGLE_DRIVE_FOLDER_ID", raising=False)
+    monkeypatch.delenv("GOOGLE_DRIVE_FOLDER_BORRADORES", raising=False)
     uploader = DriveUploader(drive_service=_FakeDriveService(), folder_id=None)
 
-    with pytest.raises(RuntimeError, match="GOOGLE_DRIVE_FOLDER_ID"):
+    with pytest.raises(RuntimeError, match="GOOGLE_DRIVE_FOLDER_BORRADORES"):
         uploader.upload_draft_as_google_doc(title="T", content_markdown="Contenido")
+
+
+def test_upload_draft_destination_borradores_falls_back_to_legacy_folder_id(monkeypatch):
+    # GOOGLE_DRIVE_FOLDER_ID (histórico, de antes de que existieran varios
+    # destinos con nombre) sigue sirviendo como resguardo, pero solo para
+    # el destino "borradores".
+    monkeypatch.delenv("GOOGLE_DRIVE_FOLDER_BORRADORES", raising=False)
+    calls = []
+    fake_service = _FakeDriveService(
+        response={"id": "abc123", "webViewLink": "https://docs.google.com/document/d/abc123/edit"},
+        captured_calls=calls,
+    )
+    uploader = DriveUploader(drive_service=fake_service, folder_id="legacy-folder-id")
+
+    uploader.upload_draft_as_google_doc(title="T", content_markdown="Contenido", destination="borradores")
+
+    assert calls[0]["body"]["parents"] == ["legacy-folder-id"]
+
+
+def test_upload_draft_routes_to_the_right_named_destination(monkeypatch):
+    monkeypatch.setenv("GOOGLE_DRIVE_FOLDER_BORRADORES", "id-borradores")
+    monkeypatch.setenv("GOOGLE_DRIVE_FOLDER_NOTES_PUBLICADOS", "id-notes")
+    monkeypatch.setenv("GOOGLE_DRIVE_FOLDER_POSTS_PUBLICADOS", "id-posts")
+
+    for destination, expected_folder in [
+        ("borradores", "id-borradores"),
+        ("notes_publicados", "id-notes"),
+        ("posts_publicados", "id-posts"),
+        (None, "id-borradores"),  # sin destino explícito, usa "borradores" por defecto
+    ]:
+        calls = []
+        fake_service = _FakeDriveService(
+            response={"id": "x", "webViewLink": "https://docs.google.com/document/d/x/edit"},
+            captured_calls=calls,
+        )
+        uploader = DriveUploader(drive_service=fake_service)
+        uploader.upload_draft_as_google_doc(title="T", content_markdown="C", destination=destination)
+        assert calls[0]["body"]["parents"] == [expected_folder]
+
+
+def test_upload_draft_raises_for_unknown_destination():
+    uploader = DriveUploader(drive_service=_FakeDriveService(), folder_id="folder-xyz")
+
+    with pytest.raises(RuntimeError, match="Destino de Drive desconocido"):
+        uploader.upload_draft_as_google_doc(title="T", content_markdown="Contenido", destination="carpeta_inventada")
+
+
+def test_upload_draft_raises_when_named_destination_not_configured(monkeypatch):
+    monkeypatch.delenv("GOOGLE_DRIVE_FOLDER_NOTES_PUBLICADOS", raising=False)
+    uploader = DriveUploader(drive_service=_FakeDriveService(), folder_id="folder-xyz")
+
+    with pytest.raises(RuntimeError, match="GOOGLE_DRIVE_FOLDER_NOTES_PUBLICADOS"):
+        uploader.upload_draft_as_google_doc(title="T", content_markdown="Contenido", destination="notes_publicados")
 
 
 def test_upload_draft_raises_on_empty_content():

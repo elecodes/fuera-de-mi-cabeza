@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.7.2)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.7.3)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -6,57 +6,65 @@ El agente no escribe inmediatamente. Su objetivo principal es ayudarte a pensar,
 
 ---
 
-## 🛠️ Flujo Principal Implementado BRAIN DUMP (Notas/Ideas) → ARCOS NARRATIVOS (Selección) → PREGUNTAR → PLAN → BORRADOR (Note/Post) → EDICIÓN DIRECTA / AUDITORÍA DE VOZ → REVISIÓN ---
+## 🛠️ Flujo Principal Implementado
+
+```
+BRAIN DUMP (Notas/Ideas) → ARCOS NARRATIVOS (Selección) → PREGUNTAR → PLAN → BORRADOR (Note/Post) → EDICIÓN DIRECTA / AUDITORÍA DE VOZ → REVISIÓN
+```
+
+---
 
 ## 🏗️ Estructura del Proyecto
 
+```
 fuera-de-mi-cabeza/
-├── SOUL.md # Constitución del agente y arquitectura de comportamiento
-├── CHANGELOG.md # Historial de cambios y versiones (Keep a Changelog)
+├── SOUL.md                      # Constitución del agente y arquitectura de comportamiento
+├── CHANGELOG.md                 # Historial de cambios y versiones (Keep a Changelog)
 ├── docs/
-│ ├── adr/ # Architecture Decision Records (MADR)
-│ └── architecture/ # Diagramas interactivos de arquitectura de Archify
+│   ├── adr/                     # Architecture Decision Records (MADR)
+│   └── architecture/            # Diagramas interactivos de arquitectura de Archify
 ├── scripts/
-│ └── update_diagram_metadata.py # Actualizador automático de metadatos de versión y Git
+│   ├── update_diagram_metadata.py # Actualizador automático de metadatos de versión y Git
+│   └── authorize_google_drive.py  # Autorización OAuth de Google Drive (una sola vez)
 ├── data/
-│ ├── voice_guide.md # Guía de voz, hábitos de escritura, ritmo y antipatrones a evitar
-│ ├── voice_samples.md # Muestras reales de texto del autor (gitignored por privacidad)
-│ ├── editorial_profile.md # Perfil e identidad del autor
-│ ├── editorial_memory.json # Persistencia local de reglas y preferencias de estilo
-│ └── sessions/ # Persistencia local JSON de sesiones
+│   ├── voice_guide.md           # Guía de voz, hábitos de escritura, ritmo y antipatrones a evitar
+│   ├── voice_samples.md         # Muestras reales de texto del autor (gitignored por privacidad)
+│   ├── editorial_profile.md     # Perfil e identidad del autor
+│   ├── editorial_memory.json    # Persistencia local de reglas y preferencias de estilo
+│   └── sessions/                # Persistencia local JSON de sesiones
 
 ├── app/
-│ ├── main.py # Endpoints FastAPI, Web UI y rutas de diagramas
-│ ├── models/
-│ │ ├── idea.py # Modelos Pydantic para ideas y brain dumps
-│ │ ├── analysis.py # Modelo de análisis y Arcos Narrativos
-│ │ ├── content_plan.py # Modelo de plan de contenido
-│ │ ├── draft.py # Modelo de borrador (Substack Note / Article)
-│ │ ├── voice_audit.py # Modelo de reporte de auditoría editorial
-│ │ └── session.py # Modelo de sesión editorial
-│ ├── services/
-│ │ ├── voice_profile.py # Carga centralizada de voz (voice_guide, voice_samples y memory)
-│ │ ├── text_output.py # Parseo de salida en texto plano del LLM (título + contenido, sin JSON)
-│ │ ├── idea_explorer.py # Analiza ideas, desglosa pensamientos y sintetiza arcos
-│ │ ├── content_planner.py # Genera el plan según el arco narrativo elegido
-│ │ ├── draft_generator.py # Redacta Substack Notes o Artículos
-│ │ ├── voice_auditor.py # Audita la naturalidad y antipatrones de IA
-│ │ ├── voice_editor.py # Ajusta el texto según tu feedback
-│ │ ├── drive_uploader.py # Exporta el borrador a Google Drive como Google Doc nativo
-│ │ └── session_manager.py # Guarda el estado de la sesión
+│   ├── main.py                  # Endpoints FastAPI, Web UI y rutas de diagramas
+│   ├── models/
+│   │   ├── idea.py              # Modelos Pydantic para ideas y brain dumps
+│   │   ├── analysis.py          # Modelo de análisis y Arcos Narrativos
+│   │   ├── content_plan.py      # Modelo de plan de contenido
+│   │   ├── draft.py             # Modelo de borrador (Substack Note / Article)
+│   │   ├── voice_audit.py       # Modelo de reporte de auditoría editorial
+│   │   └── session.py           # Modelo de sesión editorial
+│   ├── services/
+│   │   ├── voice_profile.py     # Carga centralizada de voz (voice_guide, voice_samples y memory)
+│   │   ├── text_output.py       # Parseo de salida en texto plano del LLM (título + contenido, sin JSON)
+│   │   ├── idea_explorer.py     # Analiza ideas, desglosa pensamientos y sintetiza arcos
+│   │   ├── content_planner.py   # Genera el plan según el arco narrativo elegido
+│   │   ├── draft_generator.py   # Redacta Substack Notes o Artículos
+│   │   ├── voice_auditor.py     # Audita la naturalidad y antipatrones de IA
+│   │   ├── voice_editor.py      # Ajusta el texto según tu feedback
+│   │   ├── drive_uploader.py    # Exporta el borrador a Google Drive como Google Doc nativo
+│   │   └── session_manager.py   # Guarda el estado de la sesión
 
-│ ├── llm/
-│ │ ├── client.py # Protocol LLMClient
-│ │ └── providers/ # Mock LLM y cliente HTTPX OpenAI-compatible
-│ ├── memory/
-│ │ └── editorial_memory.py # Memoria editorial y preferencias de estilo
-│ ├── prompts/ # Templates Markdown para el LLM
-│ └── web/
-│ └── index.html # Interfaz Web (cuaderno digital con edición directa y copiado)
-├── tests/ # Suite completa de tests unitarios e integración
+│   ├── llm/
+│   │   ├── client.py            # Protocol LLMClient
+│   │   └── providers/           # Mock LLM y cliente HTTPX OpenAI-compatible
+│   ├── memory/
+│   │   └── editorial_memory.py  # Memoria editorial y preferencias de estilo
+│   ├── prompts/                 # Templates Markdown para el LLM
+│   └── web/
+│       └── index.html           # Interfaz Web (cuaderno digital con edición directa y copiado)
+├── tests/                       # Suite completa de tests unitarios e integración
 ├── pyproject.toml
 └── README.md
-
+```
 
 ---
 
@@ -91,7 +99,7 @@ Puedes ingresar notas sueltas, viñetas o fragmentos de ideas. El agente desglos
 En el cuaderno web (`index.html`), puedes hacer clic y editar directamente el borrador generado (`contenteditable`). Un botón dedicado de **"📋 Copiar borrador al portapapeles"** te permite llevar el texto listo a Substack.
 
 ### 3. Auditoría de Voz Editorial y Filtros Anti-IA
-El botón **"🔍 Auditar Voz Editorial"** analiza tu texto en tiempo real contra los 11 antipatrones de IA y la guía de estilo de [`data/editorial_profile.md`](file:///Users/elena/Developer/fuera-de-mi-cabeza/data/editorial_profile.md):
+El botón **"🔍 Auditar Voz Editorial"** analiza tu texto en tiempo real contra los 11 antipatrones de IA y la guía de estilo de `data/editorial_profile.md`:
 - **Voz Peninsular:** Redacción en **Español de España (castellano peninsular)** (*tú, tienes, has vivido*).
 - **Varianza de Cadencia:** Oraciones cortas de énfasis combinadas espontáneamente con explicaciones matizadas.
 - **Filtros Antipatrones IA:** Cero antítesis ("No es X, es Y"), cero introducciones vacías, cero frases triádicas, cero muletillas cautelosas, cero cierres circulares y cero emojis decorativos.
@@ -103,10 +111,12 @@ El agente aprende continuamente de tu feedback y ajusta su estilo post a post:
 - **Optimización de Payload (65% Reducción):** Extrae las directrices clave de voz omitiendo bloques de texto repetitivos, permitiendo respuestas en menos de 1.5s en la API de Groq sin errores 413/429.
 
 ### 5. Salida en Texto Plano (sin JSON envolvente)
-Note, Article y Revision ya no le piden al LLM que envuelva el borrador en un objeto JSON. El modelo devuelve el texto tal cual (Note y Revision) o título + contenido separados por los marcadores `===TITULO===` / `===CONTENIDO===` (Article), parseados por [`app/services/text_output.py`](app/services/text_output.py). Esto evita errores de escapado en textos largos y deja que el modelo escriba prosa sin tener que pensar en el formato de salida. `content_planner`, `idea_explorer`, `voice_auditor` y `argument_griller` siguen usando JSON, porque ahí sí devuelven varios campos estructurados (listas, arrays).
+Note, Article y Revision ya no le piden al LLM que envuelva el borrador en un objeto JSON. El modelo devuelve el texto tal cual (Note y Revision) o título + contenido separados por los marcadores `===TITULO===` / `===CONTENIDO===` (Article), parseados por `app/services/text_output.py`. Esto evita errores de escapado en textos largos y deja que el modelo escriba prosa sin tener que pensar en el formato de salida. `content_planner`, `idea_explorer`, `voice_auditor` y `argument_griller` siguen usando JSON, porque ahí sí devuelven varios campos estructurados (listas, arrays).
 
 ### 6. Exportar a Google Drive
 El botón **"📤 Guardar en Google Drive"** (junto al de copiar al portapapeles) sube el borrador actual a una carpeta de tu Drive como **Google Doc nativo** (editable ahí mismo, con el título, negritas y listas ya aplicados). Es manual, no automático: solo se sube cuando pulsas el botón.
+
+Puedes elegir el destino en un desplegable junto al botón: **Borradores**, **Notes publicados** o **Posts publicados**, cada uno una carpeta de Drive distinta (ver ADR 0017).
 
 Usa **OAuth como tú misma** (no una cuenta de servicio: para una cuenta de Gmail normal, sin Google Workspace, las cuentas de servicio tienen 0 GB de cuota propia y no pueden crear archivos — ver ADR 0016). Configuración, una sola vez:
 
@@ -115,19 +125,20 @@ Usa **OAuth como tú misma** (no una cuenta de servicio: para una cuenta de Gmai
 3. **Configura la pantalla de consentimiento OAuth**: *APIs y servicios* → *Pantalla de consentimiento OAuth* → tipo **Externo** → rellena lo mínimo obligatorio → en la sección **"Usuarios de prueba"**, añade tu propia cuenta de Gmail. **Este paso es obligatorio incluso siendo tú la única usuaria** — si lo saltas, la autorización falla con `Error 403: access_denied` ("no ha completado el proceso de verificación de Google").
 4. **Crea un Client ID de OAuth**: *APIs y servicios* → *Credenciales* → *Crear credenciales* → *ID de cliente de OAuth* → tipo **"App de escritorio"** (no "Aplicación web": ese tipo exige una URL de redirección fija y falla con `Error 400: redirect_uri_mismatch`, porque el script usa un puerto local que cambia cada vez).
 5. **Descarga el JSON del cliente**: en la lista de credenciales, junto al Client ID que acabas de crear, pulsa el icono de descarga. Guárdalo en la raíz del repo, por ejemplo como `google-oauth-client-secret.json` (ya está en `.gitignore`).
-6. **Crea (o elige) la carpeta de Drive** donde quieres guardar tus borradores — es tuya, no hace falta compartirla con nadie. Copia su ID: es la parte de la URL después de `folders/`.
+6. **Crea (o elige) las carpetas de Drive** que quieras usar como destino — cada una es tuya, no hace falta compartir ninguna con nadie. Para cada una, copia su ID: es la parte de la URL después de `folders/`. No hace falta configurar las tres: puedes empezar solo con "Borradores" e ir añadiendo las demás cuando las necesites.
 7. **Añade a tu `.env`**:
-
-GOOGLE_OAUTH_CLIENT_SECRET_FILE=google-oauth-client-secret.json
-GOOGLE_OAUTH_TOKEN_FILE=google-oauth-token.json
-GOOGLE_DRIVE_FOLDER_ID=el_id_que_copiaste
-
+   ```
+   GOOGLE_OAUTH_CLIENT_SECRET_FILE=google-oauth-client-secret.json
+   GOOGLE_OAUTH_TOKEN_FILE=google-oauth-token.json
+   GOOGLE_DRIVE_FOLDER_BORRADORES=el_id_de_esa_carpeta
+   GOOGLE_DRIVE_FOLDER_NOTES_PUBLICADOS=el_id_de_esa_carpeta
+   GOOGLE_DRIVE_FOLDER_POSTS_PUBLICADOS=el_id_de_esa_carpeta
+   ```
 8. **Autoriza el acceso, una sola vez**:
-```bash
+   ```bash
    python3 scripts/authorize_google_drive.py
-```
+   ```
    Se abre tu navegador, inicias sesión con tu cuenta de Google, aceptas el acceso a Drive, y se guarda un archivo de token (`google-oauth-token.json`, también en `.gitignore`) que el backend renueva solo a partir de ahí.
-9. Reinicia el backend. Genera un borrador y pulsa "Guardar en Google Drive" — debería aparecer un enlace para abrir el documento.
+9. Reinicia el backend. Genera un borrador, elige el destino en el desplegable y pulsa "Guardar en Google Drive" — debería aparecer un enlace para abrir el documento.
 
-Si algo falla (token caducado, carpeta equivocada, permisos), el error real aparece debajo del botón — nunca se guarda nada en silencio.
-
+Si algo falla (token caducado, carpeta equivocada, un destino sin configurar, permisos), el error real aparece debajo del botón — nunca se guarda nada en silencio.

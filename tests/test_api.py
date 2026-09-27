@@ -122,7 +122,7 @@ def test_full_api_flow():
     assert res_get.status_code == 200
     assert res_get.json()["id"] == session_id
 
-    # 11. Export to Drive
+    # 11. Export to Drive (destino por defecto: borradores)
     with patch("app.main.DriveUploader") as MockUploader:
         MockUploader.return_value.upload_draft_as_google_doc.return_value = "https://docs.google.com/document/d/xyz/edit"
         res_drive = client.post(f"/api/ideas/{session_id}/export-to-drive")
@@ -131,6 +131,21 @@ def test_full_api_flow():
         MockUploader.return_value.upload_draft_as_google_doc.assert_called_once_with(
             title="IA para Aprender",
             content_markdown="Contenido del artículo revisado...",
+            destination=None,
+        )
+
+    # 11b. Export to Drive con un destino explícito
+    with patch("app.main.DriveUploader") as MockUploader:
+        MockUploader.return_value.upload_draft_as_google_doc.return_value = "https://docs.google.com/document/d/xyz/edit"
+        res_drive = client.post(
+            f"/api/ideas/{session_id}/export-to-drive",
+            json={"destination": "posts_publicados"},
+        )
+        assert res_drive.status_code == 200
+        MockUploader.return_value.upload_draft_as_google_doc.assert_called_once_with(
+            title="IA para Aprender",
+            content_markdown="Contenido del artículo revisado...",
+            destination="posts_publicados",
         )
 
 
@@ -176,10 +191,10 @@ def test_export_to_drive_surfaces_real_error():
     # Si Drive falla (credenciales, permisos, lo que sea), el error real debe
     # verse en la respuesta, nunca un 200 silencioso ni un mock disfrazado.
     with patch("app.main.DriveUploader") as MockUploader:
-        MockUploader.return_value.upload_draft_as_google_doc.side_effect = RuntimeError("GOOGLE_DRIVE_FOLDER_ID no está configurado.")
+        MockUploader.return_value.upload_draft_as_google_doc.side_effect = RuntimeError("GOOGLE_DRIVE_FOLDER_BORRADORES no está configurado.")
         res_drive = client.post(f"/api/ideas/{session_id}/export-to-drive")
         assert res_drive.status_code == 500
-        assert "GOOGLE_DRIVE_FOLDER_ID" in res_drive.json()["detail"]
+        assert "GOOGLE_DRIVE_FOLDER_BORRADORES" in res_drive.json()["detail"]
 
 
 def test_architecture_endpoint():
