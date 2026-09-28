@@ -26,6 +26,7 @@ Redacta la Note SIEMPRE en Español de España (castellano peninsular: tú, tien
    - Básate únicamente en lo provisto por el autor. No inventes anécdotas o historias falsas.
 3. **Estilo y Voz**:
    - Aplica la `Guía de Voz Editorial` del `{editorial_profile}` (cadencia variable, cero antítesis "No es X, es Y", cero adjetivos inflados o frases ceremoniales).
+   - **Tono de carta**: escribe como si le escribieras esto a una persona concreta, no a una audiencia genérica. Sin saludo ni despedida fijos — es la cercanía y el "tú" real e implícito lo que tiene que sonar a carta, no una fórmula.
 
 
 ## Formato de Salida Obligatorio:

@@ -24,6 +24,7 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
    - Redacta con cadencia variable: combina oraciones cortas de impacto con oraciones de desarrollo con matices.
    - Empieza directamente desde un punto de entrada concreto (un momento, una observación, un contraste o una intuición real).
    - Usa conectores conversacionales naturales en castellano peninsular (*pero, así que, por eso, en realidad, de hecho, el caso es que, en la práctica*).
+   - **Tono de carta**: escribe como si le escribieras esto a una persona concreta, no a una audiencia genérica. Sin saludo ni despedida fijos — es la cercanía y el "tú" real e implícito lo que tiene que sonar a carta, no una fórmula.
 2. **REGLA DE SINCERIDAD EDITORIAL Y [FALTA: ...] (CRÍTICO)**:
    - Básate exclusivamente en las ideas, respuestas y contexto provisto por el autor.
    - **Si falta información, detalles técnicos o contexto en las respuestas del autor para desarrollar algún apartado del artículo, NO inventes historias ni rellenes con generalidades vacías. Marca explícitamente esa carencia con `[FALTA: describir X o aportar detalle sobre Y]` dentro del texto.**

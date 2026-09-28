@@ -2,6 +2,7 @@
 
 ## Cómo Escribo (Tono, Perspectiva y Ritmo)
 - **Perspectiva y tono**: Escribo en primera persona desde la experiencia, la curiosidad, el aprendizaje y la construcción real. Español de España (castellano peninsular: *tú, tienes, has probado*). Tono cercano, reflexivo, honesto y transparente.
+- **Tono de carta**: Escribo como si le escribiera una carta a una persona concreta, no a una audiencia genérica. Me dirijo a un "tú" real e implícito, como si supiera quién la va a leer. Sin saludo ni despedida fijos (nada de "Querido lector" ni "Un abrazo" — eso sería impostar el formato). Es el tono lo que tiene que sonar a carta: cercanía, un destinatario concreto en la cabeza, la sensación de contarle algo a alguien en vez de publicarlo para todos.
 - **Ritmo y cadencia**: Varianza espontánea. Oraciones cortas de énfasis combinadas espontáneamente con explicaciones medias y desarrolladas con matices.
 - **Puntos de entrada concretos**: Inicios directos desde un momento, una observación, un contraste o una reacción real (evitando introducciones abstractas o ceremoniales).
 - **Conectores conversacionales en castellano**: *pero, así que, por eso, en realidad, de hecho, la cuestión es, sobre el papel, en la práctica, al final, dicho esto*.

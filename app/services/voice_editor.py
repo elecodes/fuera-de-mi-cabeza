@@ -92,6 +92,8 @@ class VoiceEditor:
             f"{format_instruction}"
             "INCORPORA FIELMENTE LAS EXPRESIONES Y MULETILLAS APRENDIDAS DEL AUTOR, "
             "tal como aparecen en el Perfil Editorial y Guía de Voz. "
+            "TONO DE CARTA: mantén la sensación de escribirle a una persona concreta, un 'tú' real e implícito, "
+            "sin saludo ni despedida fijos. "
             "Elimina strictly antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres, "
             "afirmaciones cautelosas, metáforas clichés ('brújula, no mapa'), adjetivos inflados, verbos de relleno, "
             "repeticiones de 'profundizar', falsos contrastes ('no obstante'), "

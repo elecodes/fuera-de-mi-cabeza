@@ -24,6 +24,7 @@ Edita y redacta SIEMPRE en Español de España (castellano peninsular: tú, tien
 3. **Cómo escribe el autor**:
    - Ajusta el ritmo y la cadencia según la `Guía de Voz Editorial` del `{editorial_profile}`.
    - Mantén la fidelidad a lo expresado por el autor sin inventar historias ni datos no proporcionados.
+   - **Tono de carta**: mantén la sensación de escribirle a una persona concreta, un "tú" real e implícito, sin saludo ni despedida fijos.
 
 
 ## Formato de Salida Obligatorio:
