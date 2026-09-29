@@ -20,7 +20,7 @@ Redacta la Note SIEMPRE en Español de España (castellano peninsular: tú, tien
 1. **Cómo escribe el autor (Estructura de 2-3 Párrafos)**:
    - **Párrafo 1**: Inicia directamente desde una observación concreta, experiencia o intuición real del autor (sin introducciones ceremoniales).
    - **Párrafo 2**: Conecta y explica los puntos clave con cadencia natural y matices conversacionales en castellano peninsular (*pero, así que, por eso, en realidad, el caso es que*).
-   - **Párrafo 3**: Cierre sutil y memorable sin moraleja inflada.
+   - **Párrafo 3**: Cierre sutil y memorable sin moraleja inflada. Termina con una frase breve que conecte el tema concreto de esta Note con la idea de "sacar algo de la cabeza" que da nombre a la newsletter, variando el objeto según el tema (fuera de mi cabeza, fuera de mi ordenador, fuera de mi escritorio, fuera de mi cuaderno...) — nunca la misma frase literal que en otras piezas.
 2. **Transformación Narrativa & Cero Relleno**:
    - Transforma las ideas brutas en párrafos articulados (120-250 palabras). Prohibido copy-paste de listas o etiquetas ("Pensamiento 1:").
    - Básate únicamente en lo provisto por el autor. No inventes anécdotas o historias falsas.

@@ -5,6 +5,13 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.5] - 2026-09-28
+
+### Changed
+- **Cierre con eco del nombre**: Note y Article ahora cierran con una frase breve, ligada al tema concreto de la pieza, que conecta con la idea de "sacar algo de la cabeza" (fuera de mi cabeza, fuera de mi ordenador, fuera de mi escritorio, fuera de mi cuaderno...) — variando el objeto según el tema, nunca la misma frase dos veces. No es un resumen ni una moraleja.
+
+Ver ADR 0019.
+
 ## [0.7.4] - 2026-09-28
 
 ### Changed

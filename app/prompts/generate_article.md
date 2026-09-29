@@ -32,6 +32,7 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
    - Longitud densa y articulada (entre 300 y 600 palabras en 3-5 párrafos fluidos).
    - Cero relleno, cero introducciones o conclusiones ceremoniales.
    - Aplica la guía de voz y las reglas de `Guía de Voz Editorial` (evitar antítesis clínicas "No es X, es Y", adjetivos inflados y verbos de relleno).
+   - **Cierre**: termina con una frase breve que conecte el tema concreto de este artículo con la idea de "sacar algo de la cabeza" que da nombre a la newsletter, variando el objeto según el tema (fuera de mi cabeza, fuera de mi ordenador, fuera de mi escritorio, fuera de mi cuaderno...) — nunca la misma frase literal que en otras piezas. No es un resumen ni una moraleja, es un guiño breve.
 
 
 ## Formato de Salida Obligatorio:
