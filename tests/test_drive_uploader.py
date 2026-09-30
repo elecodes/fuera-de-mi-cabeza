@@ -213,8 +213,8 @@ def test_get_service_refreshes_expired_token_and_persists_it(tmp_path, monkeypat
         response={"id": "x", "webViewLink": "https://docs.google.com/document/d/x/edit"}
     )
 
-    with patch("app.services.drive_uploader.Credentials.from_authorized_user_file", return_value=fake_creds), \
-         patch("app.services.drive_uploader.build", return_value=fake_built_service) as mock_build:
+    with patch("app.services.google_drive_auth.Credentials.from_authorized_user_file", return_value=fake_creds), \
+         patch("app.services.google_drive_auth.build", return_value=fake_built_service) as mock_build:
         uploader = DriveUploader(drive_service=None, folder_id="folder-xyz", token_file=str(token_file))
         link = uploader.upload_draft_as_google_doc(title="T", content_markdown="Contenido")
 
@@ -234,7 +234,7 @@ def test_get_service_raises_when_token_expired_without_refresh_token(tmp_path):
     fake_creds.expired = True
     fake_creds.refresh_token = None
 
-    with patch("app.services.drive_uploader.Credentials.from_authorized_user_file", return_value=fake_creds):
+    with patch("app.services.google_drive_auth.Credentials.from_authorized_user_file", return_value=fake_creds):
         uploader = DriveUploader(drive_service=None, folder_id="folder-xyz", token_file=str(token_file))
         with pytest.raises(RuntimeError, match="no tiene refresh token"):
             uploader.upload_draft_as_google_doc(title="T", content_markdown="Contenido")

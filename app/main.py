@@ -23,6 +23,8 @@ from app.services.argument_griller import ArgumentGriller
 from app.services.profile_generator import ProfileGenerator
 from app.services.audio_transcriber import AudioTranscriber
 from app.services.drive_uploader import DriveUploader
+from app.services.embeddings_client import GeminiEmbeddingsClient
+from app.services.knowledge_base import KnowledgeBase
 from app.memory.editorial_memory import EditorialMemory
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -88,6 +90,21 @@ class DriveExportInput(BaseModel):
 
 class DriveExportResult(BaseModel):
     drive_url: str
+
+
+class KnowledgeSearchInput(BaseModel):
+    query: str
+    top_k: int = 3
+
+
+class RelatedPiece(BaseModel):
+    title: str | None
+    source_link: str | None
+    score: float
+
+
+class KnowledgeSearchResult(BaseModel):
+    results: list[RelatedPiece]
 
 
 
@@ -454,6 +471,24 @@ async def export_draft_to_drive(session_id: str, payload: DriveExportInput | Non
         return DriveExportResult(drive_url=drive_url)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al exportar a Google Drive: {str(e)}")
+
+
+@app.post("/api/knowledge/search", response_model=KnowledgeSearchResult)
+async def search_knowledge_base(payload: KnowledgeSearchInput):
+    """
+    Busca, por significado (no por palabras), piezas ya publicadas parecidas
+    a `query` — pensado para avisar "ya escribiste algo parecido en..." al
+    explorar una idea nueva. Requiere haber corrido
+    `scripts/ingest_published_drive_docs.py` al menos una vez.
+    """
+    try:
+        embeddings = GeminiEmbeddingsClient()
+        query_embedding = await embeddings.embed(payload.query, task_type="RETRIEVAL_QUERY")
+        kb = KnowledgeBase()
+        matches = kb.search(query_embedding, top_k=payload.top_k)
+        return KnowledgeSearchResult(results=[RelatedPiece(**m) for m in matches])
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al buscar en el catálogo publicado: {str(e)}")
 
 
 @app.post("/api/profile/extract-tone")

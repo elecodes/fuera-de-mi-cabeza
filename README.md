@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.7.5)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.8.0)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -25,7 +25,8 @@ fuera-de-mi-cabeza/
 │   └── architecture/            # Diagramas interactivos de arquitectura de Archify
 ├── scripts/
 │   ├── update_diagram_metadata.py # Actualizador automático de metadatos de versión y Git
-│   └── authorize_google_drive.py  # Autorización OAuth de Google Drive (una sola vez)
+│   ├── authorize_google_drive.py  # Autorización OAuth de Google Drive (una sola vez)
+│   └── ingest_published_drive_docs.py # Indexa lo publicado en Drive para el RAG ligero
 ├── data/
 │   ├── voice_guide.md           # Guía de voz, hábitos de escritura, ritmo y antipatrones a evitar
 │   ├── voice_samples.md         # Muestras reales de texto del autor (gitignored por privacidad)
@@ -51,6 +52,10 @@ fuera-de-mi-cabeza/
 │   │   ├── voice_auditor.py     # Audita la naturalidad y antipatrones de IA
 │   │   ├── voice_editor.py      # Ajusta el texto según tu feedback
 │   │   ├── drive_uploader.py    # Exporta el borrador a Google Drive como Google Doc nativo
+│   │   ├── google_drive_auth.py # Carga y renovación de credenciales OAuth de Drive (compartido)
+│   │   ├── drive_reader.py      # Lee y exporta el texto de Google Docs de una carpeta de Drive
+│   │   ├── embeddings_client.py # Cliente de la API de embeddings de Gemini
+│   │   ├── knowledge_base.py    # Almacén local de piezas publicadas + búsqueda por similitud
 │   │   └── session_manager.py   # Guarda el estado de la sesión
 
 │   ├── llm/
@@ -142,3 +147,24 @@ Usa **OAuth como tú misma** (no una cuenta de servicio: para una cuenta de Gmai
 9. Reinicia el backend. Genera un borrador, elige el destino en el desplegable y pulsa "Guardar en Google Drive" — debería aparecer un enlace para abrir el documento.
 
 Si algo falla (token caducado, carpeta equivocada, un destino sin configurar, permisos), el error real aparece debajo del botón — nunca se guarda nada en silencio.
+
+### 7. Catálogo publicado (RAG ligero)
+Al explorar una idea nueva, la app avisa si ya escribiste algo parecido: compara tu idea por *significado* (no por palabras) contra tus Notes y Posts ya publicados, y muestra un aviso **"📚 Ya escribiste algo parecido"** con enlaces, si encuentra algo suficientemente similar. No mete ese contenido antiguo dentro del prompt del LLM — es solo un aviso informativo para ti, para que decidas si conectar con esa pieza, evitar repetirte, o seguir igualmente (ver ADR 0020).
+
+Nada de bases de datos vectoriales: un JSON local (`data/knowledge_base.json`, gitignored) con cada pieza y su "embedding" (huella semántica), comparados por similitud de coseno en Python — de sobra para un catálogo personal.
+
+Configuración, una sola vez:
+
+1. **Consigue una clave de la API de Gemini**: en [Google AI Studio](https://aistudio.google.com/apikey), crea una clave (tiene tier gratuito).
+2. **Añade a tu `.env`**:
+   ```
+   GEMINI_API_KEY=tu_clave
+   ```
+3. **Indexa lo que ya tienes publicado** (usa las carpetas de Drive de `GOOGLE_DRIVE_FOLDER_NOTES_PUBLICADOS` / `GOOGLE_DRIVE_FOLDER_POSTS_PUBLICADOS` que ya configuraste en la sección anterior — no hace falta mover ni copiar nada):
+   ```bash
+   python3 scripts/ingest_published_drive_docs.py
+   ```
+   Solo indexa lo que haya cambiado desde la última vez que lo corriste, así que puedes volver a ejecutarlo cuando quieras refrescar el catálogo (por ejemplo, después de publicar algo nuevo) sin volver a gastar cuota en lo que no ha cambiado.
+4. Reinicia el backend. Al explorar una idea nueva, si hay algo parecido ya publicado, debería aparecer el aviso con el enlace.
+
+Si `GEMINI_API_KEY` no está configurado, o el catálogo está vacío, el aviso simplemente no aparece — no bloquea ni interrumpe el resto del flujo.

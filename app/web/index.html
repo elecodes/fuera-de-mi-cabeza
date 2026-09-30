@@ -360,7 +360,12 @@
     <div class="badge">SÍNTESIS DE IDEAS</div>
     <div class="step-title">Núcleo detectado:</div>
     <p id="analysis-core" style="font-weight: 500; font-size: 1.1rem;"></p>
-    
+
+    <div id="related-pieces-section" class="hidden" style="margin-top: 0.8rem; padding: 0.8rem; background: var(--bg-soft, #f3f4f6); border-radius: 8px; font-size: 0.9rem;">
+      <strong>📚 Ya escribiste algo parecido:</strong>
+      <ul id="related-pieces-list" style="margin: 0.4rem 0 0 1.2rem;"></ul>
+    </div>
+
     <div style="margin-top: 1rem;" id="connected-thoughts-section">
       <strong>Pensamientos identificados:</strong>
       <ul id="analysis-connected"></ul>
@@ -549,6 +554,31 @@
 
         document.getElementById("step-2").classList.remove("hidden");
         document.getElementById("step-2").scrollIntoView({ behavior: "smooth" });
+
+        // Aviso informativo, no crítico: si falla (sin API key, catálogo
+        // vacío, lo que sea) se ignora en silencio y no interrumpe el flujo.
+        try {
+          const resRelated = await fetch("/api/knowledge/search", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: idea, top_k: 3 })
+          });
+          if (resRelated.ok) {
+            const relatedData = await resRelated.json();
+            const relevant = (relatedData.results || []).filter(r => r.score >= 0.75);
+            const section = document.getElementById("related-pieces-section");
+            if (relevant.length > 0) {
+              document.getElementById("related-pieces-list").innerHTML = relevant.map(r =>
+                `<li><a href="${r.source_link}" target="_blank" rel="noopener">${r.title}</a></li>`
+              ).join("");
+              section.classList.remove("hidden");
+            } else {
+              section.classList.add("hidden");
+            }
+          }
+        } catch (err) {
+          console.warn("Búsqueda de piezas relacionadas no disponible:", err);
+        }
       } catch (err) {
         alert("Error al explorar las ideas: " + err.message);
       } finally {

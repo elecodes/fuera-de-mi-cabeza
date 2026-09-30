@@ -5,6 +5,20 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2026-09-28
+
+### Added
+- **RAG ligero sobre el catálogo ya publicado.** Al explorar una idea nueva, la app avisa "📚 Ya escribiste algo parecido" con enlaces, si encuentra algo suficientemente similar (por significado, no por palabras) entre tus Notes/Posts ya publicados en Drive.
+  - `app/services/embeddings_client.py` (`GeminiEmbeddingsClient`): cliente ligero (httpx, sin SDK nuevo) para la API de embeddings de Gemini (tiene tier gratuito).
+  - `app/services/knowledge_base.py` (`KnowledgeBase`): almacén local en JSON (`data/knowledge_base.json`, gitignored) con búsqueda por similitud de coseno — nada de base de datos vectorial.
+  - `app/services/drive_reader.py` (`DriveReader`): lista y exporta el texto de los Google Docs de una carpeta de Drive, reutilizando las mismas credenciales OAuth del botón de exportar.
+  - `app/services/google_drive_auth.py`: carga y renovación de credenciales OAuth extraída de `DriveUploader` a un módulo compartido, para que `DriveReader` la reutilice sin duplicarla.
+  - Nuevo script `scripts/ingest_published_drive_docs.py`: indexa lo publicado en `GOOGLE_DRIVE_FOLDER_NOTES_PUBLICADOS` / `GOOGLE_DRIVE_FOLDER_POSTS_PUBLICADOS` (las mismas carpetas del botón de exportar). Solo reindexa lo que haya cambiado.
+  - Nuevo endpoint `POST /api/knowledge/search`.
+  - El contenido recuperado se muestra como enlaces informativos; no se mete dentro del prompt del LLM en esta versión.
+
+Ver ADR 0020.
+
 ## [0.7.5] - 2026-09-28
 
 ### Changed

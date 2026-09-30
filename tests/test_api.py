@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from unittest.mock import patch, AsyncMock
 from fastapi.testclient import TestClient
 from app.main import app
 from app.llm.providers.mock import MockLLMClient
@@ -195,6 +195,33 @@ def test_export_to_drive_surfaces_real_error():
         res_drive = client.post(f"/api/ideas/{session_id}/export-to-drive")
         assert res_drive.status_code == 500
         assert "GOOGLE_DRIVE_FOLDER_BORRADORES" in res_drive.json()["detail"]
+
+
+def test_knowledge_search_returns_ranked_matches():
+    with patch("app.main.GeminiEmbeddingsClient") as MockEmbeddings, \
+         patch("app.main.KnowledgeBase") as MockKB:
+        MockEmbeddings.return_value.embed = AsyncMock(return_value=[1.0, 0.0])
+        MockKB.return_value.search.return_value = [
+            {"doc_id": "d1", "title": "Post relacionado", "source_link": "https://drive/d1", "score": 0.87},
+        ]
+
+        res = client.post("/api/knowledge/search", json={"query": "una idea sobre IA", "top_k": 3})
+
+        assert res.status_code == 200
+        data = res.json()
+        assert data["results"][0]["title"] == "Post relacionado"
+        assert data["results"][0]["score"] == 0.87
+        MockEmbeddings.return_value.embed.assert_called_once_with("una idea sobre IA", task_type="RETRIEVAL_QUERY")
+
+
+def test_knowledge_search_surfaces_real_error():
+    with patch("app.main.GeminiEmbeddingsClient") as MockEmbeddings:
+        MockEmbeddings.return_value.embed = AsyncMock(side_effect=RuntimeError("GEMINI_API_KEY no está configurado."))
+
+        res = client.post("/api/knowledge/search", json={"query": "una idea"})
+
+        assert res.status_code == 500
+        assert "GEMINI_API_KEY" in res.json()["detail"]
 
 
 def test_architecture_endpoint():

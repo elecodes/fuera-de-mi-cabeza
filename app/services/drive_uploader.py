@@ -1,12 +1,10 @@
 import io
 import os
-from pathlib import Path
 
 import markdown as markdown_lib
-from google.auth.transport.requests import Request as GoogleAuthRequest
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseUpload
+
+from app.services.google_drive_auth import build_drive_service
 
 # NOTA HISTÓRICA (ver ADR 0016): esto usó una cuenta de servicio (ADR 0015),
 # pero las cuentas de servicio tienen 0 GB de cuota propia. Para una carpeta
@@ -17,7 +15,8 @@ from googleapiclient.http import MediaIoBaseUpload
 # evitarlo con una cuenta de servicio. La alternativa es autenticar como el
 # propio autor (OAuth), para que los archivos se creen bajo su propia cuenta
 # y su propio espacio, tal como si los hubiera creado él mismo desde Drive.
-_DRIVE_SCOPES = ["https://www.googleapis.com/auth/drive"]
+# La carga de credenciales en sí vive en app/services/google_drive_auth.py,
+# compartida con DriveReader (ver ADR 0020) para no duplicarla.
 
 # Destinos con nombre (ver ADR 0017): cada uno es una subcarpeta de Drive
 # distinta, configurada por su propia variable de entorno. "default" es la
@@ -93,39 +92,7 @@ class DriveUploader:
     def _get_service(self):
         if self._drive_service is not None:
             return self._drive_service
-
-        if not self._token_file:
-            raise RuntimeError(
-                "GOOGLE_OAUTH_TOKEN_FILE no está configurado. "
-                "Ejecuta 'python3 scripts/authorize_google_drive.py' para autorizar el acceso a Drive."
-            )
-        if not Path(self._token_file).exists():
-            raise RuntimeError(
-                f"No se encontró el archivo de autorización en '{self._token_file}'. "
-                "Ejecuta 'python3 scripts/authorize_google_drive.py' primero (una sola vez)."
-            )
-
-        credentials = Credentials.from_authorized_user_file(self._token_file, _DRIVE_SCOPES)
-
-        if not credentials.valid:
-            if credentials.expired and credentials.refresh_token:
-                try:
-                    credentials.refresh(GoogleAuthRequest())
-                except Exception as e:
-                    raise RuntimeError(
-                        "El token de Google Drive caducó y no se pudo renovar automáticamente. "
-                        "Vuelve a ejecutar 'python3 scripts/authorize_google_drive.py'."
-                    ) from e
-                # El access token cambia al renovarse; se guarda de vuelta para no
-                # tener que renovarlo otra vez en la próxima llamada.
-                Path(self._token_file).write_text(credentials.to_json(), encoding="utf-8")
-            else:
-                raise RuntimeError(
-                    "El token de Google Drive no es válido y no tiene refresh token. "
-                    "Vuelve a ejecutar 'python3 scripts/authorize_google_drive.py'."
-                )
-
-        self._drive_service = build("drive", "v3", credentials=credentials)
+        self._drive_service = build_drive_service(self._token_file)
         return self._drive_service
 
     def upload_draft_as_google_doc(
