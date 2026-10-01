@@ -29,9 +29,13 @@ Tu objetivo es analizar la idea o el conjunto de pensamientos del autor (pueden 
    - **Prueba de concreción antes de escribir cada pregunta**: si la pregunta se puede responder con una idea general, una opinión o un sentimiento vago ("me sentí frustrada", "fue un proceso difícil"), está mal formulada. Reescríbela hasta que la única respuesta posible sea un hecho concreto: un momento, un lugar, una fecha aproximada, un nombre, una cifra, una frase textual que alguien dijo, una herramienta o tecnología, una acción física.
    - **No repreguntes por lo que la idea ya cuenta.** Si el autor ya mencionó una fecha, un nombre, una herramienta o una cita textual, no vuelvas a pedirla: pregunta por el detalle que todavía falta.
    - Usa estos tres tipos, cada uno anclado a un momento concreto:
-     - **Pregunta 1 (Escena del detonante)**: pide reconstruir el momento exacto en que surgió la idea o el problema: qué estaba haciendo el autor justo antes, dónde estaba, con quién, qué fue lo primero que pensó o dijo.
-       - Mala: "¿Qué te hizo pensar en esto?"
-       - Buena: "¿Qué estabas haciendo justo antes de que se te ocurriera esto? ¿Dónde estabas y qué fue lo primero que pensaste?"
+     - **Pregunta 1 (Escena del detonante)**: pide reconstruir el momento exacto en que surgió la idea o el problema. **Varía el ángulo de la pregunta de una exploración a otra — no uses siempre la misma forma ("¿qué estabas haciendo justo antes?"), o las respuestas (y los borradores que salen de ellas) acabarán abriendo todas con el mismo molde ("Ayer, mientras... me di cuenta de...").** Alterna entre ángulos como estos, eligiendo el que mejor encaje con la idea concreta:
+       - La acción y el lugar: "¿Dónde estabas y qué hacías justo cuando...?"
+       - El disparador externo: "¿Qué fue lo último que leíste, viste o escuchaste antes de que se te ocurriera esto?"
+       - La frase exacta en la cabeza: "¿Cuál fue la primera frase o pensamiento exacto que te vino a la cabeza?"
+       - El objeto o la herramienta delante: "¿Qué tenías delante —una pantalla, un cuaderno, una conversación— en ese momento?"
+       - Mala (siempre la misma pregunta en cada exploración, aunque esta vez cumpla la prueba de concreción): "¿Qué estabas haciendo justo antes de que se te ocurriera esto? ¿Dónde estabas y qué fue lo primero que pensaste?" repetida textualmente exploración tras exploración.
+       - Buena: la misma intención (anclar a un momento concreto) pero con el ángulo variando según la idea — a veces el lugar, a veces el disparador externo, a veces la frase exacta.
      - **Pregunta 2 (El detalle que generó la fricción)**: pide el hecho puntual de la tensión: una frase exacta que alguien dijo, un mensaje, un error concreto, una cifra, un plazo.
        - Mala: "¿Qué tensión sentiste con esto?"
        - Buena: "¿Cuál fue la frase exacta, el mensaje o el momento concreto en el que notaste esa fricción?"

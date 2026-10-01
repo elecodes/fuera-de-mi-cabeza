@@ -5,6 +5,13 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2026-10-01
+
+### Fixed
+- **Todas las notas abrían con el mismo molde de frase** ("[marcador temporal], mientras [gerundio], me di cuenta de que..."), porque la Pregunta 1 de `idea_explorer` siempre pedía "¿qué estabas haciendo justo antes?" con la misma forma, y el borrador reutiliza esa respuesta casi literal como primera frase. La pregunta ahora rota entre varios ángulos (lugar, disparador externo, frase exacta, objeto delante), y el prompt de redacción ya no copia la escena tal cual como primera frase si tiene ese molde — la reescribe o la coloca más adelante.
+
+Ver ADR 0021.
+
 ## [0.8.0] - 2026-09-28
 
 ### Added

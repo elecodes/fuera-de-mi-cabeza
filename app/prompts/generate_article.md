@@ -23,6 +23,7 @@ Redacta el artículo SIEMPRE en Español de España (castellano peninsular: tú,
 1. **Cómo escribe el autor (Tono y Estilo)**:
    - Redacta con cadencia variable: combina oraciones cortas de impacto con oraciones de desarrollo con matices.
    - Empieza directamente desde un punto de entrada concreto (un momento, una observación, un contraste o una intuición real).
+   - **Varía la apertura entre piezas**: no repitas el mismo molde de primera frase (p. ej. "[Marca temporal], mientras [gerundio], me di cuenta de que..."). Si la respuesta del autor sobre la escena tiene esa forma, no la copies tal cual como primera frase — reescríbela, cambia el orden, o arranca por otro punto (la reflexión, el detalle de fricción, el objeto) y mete la escena un poco más adelante.
    - Usa conectores conversacionales naturales en castellano peninsular (*pero, así que, por eso, en realidad, de hecho, el caso es que, en la práctica*).
    - **Tono de carta**: escribe como si le escribieras esto a una persona concreta, no a una audiencia genérica. Sin saludo ni despedida fijos — es la cercanía y el "tú" real e implícito lo que tiene que sonar a carta, no una fórmula.
 2. **REGLA DE SINCERIDAD EDITORIAL Y [FALTA: ...] (CRÍTICO)**:
