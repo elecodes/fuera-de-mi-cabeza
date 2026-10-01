@@ -48,7 +48,11 @@ def test_embed_returns_values_from_response():
     asyncio.run(_run())
 
 
-def test_embed_raises_without_api_key():
+def test_embed_raises_without_api_key(monkeypatch):
+    # Aísla del GEMINI_API_KEY real del .env (se carga al importar app.main
+    # durante la recolección de tests) — mismo motivo que en test_drive_uploader.py.
+    monkeypatch.delenv("GEMINI_API_KEY", raising=False)
+
     async def _run():
         client = GeminiEmbeddingsClient(api_key=None, http_client=_FakeHttpClient())
         with pytest.raises(RuntimeError, match="GEMINI_API_KEY"):
