@@ -1,3 +1,5 @@
+import os
+
 from app.services.google_drive_auth import build_drive_service
 
 
@@ -11,7 +13,7 @@ class DriveReader:
     """
 
     def __init__(self, drive_service=None, token_file: str | None = None):
-        self._token_file = token_file
+        self._token_file = token_file or os.getenv("GOOGLE_OAUTH_TOKEN_FILE")
         self._drive_service = drive_service  # inyectable para tests
 
     def _get_service(self):

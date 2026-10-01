@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 
 from app.services.drive_reader import DriveReader
 
@@ -92,3 +93,27 @@ def test_export_document_text_raises_on_api_error():
 
     with pytest.raises(RuntimeError, match="404 Not Found"):
         reader.export_document_text("file-id")
+
+
+def test_reader_falls_back_to_env_var_for_token_file(monkeypatch):
+    # Bug real: DriveReader() sin argumentos debía leer GOOGLE_OAUTH_TOKEN_FILE
+    # del entorno (igual que DriveUploader), pero se quedaba en None y
+    # `scripts/ingest_published_drive_docs.py` fallaba siempre con
+    # "GOOGLE_OAUTH_TOKEN_FILE no está configurado" aunque sí lo estuviera.
+    monkeypatch.setenv("GOOGLE_OAUTH_TOKEN_FILE", "un-token-real.json")
+    with patch("app.services.drive_reader.build_drive_service") as mock_build:
+        mock_build.return_value = object()
+        reader = DriveReader()
+        reader._get_service()
+
+    mock_build.assert_called_once_with("un-token-real.json")
+
+
+def test_reader_explicit_token_file_overrides_env_var(monkeypatch):
+    monkeypatch.setenv("GOOGLE_OAUTH_TOKEN_FILE", "del-env.json")
+    with patch("app.services.drive_reader.build_drive_service") as mock_build:
+        mock_build.return_value = object()
+        reader = DriveReader(token_file="explicito.json")
+        reader._get_service()
+
+    mock_build.assert_called_once_with("explicito.json")
