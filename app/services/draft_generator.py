@@ -69,7 +69,7 @@ class DraftGenerator:
             "con la idea de 'sacar algo de la cabeza', variando el objeto (cabeza, ordenador, escritorio, cuaderno...) "
             "según el tema — nunca la misma frase literal dos veces. "
             "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
-            "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
+            "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa') O INVENTADAS (cualquier símil o imagen poética nueva creada para ilustrar la idea, no solo las de plantilla), vocabulario literario/ensayístico cuando hay una palabra hablada más sencilla (nada de 'desencadenó', 'se diluyó', 'escasa', 'pulso' como verbo, 'al fin'), autoayuda ('¡Tú puedes!'), "
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
             "Devuelve únicamente el texto plano de la Note, sin JSON."
         )
@@ -123,7 +123,7 @@ class DraftGenerator:
             "con la idea de 'sacar algo de la cabeza', variando el objeto (cabeza, ordenador, escritorio, cuaderno...) "
             "según el tema — nunca la misma frase literal dos veces. "
             "PROHIBIDO usar tics de IA: antítesis ('No es X, es Y'), intros vacías ('En un mundo...'), regla de tres constante, "
-            "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa'), autoayuda ('¡Tú puedes!'), "
+            "afirmaciones sobrecalificadas ('Es importante señalar'), metáforas trilladas ('brújula, no mapa') O INVENTADAS (cualquier símil o imagen poética nueva creada para ilustrar la idea, no solo las de plantilla), vocabulario literario/ensayístico cuando hay una palabra hablada más sencilla (nada de 'desencadenó', 'se diluyó', 'escasa', 'pulso' como verbo, 'al fin'), autoayuda ('¡Tú puedes!'), "
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
             "Devuelve el título y el contenido separados por los marcadores ===TITULO=== / ===CONTENIDO===, sin JSON."
         )

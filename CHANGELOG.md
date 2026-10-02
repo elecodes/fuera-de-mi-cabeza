@@ -5,6 +5,13 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2026-10-01
+
+### Fixed
+- **"Más coloquial/natural" no tenía un objetivo concreto al que apuntar.** Las reglas solo prohibían metáforas *trilladas* (clichés conocidos) y adjetivos *corporativos* (crucial, esencial) — pero no las metáforas inventadas para la ocasión ni el vocabulario de registro literario/ensayístico (desencadenó, se diluyó, escasa, pulso como verbo), que es lo que de verdad seguía sonando impostado. Añadidas ambas prohibiciones, con ejemplos reales, en `voice_guide.md`, en los prompts de generación y revisión, y en los `system_prompt`.
+
+Ver ADR 0022.
+
 ## [0.8.1] - 2026-10-01
 
 ### Fixed

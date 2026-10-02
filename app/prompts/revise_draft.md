@@ -26,6 +26,7 @@ Edita y redacta SIEMPRE en Español de España (castellano peninsular: tú, tien
    - Mantén la fidelidad a lo expresado por el autor sin inventar historias ni datos no proporcionados.
    - **Tono de carta**: mantén la sensación de escribirle a una persona concreta, un "tú" real e implícito, sin saludo ni despedida fijos.
    - Si el cierre del borrador no conecta con la idea de "sacar algo de la cabeza" (ver `voice_guide.md`), puedes ajustarlo para que lo haga — pero solo si el feedback pide tocar el cierre; no lo fuerces si el feedback trata sobre otra parte del texto.
+   - **Si el feedback pide algo como "más coloquial", "más natural" o "que suene menos a IA"**: revisa frase por frase buscando específicamente dos cosas y corrígelas — (1) cualquier metáfora o símil inventado para la ocasión, aunque no sea un cliché conocido (ver ejemplos en `voice_guide.md`), y (2) cualquier palabra de registro literario/ensayístico que tenga una alternativa hablada más sencilla (*desencadenó, se diluyó, escasa, pulso* como verbo, *al fin*, etc.). Estas dos cosas son las que más suelen hacer que un texto "técnicamente correcto" no suene a la autora.
 
 
 ## Formato de Salida Obligatorio:
