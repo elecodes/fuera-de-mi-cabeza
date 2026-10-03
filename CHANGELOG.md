@@ -5,6 +5,14 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2026-10-01
+
+### Fixed
+- **CRÍTICO: pedir "deja de usar esta expresión" podía guardarse como "úsala más".** La categorización de feedback en `save_preference_to_profile` comprobaba primero palabras como "usar" para decidir si algo era una "expresión favorita" — y como "no usar" contiene literalmente "usar", una petición de prohibir una frase caía en la categoría contraria. Reordenado para comprobar primero las señales de prohibición ("no usar", "evitar", "eliminar", "deja de"...).
+- Limpieza manual de `data/editorial_memory.json` y `data/editorial_profile.md`: sacada la frase "una lista de comprobación: evita perder el hilo" (y otra regla sobre tríos) de "favoritas" a su sitio correcto, arregladas dos entradas de "forbidden_words" que en realidad eran frases de instrucción completas, y eliminadas reglas de cierre duplicadas que competían con la versión ya bien diseñada de `voice_guide.md` (ADR 0019).
+
+Ver ADR 0023.
+
 ## [0.8.2] - 2026-10-01
 
 ### Fixed

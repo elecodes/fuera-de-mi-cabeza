@@ -127,14 +127,27 @@ class VoiceEditor:
         """
         editorial_profile = self._load_profile()
 
-        # Determinar categoría para la memoria editorial
+        # Determinar categoría para la memoria editorial.
+        # IMPORTANTE: la intención de PROHIBIR algo se comprueba primero y
+        # tiene prioridad sobre cualquier otra señal. Antes, un feedback como
+        # "no uses esta expresión: ..." podía caer en "favorite_expressions"
+        # en vez de "forbidden_words", porque "no usar" contiene literalmente
+        # la palabra "usar" (uno de los disparadores de "favorite_expressions")
+        # — invirtiendo el sentido exacto de lo que el autor pedía. El orden
+        # de estas comprobaciones es lo que evita ese fallo, no lo cambies
+        # sin repensar los solapamientos entre las listas de palabras.
         fb_lower = user_correction.lower()
-        if any(w in fb_lower for w in ["expresión", "muletilla", "frase", "giro", "usar", "decir"]):
-            cat = "favorite_expressions"
-        elif any(w in fb_lower for w in ["no usar", "evitar", "eliminar", "palabra", "vicio", "tic"]):
+        negation_markers = [
+            "no usar", "no uses", "no utilices", "no utilizar", "no emplees", "no digas",
+            "no repitas", "evitar", "evita", "eliminar", "elimina", "quitar", "quita",
+            "deja de", "dejar de", "ya no", "nunca uses", "nunca utilices",
+        ]
+        if any(w in fb_lower for w in negation_markers):
             cat = "forbidden_words"
         elif any(w in fb_lower for w in ["ritmo", "oraciones", "largo", "corto", "frases"]):
             cat = "rhythm_rules"
+        elif any(w in fb_lower for w in ["expresión", "muletilla", "giro"]):
+            cat = "favorite_expressions"
         else:
             cat = "style_rules"
 
