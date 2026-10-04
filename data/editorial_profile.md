@@ -4,9 +4,8 @@ Este archivo ya no se usa para generar borradores: `app/services/voice_profile.p
 construye el contexto de voz a partir de `data/voice_guide.md`, `data/voice_samples.md`
 y `data/editorial_memory.json`.
 
-Este archivo se conserva como registro legible, en orden cronológico, de las reglas
-que se han ido aprendiendo por feedback (ver `data/editorial_memory.json` para la
-versión que realmente usan los prompts).
+Este archivo se conserva como registro legible de las reglas aprendidas por feedback
+(ver `data/editorial_memory.json` para la versión que realmente usan los prompts).
 
 ## Reglas aprendidas
 - Evitar adjetivos y verbos inflados (crucial, esencial, clave, optimizar, potenciar).
@@ -18,31 +17,21 @@ versión que realmente usan los prompts).
 - Integrar las notas y modificaciones directamente en el borrador, sin crear versiones separadas.
 - Evitar metáforas cliché y cierres genéricos; usar vocabulario preciso en español.
 - Describir acciones concretas en vez de frases vagas.
+- Mantener un tono íntimo y cercano, como si hablara directamente al lector.
+- No emplear construcciones antitéticas tipo 'no es X, sino Y'.
+- Sonar coloquial, natural y cercano, como una conversación real, sin formalidades excesivas.
 - Español peninsular (tú, tienes, has probado), sin voseo.
-- Evitar enumeraciones de tres ítems forzadas.
-- Párrafos breves y claros, sin repeticiones ni redundancias.
-- Explicar con claridad qué resuelve una lista de comprobación.
+- Evitar enumeraciones de tres ítems forzadas; reformular la idea o separar los elementos.
+- Párrafos breves, claros y cercanos, sin repeticiones ni construcciones confusas.
 
+## Expresiones prohibidas
+- "No se trata de X, sino de Y"
+- "una lista de comprobación: evita perder el hilo"
+- "mapa interno"
 
-- **Preferencia aprendida**: Escribir párrafos más breves, claros y cercanos, evitando construcciones confusas y asegurando que el mensaje sea fácilmente comprensible.
-
-
-- **Preferencia aprendida**: No utilizar formulaciones antitéticas del tipo 'No se trata de X, sino de Y' y suprimir cualquier referencia redundante que describa la lista de comprobación como un mapa interno.
-
-
-- **Preferencia aprendida**: No emplear construcciones antitéticas tipo 'no es X; es Y' y cerrar las notas con una referencia a 'sacando fuera de mi cabeza, de mi escritorio...'.
-
-
-- **Preferencia aprendida**: No crear enumeraciones forzadas de tres ítems; reformula la idea o separa los elementos para evitar frases triádicas.
-
-
-- **Preferencia aprendida**: Mantener un tono íntimo y cercano, como si hablara directamente al lector, evitando cualquier expresión que resulte distante
-
-
-- **Preferencia aprendida**: Evita enumeraciones forzadas de tres ítems; reformula la idea o separa los elementos para no crear tríos sintácticos.
-
-
-- **Preferencia aprendida**: Los textos deben concluir con una mención que indique que la reflexión proviene directamente de mi cabeza, mis notas o mi ordenador.
-
-
-- **Preferencia aprendida**: Al describir la organización de tus ideas, usa una redacción clara y concreta en primera persona, evita enumeraciones de tres ítems y expresiones genéricas, y detalla la transición de papel a un organizador digital accesible desde el ordenador.
+## Nota sobre esta limpieza (2026-10-01)
+Varias entradas de feedback reciente sobre tono, antítesis y tríos se habían
+guardado por error como "expresiones favoritas" (es decir, como frases a usar
+literalmente) en vez de como reglas de estilo — un bug de categorización ya
+corregido (ver ADR 0023). Esta versión consolida esas entradas duplicadas en
+las reglas de arriba, en la categoría correcta.
