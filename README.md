@@ -1,4 +1,4 @@
-# Fuera de mi cabeza — Personal Editorial Agent (v0.8.3)
+# Fuera de mi cabeza — Personal Editorial Agent (v0.9.0)
 
 Editor personal en Python para el Substack **"Fuera de mi cabeza"** (tecnología, IA, aprendizaje y reflexiones sobre cómo convertir conocimiento en cosas reales).
 
@@ -56,6 +56,7 @@ fuera-de-mi-cabeza/
 │   │   ├── drive_reader.py      # Lee y exporta el texto de Google Docs de una carpeta de Drive
 │   │   ├── embeddings_client.py # Cliente de la API de embeddings de Gemini
 │   │   ├── knowledge_base.py    # Almacén local de piezas publicadas + búsqueda por similitud
+│   │   ├── tracer.py            # Observabilidad ligera: registra cada llamada al LLM
 │   │   └── session_manager.py   # Guarda el estado de la sesión
 
 │   ├── llm/
@@ -168,3 +169,10 @@ Configuración, una sola vez:
 4. Reinicia el backend. Al explorar una idea nueva, si hay algo parecido ya publicado, debería aparecer el aviso con el enlace.
 
 Si `GEMINI_API_KEY` no está configurado, o el catálogo está vacío, el aviso simplemente no aparece — no bloquea ni interrumpe el resto del flujo.
+
+### 8. Observabilidad
+El botón **"🔬 Observabilidad"** (arriba a la derecha) abre un panel con las últimas llamadas al LLM: qué paso del pipeline la hizo (`idea_explorer.analyze`, `draft_generator.generate_note`, etc.), cuánto tardó, si falló, y el prompt y la respuesta completos de cada una. Pensado para depurar "por qué ha salido así este borrador" sin tener que leer los prompts a mano, como hemos hecho muchas veces en el desarrollo de este proyecto.
+
+No hace falta configurar nada — funciona automáticamente desde el primer arranque. Se guarda en `data/traces.jsonl` (gitignored, solo local), que conserva como mucho las 300 llamadas más recientes.
+
+Se evaluó adoptar un framework de orquestación (Genkit) para esto, pero se descartó por ahora — ver ADR 0024 y ADR 0025 para el razonamiento completo.

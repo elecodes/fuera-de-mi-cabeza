@@ -262,8 +262,19 @@
     <div id="status-bar" style="text-align: right;">
       <div id="status-badge" class="badge" style="background:#e5e7eb; color:#374151; margin-bottom: 0.3rem;">Comprobando servidor...</div>
       <button id="btn-start-omniroute" class="hidden" onclick="startOmniRoute()" style="font-size:0.8rem; padding:0.35rem 0.7rem; margin-top:0.2rem; background:#dc2626;">⚡ Iniciar OmniRoute</button>
+      <button onclick="toggleObservability()" class="secondary" style="font-size:0.8rem; padding:0.35rem 0.7rem; margin-top:0.2rem;">🔬 Observabilidad</button>
     </div>
   </header>
+
+  <!-- PANEL DE OBSERVABILIDAD: últimas llamadas al LLM (ver ADR 0025) -->
+  <div id="observability-panel" class="step-card hidden" style="background:#f8fafc; border:1px solid #cbd5e1;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="badge" style="background:#334155;">🔬 OBSERVABILIDAD</div>
+      <button class="secondary" onclick="loadTraces()" style="font-size:0.8rem; padding:0.3rem 0.6rem;">↻ Refrescar</button>
+    </div>
+    <p style="font-size:0.85rem; color:var(--muted, #64748b); margin:0.4rem 0;">Las últimas llamadas al LLM: qué paso las hizo, cuánto tardaron, y el prompt/respuesta de cada una.</p>
+    <div id="traces-list" style="margin-top:0.6rem;"></div>
+  </div>
 
   <!-- SECCIÓN RUK LAB: Extractor de Tono (3 Muestras de Texto) -->
   <div class="step-card" style="background:#fefce8; border:1px solid #fef08a;">
@@ -497,6 +508,47 @@
     let currentSessionId = null;
     let currentAnalysis = null;
     let selectedArcId = null;
+
+    function toggleObservability() {
+      const panel = document.getElementById("observability-panel");
+      panel.classList.toggle("hidden");
+      if (!panel.classList.contains("hidden")) loadTraces();
+    }
+
+    async function loadTraces() {
+      const listEl = document.getElementById("traces-list");
+      listEl.innerHTML = "⏳ Cargando...";
+      try {
+        const res = await fetch("/api/traces?limit=50");
+        const data = await res.json();
+        const traces = data.traces || [];
+        if (traces.length === 0) {
+          listEl.innerHTML = "<p style='color:var(--muted,#64748b); font-size:0.85rem;'>Aún no hay llamadas registradas.</p>";
+          return;
+        }
+        listEl.innerHTML = traces.map((t, i) => {
+          const statusColor = t.error ? "#dc2626" : "#16a34a";
+          const statusLabel = t.error ? "❌ error" : "✅ ok";
+          return `
+            <details style="border:1px solid #e2e8f0; border-radius:6px; margin-bottom:0.4rem; background:white;">
+              <summary style="cursor:pointer; padding:0.5rem 0.7rem; font-size:0.85rem; display:flex; justify-content:space-between; gap:0.5rem;">
+                <span><strong>${escapeHtml(t.step)}</strong> ${t.model ? "· " + escapeHtml(t.model) : ""}</span>
+                <span style="color:${statusColor};">${statusLabel} · ${t.duration_ms} ms</span>
+              </summary>
+              <div style="padding:0.6rem 0.8rem; border-top:1px solid #e2e8f0; font-size:0.8rem;">
+                <div style="color:var(--muted,#64748b); margin-bottom:0.4rem;">${escapeHtml(t.timestamp)}</div>
+                ${t.error ? `<div style="color:#dc2626; margin-bottom:0.5rem;"><strong>Error:</strong> ${escapeHtml(t.error)}</div>` : ""}
+                <div style="margin-bottom:0.5rem;"><strong>System prompt:</strong><pre style="white-space:pre-wrap; background:#f1f5f9; padding:0.5rem; border-radius:4px; max-height:150px; overflow:auto;">${escapeHtml(t.system_prompt_preview)}</pre></div>
+                <div style="margin-bottom:0.5rem;"><strong>Prompt:</strong><pre style="white-space:pre-wrap; background:#f1f5f9; padding:0.5rem; border-radius:4px; max-height:200px; overflow:auto;">${escapeHtml(t.prompt_preview)}</pre></div>
+                ${t.response_preview ? `<div><strong>Respuesta:</strong><pre style="white-space:pre-wrap; background:#f1f5f9; padding:0.5rem; border-radius:4px; max-height:200px; overflow:auto;">${escapeHtml(t.response_preview)}</pre></div>` : ""}
+              </div>
+            </details>
+          `;
+        }).join("");
+      } catch (err) {
+        listEl.innerHTML = `<p style="color:#dc2626; font-size:0.85rem;">❌ ${escapeHtml(err.message)}</p>`;
+      }
+    }
 
     async function exploreIdea() {
       const idea = document.getElementById("idea-input").value.trim();

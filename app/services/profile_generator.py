@@ -1,6 +1,7 @@
 import json
 from pathlib import Path
 from app.llm.client import LLMClient
+from app.services.tracer import traced_generate
 
 
 class ProfileGenerator:
@@ -41,9 +42,8 @@ class ProfileGenerator:
             "Responde SIEMPRE con un objeto JSON válido respetando el esquema solicitado."
         )
 
-        raw_response = await self.llm_client.generate(
-            prompt=formatted_prompt,
-            system_prompt=system_prompt,
+        raw_response = await traced_generate(
+            self.llm_client, "profile_generator.extract_tone", formatted_prompt, system_prompt
         )
 
         clean_json_str = self._clean_json_output(raw_response)

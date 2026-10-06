@@ -5,6 +5,7 @@ from app.models.draft import Draft
 from app.memory.editorial_memory import EditorialMemory
 from app.services.voice_profile import load_voice_profile
 from app.services.text_output import strip_code_fences, parse_titled_content
+from app.services.tracer import traced_generate
 
 
 class DraftGenerator:
@@ -73,7 +74,9 @@ class DraftGenerator:
             "cierres circulares ('En resumen'), preguntas de transición ('¿La trampa?'), emojis decorativos o abusar de rayas (—). "
             "Devuelve únicamente el texto plano de la Note, sin JSON."
         )
-        raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
+        raw_response = await traced_generate(
+            self.llm_client, "draft_generator.generate_note", formatted_prompt, system_prompt
+        )
 
         content = strip_code_fences(raw_response)
         return Draft.model_validate({"format": "note", "title": None, "content": content})
@@ -128,7 +131,9 @@ class DraftGenerator:
             "Devuelve el título y el contenido separados por los marcadores ===TITULO=== / ===CONTENIDO===, sin JSON."
         )
 
-        raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
+        raw_response = await traced_generate(
+            self.llm_client, "draft_generator.generate_article", formatted_prompt, system_prompt
+        )
 
         parsed_title, content = parse_titled_content(raw_response)
         return Draft.model_validate({

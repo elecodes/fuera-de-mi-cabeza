@@ -224,6 +224,24 @@ def test_knowledge_search_surfaces_real_error():
         assert "GEMINI_API_KEY" in res.json()["detail"]
 
 
+def test_get_traces_returns_recent_entries():
+    with patch("app.main.read_recent_traces") as mock_read:
+        mock_read.return_value = [
+            {"step": "idea_explorer.analyze", "duration_ms": 120, "error": None},
+        ]
+        res = client.get("/api/traces?limit=5")
+        assert res.status_code == 200
+        assert res.json()["traces"][0]["step"] == "idea_explorer.analyze"
+        mock_read.assert_called_once_with(limit=5)
+
+
+def test_get_traces_defaults_to_empty_list_when_no_traces_yet():
+    with patch("app.main.read_recent_traces", return_value=[]):
+        res = client.get("/api/traces")
+        assert res.status_code == 200
+        assert res.json()["traces"] == []
+
+
 def test_architecture_endpoint():
     res = client.get("/architecture")
     assert res.status_code == 200

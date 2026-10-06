@@ -25,6 +25,7 @@ from app.services.audio_transcriber import AudioTranscriber
 from app.services.drive_uploader import DriveUploader
 from app.services.embeddings_client import GeminiEmbeddingsClient
 from app.services.knowledge_base import KnowledgeBase
+from app.services.tracer import read_recent_traces
 from app.memory.editorial_memory import EditorialMemory
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -489,6 +490,17 @@ async def search_knowledge_base(payload: KnowledgeSearchInput):
         return KnowledgeSearchResult(results=[RelatedPiece(**m) for m in matches])
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al buscar en el catálogo publicado: {str(e)}")
+
+
+@app.get("/api/traces")
+async def get_traces(limit: int = 50):
+    """
+    Observabilidad ligera (ver ADR 0025): las últimas llamadas al LLM, con el
+    prompt, la respuesta, la duración y el error si lo hubo, para depurar sin
+    tener que leer los prompts a mano. No requiere ninguna configuración
+    extra; si aún no hay trazas, devuelve una lista vacía.
+    """
+    return {"traces": read_recent_traces(limit=limit)}
 
 
 @app.post("/api/profile/extract-tone")

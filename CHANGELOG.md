@@ -5,6 +5,17 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2026-10-03
+
+### Added
+- **Observabilidad ligera**: nuevo panel "🔬 Observabilidad" con las últimas llamadas al LLM (paso, modelo, duración, prompt y respuesta completos, error si lo hubo). Pensado como alternativa a adoptar un framework de orquestación (ver ADR 0024) solo para poder depurar sin leer prompts a mano.
+  - Nuevo `app/services/tracer.py`: registra cada llamada en `data/traces.jsonl` (gitignored, máximo 300 entradas), sin romper nunca el flujo real si la escritura de la traza falla.
+  - Las 10 llamadas al LLM de todos los servicios (`idea_explorer`, `content_planner`, `draft_generator`, `voice_auditor`, `voice_editor`, `argument_griller`, `profile_generator`) pasan ahora por `traced_generate(...)`.
+  - Nuevo endpoint `GET /api/traces`.
+  - Funciona desde el primer arranque, sin configuración.
+
+Ver ADR 0025.
+
 ## [0.8.3] - 2026-10-01
 
 ### Fixed

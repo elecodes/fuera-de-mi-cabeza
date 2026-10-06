@@ -5,6 +5,7 @@ from app.models.draft import Draft
 from app.memory.editorial_memory import EditorialMemory
 from app.services.voice_profile import load_voice_profile
 from app.services.text_output import strip_code_fences
+from app.services.tracer import traced_generate
 
 
 class VoiceEditor:
@@ -106,7 +107,9 @@ class VoiceEditor:
             "Devuelve ÚNICAMENTE el texto plano revisado, sin JSON, sin título y sin repetir el formato."
         )
 
-        raw_response = await self.llm_client.generate(prompt=formatted_prompt, system_prompt=system_prompt)
+        raw_response = await traced_generate(
+            self.llm_client, "voice_editor.revise", formatted_prompt, system_prompt
+        )
 
         content = strip_code_fences(raw_response)
         # El formato y el título del borrador se conservan siempre desde current_draft:
@@ -173,9 +176,8 @@ class VoiceEditor:
         last_error: Exception | None = None
         for _ in range(2):
             try:
-                raw_response = await self.llm_client.generate(
-                    prompt=formatted_prompt,
-                    system_prompt=system_prompt,
+                raw_response = await traced_generate(
+                    self.llm_client, "voice_editor.learn_preference", formatted_prompt, system_prompt
                 )
                 clean_json = self._clean_json_output(raw_response)
                 data = json.loads(clean_json)
