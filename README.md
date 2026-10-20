@@ -41,6 +41,7 @@ fuera-de-mi-cabeza/
 │   │   ├── analysis.py          # Modelo de análisis y Arcos Narrativos
 │   │   ├── content_plan.py      # Modelo de plan de contenido
 │   │   ├── draft.py             # Modelo de borrador (Substack Note / Article)
+│   │   ├── visual_asset.py      # Modelo para máquinas visuales interactivas (Anatomy)
 │   │   ├── voice_audit.py       # Modelo de reporte de auditoría editorial
 │   │   └── session.py           # Modelo de sesión editorial
 │   ├── services/
@@ -49,6 +50,7 @@ fuera-de-mi-cabeza/
 │   │   ├── idea_explorer.py     # Analiza ideas, desglosa pensamientos y sintetiza arcos
 │   │   ├── content_planner.py   # Genera el plan según el arco narrativo elegido
 │   │   ├── draft_generator.py   # Redacta Substack Notes o Artículos
+│   │   ├── anatomy_generator.py # Generador de máquinas conceptuales mecánicas e isométricas (Anatomy)
 │   │   ├── voice_auditor.py     # Audita la naturalidad y antipatrones de IA
 │   │   ├── voice_editor.py      # Ajusta el texto según tu feedback
 │   │   ├── drive_uploader.py    # Exporta el borrador a Google Drive como Google Doc nativo
@@ -176,3 +178,8 @@ El botón **"🔬 Observabilidad"** (arriba a la derecha) abre un panel con las 
 No hace falta configurar nada — funciona automáticamente desde el primer arranque. Se guarda en `data/traces.jsonl` (gitignored, solo local), que conserva como mucho las 300 llamadas más recientes.
 
 Se evaluó adoptar un framework de orquestación (Genkit) para esto, pero se descartó por ahora — ver ADR 0024 y ADR 0025 para el razonamiento completo.
+
+### 9. Máquinas Conceptuales con Anatomy (Experimental en branch `feature/anatomy-visuals`)
+El botón **"⚙️ Generar Visual Anatomy"** en la etapa de Borrador permite traducir un concepto técnico complejo (balanceadores, token buckets, locks, etc.) en una máquina física interactiva en proyección isométrica (HTML/SVG autocontenido).
+- Genera el asset y lo sirve localmente en `/visuals/{slug}`.
+- Ofrece un botón para copiar el snippet formateado listo para incrustar en Substack como enlace complementario para tus lectores (ver ADR 0026).

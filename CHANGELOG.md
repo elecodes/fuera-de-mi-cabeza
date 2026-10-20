@@ -5,6 +5,15 @@ All notable changes to the **Fuera de mi cabeza** personal editorial agent will 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Visuales interactivos con Anatomy (Experimental en `feature/anatomy-visuals`)**: generación bajo demanda de máquinas conceptuales mecánicas e isométricas en HTML/SVG interactivo como páginas de acompañamiento para posts de Substack (ADR 0026).
+  - Nuevo servicio `app/services/anatomy_generator.py` y prompt `app/prompts/anatomy_prompt.md`.
+  - Nuevo modelo `app/models/visual_asset.py` (`VisualAsset` y `VisualAssetRequest`).
+  - Endpoints `POST /api/ideas/{session_id}/visuals`, `GET /api/ideas/{session_id}/visuals/snippet` y `GET /visuals/{slug}`.
+  - Botón "⚙️ Generar Visual Anatomy", previsualizador y copia rápida del snippet de Substack en el Paso 4 (Borrador).
+
 ## [0.9.0] - 2026-10-03
 
 ### Added

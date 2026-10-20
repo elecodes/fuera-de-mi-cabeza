@@ -14,5 +14,8 @@ This directory contains records of major architectural decisions made in the "Fu
 | [0007](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0007-in-place-draft-revisions-omniroute-process-lifecycle-and-markdown-tab-preview.md) | In-Place Draft Revisions, OmniRoute Process Lifecycle, and Markdown Tab Preview | Accepted | 2026-09-22 |
 | [0008](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0008-continuous-editorial-memory-and-personalized-voice-learning.md) | Continuous Editorial Memory, Personalized Voice Learning, and Prompt Payload Condensation | Accepted | 2026-09-24 |
 | [0009](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0009-centralized-voice-profile-and-memory-deduplication.md) | Centralized Voice Profile Loader and Semantic Memory Deduplication | Accepted | 2026-09-25 |
+| [0025](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0025-lightweight-observability.md) | Lightweight Observability for LLM Calls | Accepted | 2026-10-03 |
+| [0026](file:///Users/elena/Developer/fuera-de-mi-cabeza/docs/adr/0026-anatomy-interactive-visual-assets.md) | Anatomy Interactive Visual Assets as Companion Pages | Proposed (Experimental) | 2026-10-20 |
+
 
 
