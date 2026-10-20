@@ -4,6 +4,7 @@ from app.models.analysis import IdeaAnalysis, NarrativeArc
 from app.models.content_plan import ContentPlan
 from app.models.draft import Draft
 from app.models.voice_audit import VoiceAuditReport
+from app.models.visual_asset import VisualAsset
 
 
 class EditorialSession(BaseModel):
@@ -20,5 +21,6 @@ class EditorialSession(BaseModel):
     content_plan: ContentPlan | None = Field(default=None, description="Plan de contenido aprobado o propuesto")
     draft: Draft | None = Field(default=None, description="Borrador actual generado")
     voice_audit: VoiceAuditReport | None = Field(default=None, description="Último reporte de auditoría de voz y estilo")
+    visual_asset: VisualAsset | None = Field(default=None, description="Asset visual interactivo generado con Anatomy")
     feedback: list[str] = Field(default_factory=list, description="Historial de feedback provisto por el usuario")
     revisions: list[str] = Field(default_factory=list, description="Historial de revisiones del borrador")

@@ -13,12 +13,14 @@ load_dotenv()
 from app.llm.providers import get_llm_client
 from app.models.idea import IdeaInput
 from app.models.session import EditorialSession
+from app.models.visual_asset import VisualAsset, VisualAssetRequest
 from app.services.session_manager import SessionManager
 from app.services.idea_explorer import IdeaExplorer
 from app.services.content_planner import ContentPlanner
 from app.services.draft_generator import DraftGenerator
 from app.services.voice_editor import VoiceEditor
 from app.services.voice_auditor import VoiceAuditor
+from app.services.anatomy_generator import AnatomyGenerator
 from app.services.argument_griller import ArgumentGriller
 from app.services.profile_generator import ProfileGenerator
 from app.services.audio_transcriber import AudioTranscriber
@@ -554,6 +556,69 @@ async def get_session_details(session_id: str):
     if not session:
         raise HTTPException(status_code=404, detail="Sesión no encontrada")
     return session
+
+
+@app.post("/api/ideas/{session_id}/visuals", response_model=EditorialSession)
+async def generate_visual_asset(session_id: str, payload: VisualAssetRequest | None = None):
+    session = session_manager.get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+
+    concept = ""
+    title = None
+    if payload and payload.concept and payload.concept.strip():
+        concept = payload.concept.strip()
+    elif session.draft and session.draft.content.strip():
+        concept = f"{session.draft.title or ''}\n\n{session.draft.content}".strip()
+    elif session.content_plan and session.content_plan.central_message:
+        concept = session.content_plan.central_message
+    else:
+        concept = session.original_idea
+
+    if payload and payload.title:
+        title = payload.title
+    elif session.draft and session.draft.title:
+        title = session.draft.title
+
+    context = f"Idea central: {session.content_plan.central_message if session.content_plan else session.original_idea}"
+
+    try:
+        llm = get_llm_client()
+        generator = AnatomyGenerator(llm_client=llm)
+        asset = await generator.generate_visual(
+            concept=concept,
+            title=title,
+            context=context,
+        )
+        session.visual_asset = asset
+        session_manager.save_session(session)
+        return session
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al generar visual de Anatomy: {str(e)}")
+
+
+@app.get("/api/ideas/{session_id}/visuals/snippet")
+async def get_visual_snippet(session_id: str):
+    session = session_manager.get_session(session_id)
+    if not session or not session.visual_asset:
+        raise HTTPException(status_code=404, detail="No hay asset visual para esta sesión")
+
+    return {
+        "snippet": session.visual_asset.substack_snippet(),
+        "slug": session.visual_asset.slug,
+        "title": session.visual_asset.title,
+        "metaphor": session.visual_asset.metaphor,
+    }
+
+
+@app.get("/visuals/{slug}", response_class=HTMLResponse)
+async def serve_visual_asset(slug: str):
+    # Dummy mock client for retrieval only (read local file)
+    generator = AnatomyGenerator(llm_client=get_llm_client())
+    html = generator.get_visual_html(slug)
+    if not html:
+        raise HTTPException(status_code=404, detail="Visual de Anatomy no encontrado")
+    return HTMLResponse(content=html)
 
 
 FAVICON_SVG = """<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232c2c2c'/><path d='M50 20 L75 50 L60 80 L50 72 L40 80 L25 50 Z' fill='%23d97706'/><circle cx='50' cy='50' r='4' fill='%232c2c2c'/><line x1='50' y1='54' x2='50' y2='72' stroke='%232c2c2c' stroke-width='3'/></svg>"""

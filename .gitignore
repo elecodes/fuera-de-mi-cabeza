@@ -10,6 +10,7 @@ data/sessions/*.json
 data/voice_samples.md
 data/knowledge_base.json
 data/traces.jsonl
+data/visuals/*.html
 
 # Credenciales de Google Drive: nunca deben subirse al repo.
 google-service-account.json

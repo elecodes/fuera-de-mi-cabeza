@@ -189,6 +189,42 @@ class MockLLMClient:
 
         clean_idea = self._clean_idea_summary(idea_raw)
 
+        # 0. Detección de Anatomy (máquina conceptual visual)
+        if "anatomy" in prompt_lower or "máquina conceptual" in prompt_lower or "el objeto es la explicación" in prompt_lower:
+            return (
+                "===TITULO===\n"
+                "Tolva Isométrica de Control de Flujo\n"
+                "===METAFORA===\n"
+                "Un mecanismo de compuertas hidráulicas y contrapesos\n"
+                "===HTML===\n"
+                "<!DOCTYPE html>\n"
+                "<html lang=\"es\">\n"
+                "<head>\n"
+                "  <meta charset=\"UTF-8\">\n"
+                "  <title>Anatomy: Tolva Isométrica</title>\n"
+                "  <style>\n"
+                "    body { background: #0f172a; color: #f8fafc; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }\n"
+                "    .card { background: #1e293b; border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; max-width: 650px; text-align: center; }\n"
+                "    svg { max-width: 100%; height: auto; }\n"
+                "    .btn { background: #38bdf8; color: #0f172a; border: none; padding: 0.6rem 1.2rem; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 1rem; }\n"
+                "  </style>\n"
+                "</head>\n"
+                "<body>\n"
+                "  <div class=\"card\">\n"
+                "    <h2>Tolva Isométrica de Control de Flujo</h2>\n"
+                "    <p>Metáfora: Un mecanismo de compuertas hidráulicas y contrapesos</p>\n"
+                "    <svg viewBox=\"0 0 400 300\" width=\"400\" height=\"300\">\n"
+                "      <rect x=\"150\" y=\"50\" width=\"100\" height=\"80\" fill=\"#334155\" stroke=\"#94a3b8\" stroke-width=\"2\" />\n"
+                "      <polygon points=\"120,130 280,130 200,220\" fill=\"#475569\" stroke=\"#94a3b8\" stroke-width=\"2\" />\n"
+                "      <circle cx=\"200\" cy=\"250\" r=\"20\" fill=\"#38bdf8\" />\n"
+                "    </svg>\n"
+                "    <br/>\n"
+                "    <button class=\"btn\" onclick=\"alert('Ciclo de máquina activado')\">▶ Operar máquina</button>\n"
+                "  </div>\n"
+                "</body>\n"
+                "</html>\n"
+            )
+
         # 1. Detección de entrevista Grill (Argument Griller)
         if "argument griller" in prompt_lower or "grill_questions" in prompt_lower or "abogado del diablo" in prompt_lower:
             return json.dumps({
